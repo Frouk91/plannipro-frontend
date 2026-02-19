@@ -37,12 +37,22 @@ function LoginPage({ onLogin }) {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleLogin() {
-    const user = USERS.find(u => u.email === email.trim().toLowerCase() && u.password === password);
-    if (user) {
-      onLogin(user);
-    } else {
-      setError("Email ou mot de passe incorrect.");
+  async function handleLogin() {
+    try {
+      const res = await fetch("https://plannipro-backend-production.up.railway.app/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password })
+      });
+      const data = await res.json();
+      if (data.accessToken) {
+        const user = USERS.find(u => u.email === email.trim().toLowerCase());
+        onLogin({ ...user, token: data.accessToken });
+      } else {
+        setError("Email ou mot de passe incorrect.");
+      }
+    } catch (err) {
+      setError("Erreur de connexion au serveur.");
     }
   }
 
