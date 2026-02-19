@@ -1,4 +1,3 @@
+import './index.css'
 import PlanningApp from './planning-presence.jsx'
-export default function App() {
-  return <PlanningApp />
-}
+export default PlanningApp
