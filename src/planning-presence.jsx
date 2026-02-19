@@ -1,20 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const COLORS = ["#6366f1","#0ea5e9","#f59e0b","#10b981","#8b5cf6","#ef4444","#ec4899","#14b8a6","#f97316","#84cc16"];
 
-const DEFAULT_USERS = [
-  { id: 1, name: "Redouane F", email: "redouane@entreprise.fr", password: "admin1234", role: "admin", team: "Admin", avatar: "RF" },
-  { id: 2, name: "Sophie Martin", email: "sophie@entreprise.fr", password: "sophie123", role: "manager", team: "RH", avatar: "SM" },
-  { id: 3, name: "Lucas Bernard", email: "lucas@entreprise.fr", password: "lucas123", role: "agent", team: "Tech", avatar: "LB" },
-  { id: 4, name: "Emma Dubois", email: "emma@entreprise.fr", password: "emma1234", role: "agent", team: "Tech", avatar: "ED" },
-  { id: 5, name: "Hugo Leroy", email: "hugo@entreprise.fr", password: "hugo1234", role: "agent", team: "Ventes", avatar: "HL" },
-  { id: 6, name: "Chloé Moreau", email: "chloe@entreprise.fr", password: "chloe123", role: "agent", team: "Finance", avatar: "CM" },
-  { id: 7, name: "Nathan Simon", email: "nathan@entreprise.fr", password: "nathan123", role: "agent", team: "Tech", avatar: "NS" },
-  { id: 8, name: "Léa Petit", email: "lea@entreprise.fr", password: "lea12345", role: "agent", team: "RH", avatar: "LP" },
-  { id: 9, name: "Théo Lambert", email: "theo@entreprise.fr", password: "theo1234", role: "agent", team: "Ventes", avatar: "TL" },
+const DEMO_USERS = [
+  { email: "redouane@entreprise.fr", password: "admin1234" },
+  { email: "sophie@entreprise.fr", password: "sophie123" },
+  { email: "lucas@entreprise.fr", password: "lucas123" },
+  { email: "emma@entreprise.fr", password: "emma1234" },
 ];
 
 function hexToLight(hex) {
@@ -26,12 +21,12 @@ function getFirstDayOfMonth(y,m){let d=new Date(y,m,1).getDay();return d===0?6:d
 function dateKey(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
 function isWeekend(y,m,d){const w=new Date(y,m,d).getDay();return w===0||w===6;}
 function formatDate(s){const[y,m,d]=s.split("-");return `${d}/${m}/${y}`;}
-function getInitials(name){return name.split(" ").map(w=>w[0]||"").join("").toUpperCase().slice(0,2);}
+function getInitials(name){return (name||"?").split(" ").map(w=>w[0]||"").join("").toUpperCase().slice(0,2);}
 
 async function apiFetch(path, token, options={}) {
   const res = await fetch(`${API}${path}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers||{}) }
+    headers: { "Content-Type":"application/json", ...(token?{Authorization:`Bearer ${token}`}:{}), ...(options.headers||{}) }
   });
   return res.json();
 }
@@ -47,10 +42,9 @@ function LoginPage({onLogin}) {
   async function handleLogin() {
     setLoading(true);
     try {
-      const data = await apiFetch("/auth/login", null, { method:"POST", body: JSON.stringify({email:email.trim().toLowerCase(),password}) });
+      const data = await apiFetch("/auth/login", null, {method:"POST", body:JSON.stringify({email:email.trim().toLowerCase(),password})});
       if (data.accessToken) {
-        const user = DEFAULT_USERS.find(u=>u.email===email.trim().toLowerCase()) || { name: email, email, role:"agent", team:"", avatar: getInitials(email) };
-        onLogin({...user, token: data.accessToken});
+        onLogin({ email:email.trim().toLowerCase(), token:data.accessToken, ...data.agent });
       } else { setError("Email ou mot de passe incorrect."); }
     } catch { setError("Erreur de connexion au serveur."); }
     setLoading(false);
@@ -85,18 +79,13 @@ function LoginPage({onLogin}) {
           </button>
         </div>
         <div style={{background:"rgba(255,255,255,0.08)",borderRadius:16,padding:20,marginTop:20}}>
-          <div style={{fontSize:12,color:"#9ca3af",marginBottom:14,textAlign:"center",textTransform:"uppercase",letterSpacing:1}}>Comptes demo</div>
+          <div style={{fontSize:12,color:"#9ca3af",marginBottom:12,textAlign:"center",textTransform:"uppercase",letterSpacing:1}}>Comptes demo</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {DEFAULT_USERS.slice(0,4).map(u=>(
-              <button key={u.id} onClick={()=>{setEmail(u.email);setPassword(u.password);setError("");}}
-                style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:10,padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <div style={{width:28,height:28,borderRadius:"50%",background:`hsl(${(u.id*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{u.avatar}</div>
-                  <div>
-                    <div style={{color:"#fff",fontSize:11,fontWeight:600}}>{u.name.split(" ")[0]}</div>
-                    <div style={{color:u.role==="admin"?"#f59e0b":u.role==="manager"?"#818cf8":"#9ca3af",fontSize:10}}>{u.role==="admin"?"👑 Admin":u.role==="manager"?"👑 Manager":"Agent"}</div>
-                  </div>
-                </div>
+            {DEMO_USERS.map((u,i)=>(
+              <button key={i} onClick={()=>{setEmail(u.email);setPassword(u.password);setError("");}}
+                style={{background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",borderRadius:10,padding:"8px 12px",cursor:"pointer",textAlign:"left"}}>
+                <div style={{color:"#fff",fontSize:11,fontWeight:600}}>{u.email.split("@")[0]}</div>
+                <div style={{color:"#9ca3af",fontSize:10}}>{u.email}</div>
               </button>
             ))}
           </div>
@@ -104,6 +93,29 @@ function LoginPage({onLogin}) {
       </div>
     </div>
   );
+}
+
+// ─── COMPOSANTS UTILITAIRES ───
+function Field({label,value,onChange,placeholder,type="text",style={}}){
+  return(<div style={style}>
+    {label&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4}}>{label}</label>}
+    <input type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+      style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+  </div>);
+}
+function Modal({title,children,onClose}){
+  return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}}>
+    <div style={{background:"#fff",borderRadius:16,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 20px 60px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
+      <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700}}>{title}</h2>
+      {children}
+    </div>
+  </div>);
+}
+function ModalButtons({onCancel,onConfirm,confirmLabel,confirmColor,disabled}){
+  return(<div style={{display:"flex",gap:10}}>
+    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:14}}>Annuler</button>
+    <button onClick={onConfirm} disabled={disabled} style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"#4f46e5",color:"#fff",cursor:disabled?"default":"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.7:1}}>{confirmLabel}</button>
+  </div>);
 }
 
 // ─── ADMIN ───
@@ -125,8 +137,8 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
     try {
       const data = await apiFetch("/auth/register", token, {method:"POST", body:JSON.stringify(newAgent)});
       if (data.agent) {
-        onAgentAdded({id:Date.now(),name:`${newAgent.first_name} ${newAgent.last_name}`,email:newAgent.email,password:newAgent.password,role:newAgent.role,team:newAgent.team,avatar:getInitials(`${newAgent.first_name} ${newAgent.last_name}`)});
-        setAddModal(false);setNewAgent({first_name:"",last_name:"",email:"",password:"",role:"agent",team:""});
+        onAgentAdded({id:data.agent.id, name:`${newAgent.first_name} ${newAgent.last_name}`, email:newAgent.email, role:newAgent.role, team:newAgent.team, avatar:getInitials(`${newAgent.first_name} ${newAgent.last_name}`)});
+        setAddModal(false); setNewAgent({first_name:"",last_name:"",email:"",password:"",role:"agent",team:""});
         showNotif("Agent ajouté ✅");
       } else { showNotif(data.errors?.[0]?.msg||"Erreur","error"); }
     } catch { showNotif("Erreur de connexion","error"); }
@@ -137,7 +149,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
     if (!newTeam.trim()) return;
     try {
       const data = await apiFetch("/teams", token, {method:"POST", body:JSON.stringify({name:newTeam.trim()})});
-      if (data.id) { onTeamAdded({id:data.id,name:data.name}); setNewTeam(""); showNotif("Équipe ajoutée ✅"); }
+      if (data.id) { onTeamAdded(data); setNewTeam(""); showNotif("Équipe ajoutée ✅"); }
     } catch { showNotif("Erreur","error"); }
   }
 
@@ -152,10 +164,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
     if (!newLT.label.trim()) return;
     try {
       const data = await apiFetch("/leave-types", token, {method:"POST", body:JSON.stringify({label:newLT.label.trim(),color:newLT.color})});
-      if (data.id) {
-        onLeaveTypeAdded({id:data.id,label:data.label,color:data.color,bg:hexToLight(data.color)});
-        setNewLT({label:"",color:COLORS[0]}); showNotif("Type ajouté ✅");
-      }
+      if (data.id) { onLeaveTypeAdded({...data, bg:hexToLight(data.color)}); setNewLT({label:"",color:COLORS[0]}); showNotif("Type ajouté ✅"); }
     } catch { showNotif("Erreur","error"); }
   }
 
@@ -199,7 +208,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                   <tr key={a.id} style={{borderBottom:"1px solid #f3f4f6"}}>
                     <td style={{padding:"10px 16px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <div style={{width:32,height:32,borderRadius:"50%",background:`hsl(${(a.id*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700}}>{a.avatar}</div>
+                        <div style={{width:32,height:32,borderRadius:"50%",background:`hsl(${Math.abs(a.id.toString().charCodeAt(0)*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700}}>{a.avatar}</div>
                         <span style={{fontWeight:600,fontSize:13}}>{a.name}</span>
                       </div>
                     </td>
@@ -322,17 +331,17 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
           <div>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4}}>Équipe</label>
-            <input value={editData.team} onChange={e=>setEditData(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
+            <input value={editData.team||""} onChange={e=>setEditData(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
           </div>
           <div>
             <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4}}>Rôle</label>
-            <select value={editData.role} onChange={e=>setEditData(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,outline:"none"}}>
+            <select value={editData.role||"agent"} onChange={e=>setEditData(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,outline:"none"}}>
               <option value="agent">Agent</option>
               <option value="manager">Manager 👑</option>
             </select>
           </div>
         </div>
-        <Field label="Nouveau mot de passe (laisser vide pour ne pas changer)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:20}}/>
+        <Field label="Nouveau mot de passe (laisser vide = inchangé)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:20}}/>
         <ModalButtons onCancel={()=>setEditModal(null)} onConfirm={()=>{onAgentUpdated(editModal.id,editData);setEditModal(null);showNotif("Agent modifié ✅");}} confirmLabel="Enregistrer" confirmColor="#4f46e5"/>
       </Modal>}
 
@@ -344,46 +353,19 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
   );
 }
 
-function Field({label,value,onChange,placeholder,style={}}){
-  return(<div style={style}>
-    {label&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4}}>{label}</label>}
-    <input value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,boxSizing:"border-box",outline:"none"}}/>
-  </div>);
-}
-function Modal({title,children,onClose}){
-  return(<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}}>
-    <div style={{background:"#fff",borderRadius:16,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 20px 60px rgba(0,0,0,0.2)",maxHeight:"90vh",overflowY:"auto"}}>
-      <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700}}>{title}</h2>
-      {children}
-    </div>
-  </div>);
-}
-function ModalButtons({onCancel,onConfirm,confirmLabel,confirmColor,disabled}){
-  return(<div style={{display:"flex",gap:10}}>
-    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:14}}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"#4f46e5",color:"#fff",cursor:"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.7:1}}>{confirmLabel}</button>
-  </div>);
-}
-
 // ─── APP PRINCIPALE ───
-function PlanningApp({currentUser,onLogout}) {
+function PlanningApp({currentUser, onLogout}) {
   const now = new Date();
   const [year,setYear]=useState(now.getFullYear());
   const [month,setMonth]=useState(now.getMonth());
-  const [agents,setAgents]=useState(DEFAULT_USERS);
-  const [teams,setTeams]=useState([{id:"rh",name:"RH"},{id:"tech",name:"Tech"},{id:"ventes",name:"Ventes"},{id:"finance",name:"Finance"}]);
-  const [leaveTypes,setLeaveTypes]=useState([
-    {id:"cp",label:"Congé payé",color:"#6366f1",bg:"#eef2ff"},
-    {id:"rtt",label:"RTT",color:"#0ea5e9",bg:"#e0f2fe"},
-    {id:"maladie",label:"Maladie",color:"#f59e0b",bg:"#fef3c7"},
-    {id:"formation",label:"Formation",color:"#10b981",bg:"#d1fae5"},
-    {id:"teletravail",label:"Télétravail",color:"#8b5cf6",bg:"#ede9fe"},
-  ]);
+  const [agents,setAgents]=useState([]);
+  const [teams,setTeams]=useState([]);
+  const [leaveTypes,setLeaveTypes]=useState([]);
   const [leaves,setLeaves]=useState({});
   const [requests,setRequests]=useState([]);
   const [view,setView]=useState("planning");
   const [filterTeam,setFilterTeam]=useState("Tous");
-  const [selectedLeaveType,setSelectedLeaveType]=useState(null);
+  const [selectedLTId,setSelectedLTId]=useState(null);
   const [selectionStart,setSelectionStart]=useState(null);
   const [hoveredDay,setHoveredDay]=useState(null);
   const [selectedAgent,setSelectedAgent]=useState(null);
@@ -398,36 +380,60 @@ function PlanningApp({currentUser,onLogout}) {
   const isManager = currentUser.role==="manager"||currentUser.role==="admin";
   const isAdmin = currentUser.role==="admin";
 
-  // Charger les données depuis le backend au démarrage
+  // Charger toutes les données au démarrage
   useEffect(()=>{
-    async function loadData() {
+    async function loadAll() {
       try {
-        const [teamsData, ltData, leavesData] = await Promise.all([
+        const [teamsData, ltData, agentsData] = await Promise.all([
           apiFetch("/teams", token),
           apiFetch("/leave-types", token),
-          apiFetch(`/leaves?year=${year}&month=${month+1}`, token).catch(()=>[]),
+          apiFetch("/agents", token),
         ]);
-        if (Array.isArray(teamsData) && teamsData.length > 0) setTeams(teamsData);
-        if (Array.isArray(ltData) && ltData.length > 0) {
-          setLeaveTypes(ltData.map(lt=>({...lt, bg:hexToLight(lt.color)})));
-          setSelectedLeaveType(ltData[0].id);
-        } else {
-          setSelectedLeaveType("cp");
-        }
-        if (Array.isArray(leavesData) && leavesData.length > 0) {
-          const leavesMap = {};
-          leavesData.forEach(l => {
-            if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
-            const lt = ltData.find(t=>t.id===l.leave_type_id)||{label:"Congé",color:"#6366f1",bg:"#eef2ff"};
-            leavesMap[l.agent_id][l.date] = {...lt, bg:hexToLight(lt.color), status:l.status||"approved"};
-          });
-          setLeaves(leavesMap);
-        }
-      } catch(e) { console.error(e); setSelectedLeaveType("cp"); }
+
+        const teamsResult = Array.isArray(teamsData) ? teamsData : [];
+        const ltResult = Array.isArray(ltData) ? ltData : [];
+        const agentsResult = Array.isArray(agentsData) ? agentsData : [];
+
+        setTeams(teamsResult);
+
+        const ltFormatted = ltResult.map(lt=>({...lt, bg:hexToLight(lt.color)}));
+        setLeaveTypes(ltFormatted);
+        if (ltFormatted.length > 0) setSelectedLTId(ltFormatted[0].id);
+
+        const agentsFormatted = agentsResult.map(a=>({
+          id: a.id,
+          name: `${a.first_name||""} ${a.last_name||""}`.trim(),
+          email: a.email,
+          role: a.role||"agent",
+          team: a.team_name||a.team||"",
+          avatar: getInitials(`${a.first_name||""} ${a.last_name||""}`)
+        }));
+        setAgents(agentsFormatted);
+
+        // Charger les congés du mois
+        await loadLeaves(ltFormatted, token);
+      } catch(e) {
+        console.error("Erreur chargement:", e);
+      }
       setDataLoaded(true);
     }
-    loadData();
-  },[token]);
+    loadAll();
+  }, [token]);
+
+  async function loadLeaves(ltList, tok) {
+    try {
+      const leavesData = await apiFetch(`/leaves?year=${year}&month=${month+1}`, tok||token);
+      if (!Array.isArray(leavesData)) return;
+      const leavesMap = {};
+      leavesData.forEach(l => {
+        if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
+        const lt = (ltList||leaveTypes).find(t=>t.id===l.leave_type_id)||{label:"Congé",color:"#6366f1",bg:"#eef2ff"};
+        const dateStr = l.date || l.start_date;
+        if (dateStr) leavesMap[l.agent_id][dateStr] = {...lt, bg:lt.bg||hexToLight(lt.color), status:l.status||"approved"};
+      });
+      setLeaves(leavesMap);
+    } catch(e) { console.error("Erreur congés:", e); }
+  }
 
   function showNotif(msg,type="success"){setNotification({msg,type});setTimeout(()=>setNotification(null),3500);}
 
@@ -438,7 +444,7 @@ function PlanningApp({currentUser,onLogout}) {
   const pendingRequests=requests.filter(r=>r.status==="pending");
   const myRequests=requests.filter(r=>r.agentId===currentUser.id);
   const todayDay=now.getFullYear()===year&&now.getMonth()===month?now.getDate():null;
-  const currentLT = leaveTypes.find(t=>t.id===selectedLeaveType)||leaveTypes[0];
+  const currentLT = leaveTypes.find(t=>t.id===selectedLTId)||leaveTypes[0];
 
   function getLeave(agentId,day){return leaves[agentId]?.[dateKey(year,month,day)];}
 
@@ -449,29 +455,30 @@ function PlanningApp({currentUser,onLogout}) {
     else {
       const start=Math.min(selectionStart,day),end=Math.max(selectionStart,day);
       if(isManager){
-        applyLeave(agentId,start,end,currentLT,"approved");
-        // Sauvegarder dans le backend
+        // Appliquer localement
+        applyLeaveLocal(agentId,start,end,currentLT,"approved");
+        // Sauvegarder en base
         try {
-          for(let d=start;d<=end;d++){
-            if(!isWeekend(year,month,d)){
-              await apiFetch("/leaves", token, {method:"POST", body:JSON.stringify({
-                agent_id: agentId, leave_type_id: currentLT.id,
-                start_date: dateKey(year,month,start), end_date: dateKey(year,month,end),
-                status:"approved"
-              })}).catch(()=>{});
-              break; // Une seule requête pour la période
-            }
-          }
-        } catch(e){}
-        showNotif("Congé appliqué ✅");
+          await apiFetch("/leaves", token, {method:"POST", body:JSON.stringify({
+            agent_id: agentId,
+            leave_type_id: currentLT.id,
+            start_date: dateKey(year,month,start),
+            end_date: dateKey(year,month,end),
+            status: "approved"
+          })});
+          showNotif("Congé appliqué et sauvegardé ✅");
+        } catch(e) {
+          showNotif("Congé appliqué (erreur sauvegarde)","error");
+        }
       } else {
-        setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end)});setRequestReason("");
+        setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end)});
+        setRequestReason("");
       }
       setSelectionStart(null);setSelectedAgent(null);
     }
   }
 
-  function applyLeave(agentId,startDay,endDay,type,status){
+  function applyLeaveLocal(agentId,startDay,endDay,type,status){
     setLeaves(prev=>{
       const al={...(prev[agentId]||{})};
       for(let d=startDay;d<=endDay;d++){if(!isWeekend(year,month,d))al[dateKey(year,month,d)]={...type,status};}
@@ -480,27 +487,36 @@ function PlanningApp({currentUser,onLogout}) {
   }
 
   async function submitRequest(){
-    if(!requestModal)return;
+    if(!requestModal||!currentLT)return;
     const{agentId,start,end}=requestModal;
     const agent=agents.find(a=>a.id===agentId);
     setRequests(prev=>[...prev,{id:Date.now(),agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType:currentLT,start,end,reason:requestReason,status:"pending",createdAt:new Date().toISOString()}]);
     setRequestModal(null);showNotif("Demande envoyée au manager !");
   }
 
-  function approveRequest(reqId){
+  async function approveRequest(reqId){
     const req=requests.find(r=>r.id===reqId);
-    if(req){
-      setRequests(prev=>prev.map(r=>r.id===reqId?{...r,status:"approved"}:r));
-      const[sy,sm,sd]=req.start.split("-").map(Number),[ey,em,ed]=req.end.split("-").map(Number);
-      setLeaves(prev=>{
-        const al={...(prev[req.agentId]||{})};
-        for(let d=new Date(sy,sm-1,sd);d<=new Date(ey,em-1,ed);d.setDate(d.getDate()+1)){
-          if(d.getDay()!==0&&d.getDay()!==6)al[`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`]={...req.leaveType,status:"approved"};
+    if(!req)return;
+    setRequests(prev=>prev.map(r=>r.id===reqId?{...r,status:"approved"}:r));
+    const[sy,sm,sd]=req.start.split("-").map(Number),[ey,em,ed]=req.end.split("-").map(Number);
+    setLeaves(prev=>{
+      const al={...(prev[req.agentId]||{})};
+      for(let d=new Date(sy,sm-1,sd);d<=new Date(ey,em-1,ed);d.setDate(d.getDate()+1)){
+        if(d.getDay()!==0&&d.getDay()!==6){
+          const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+          al[k]={...req.leaveType,status:"approved"};
         }
-        return{...prev,[req.agentId]:al};
-      });
-      showNotif("Demande approuvée ✅");
-    }
+      }
+      return{...prev,[req.agentId]:al};
+    });
+    // Sauvegarder en base
+    try {
+      await apiFetch("/leaves", token, {method:"POST", body:JSON.stringify({
+        agent_id: req.agentId, leave_type_id: req.leaveType.id,
+        start_date: req.start, end_date: req.end, status:"approved"
+      })});
+    } catch(e) {}
+    showNotif("Demande approuvée ✅");
   }
 
   function isInSelection(agentId,day){
@@ -519,7 +535,7 @@ function PlanningApp({currentUser,onLogout}) {
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f0f2f7",fontFamily:"'DM Sans',sans-serif"}}>
       <div style={{textAlign:"center"}}>
         <div style={{fontSize:48,marginBottom:16}}>📅</div>
-        <div style={{fontSize:16,color:"#6b7280"}}>Chargement de vos données...</div>
+        <div style={{fontSize:16,color:"#6b7280",fontWeight:500}}>Chargement en cours...</div>
       </div>
     </div>
   );
@@ -528,6 +544,7 @@ function PlanningApp({currentUser,onLogout}) {
     <div style={{fontFamily:"'DM Sans','Segoe UI',sans-serif",minHeight:"100vh",background:"#f0f2f7",display:"flex"}}>
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#ef4444":"#10b981",color:"white",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 4px 20px rgba(0,0,0,0.2)"}}>{notification.msg}</div>}
 
+      {/* SIDEBAR */}
       <aside style={{width:220,background:"#1a1d27",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0}}>
         <div style={{padding:"0 20px 20px",borderBottom:"1px solid #2d3148"}}>
           <div style={{fontSize:20,fontWeight:700}}>📅 PlanniPro</div>
@@ -535,10 +552,16 @@ function PlanningApp({currentUser,onLogout}) {
         </div>
         <div style={{padding:"16px 20px",borderBottom:"1px solid #2d3148"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:36,height:36,borderRadius:"50%",background:`hsl(${(currentUser.id*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{currentUser.avatar}</div>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"#4f46e5",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>
+              {getInitials(`${currentUser.first_name||""} ${currentUser.last_name||currentUser.email||""}`)}
+            </div>
             <div style={{flex:1,overflow:"hidden"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.name}</div>
-              <div style={{fontSize:10,color:currentUser.role==="admin"?"#f59e0b":currentUser.role==="manager"?"#818cf8":"#9ca3af"}}>{currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"} · {currentUser.team}</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                {currentUser.first_name ? `${currentUser.first_name} ${currentUser.last_name||""}` : currentUser.email}
+              </div>
+              <div style={{fontSize:10,color:currentUser.role==="admin"?"#f59e0b":currentUser.role==="manager"?"#818cf8":"#9ca3af"}}>
+                {currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"}
+              </div>
             </div>
           </div>
           <button onClick={onLogout} style={{width:"100%",marginTop:10,padding:"6px 0",borderRadius:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",color:"#9ca3af",fontSize:11,cursor:"pointer",fontWeight:600}}>🚪 Déconnexion</button>
@@ -561,15 +584,17 @@ function PlanningApp({currentUser,onLogout}) {
         </div>
       </aside>
 
+      {/* MAIN */}
       <main style={{flex:1,overflow:"auto"}}>
         <div style={{background:"#fff",borderBottom:"1px solid #e5e7eb",padding:"16px 28px"}}>
           <h1 style={{margin:0,fontSize:20,fontWeight:700,color:"#111827"}}>{view==="planning"?"Planning mensuel":view==="validations"?"Demandes de congés":view==="stats"?"Statistiques":"Administration"}</h1>
-          <p style={{margin:"2px 0 0",fontSize:13,color:"#6b7280"}}>{view==="planning"?`${MONTHS_FR[month]} ${year}`:view==="validations"?(isManager?`${pendingRequests.length} demande(s) en attente`:`${myRequests.length} demande(s)`):""}</p>
+          <p style={{margin:"2px 0 0",fontSize:13,color:"#6b7280"}}>{view==="planning"?`${MONTHS_FR[month]} ${year}`:view==="validations"?(isManager?`${pendingRequests.length} en attente`:`${myRequests.length} demande(s)`):""}</p>
         </div>
 
+        {/* ADMIN */}
         {view==="admin"&&isAdmin&&<AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           onAgentAdded={a=>setAgents(prev=>[...prev,a])}
-          onAgentUpdated={(id,data)=>setAgents(prev=>prev.map(a=>a.id===id?{...a,...data,avatar:data.name?getInitials(data.name):a.avatar}:a))}
+          onAgentUpdated={(id,data)=>setAgents(prev=>prev.map(a=>a.id===id?{...a,...(data.name?{name:data.name,avatar:getInitials(data.name)}:{}),email:data.email||a.email,team:data.team||a.team,role:data.role||a.role}:a))}
           onAgentDeleted={id=>setAgents(prev=>prev.filter(a=>a.id!==id))}
           onTeamAdded={t=>setTeams(prev=>[...prev,t])}
           onTeamDeleted={id=>setTeams(prev=>prev.filter(t=>t.id!==id))}
@@ -578,6 +603,7 @@ function PlanningApp({currentUser,onLogout}) {
           onLeaveTypeDeleted={id=>setLeaveTypes(prev=>prev.filter(lt=>lt.id!==id))}
         />}
 
+        {/* PLANNING */}
         {view==="planning"&&(
           <div style={{padding:24}}>
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
@@ -589,11 +615,11 @@ function PlanningApp({currentUser,onLogout}) {
                 {allTeams.map(t=><button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"5px 12px",borderRadius:20,border:"1px solid",fontSize:12,cursor:"pointer",fontWeight:500,background:filterTeam===t?"#4f46e5":"#fff",color:filterTeam===t?"#fff":"#6b7280",borderColor:filterTeam===t?"#4f46e5":"#e5e7eb"}}>{t}</button>)}
               </div>
             </div>
-            <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-              {leaveTypes.map(t=><button key={t.id} onClick={()=>setSelectedLeaveType(t.id)} style={{padding:"5px 12px",borderRadius:20,border:"2px solid",fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLeaveType===t.id?t.color:t.bg||hexToLight(t.color),color:selectedLeaveType===t.id?"#fff":t.color,borderColor:t.color}}>{t.label}</button>)}
-            </div>
+            {leaveTypes.length>0&&<div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+              {leaveTypes.map(t=><button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"5px 12px",borderRadius:20,border:"2px solid",fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:t.bg,color:selectedLTId===t.id?"#fff":t.color,borderColor:t.color}}>{t.label}</button>)}
+            </div>}
             <div style={{fontSize:12,color:"#92400e",marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",borderRadius:8,padding:"8px 14px"}}>
-              {isManager?"👑 Manager : 1er clic = début, 2ème clic = fin de période.":"👤 Sélectionnez des dates pour envoyer une demande au manager."}
+              {isManager?"👑 1er clic = début, 2ème clic = fin. Les congés sont sauvegardés automatiquement.":"👤 Sélectionnez des dates pour envoyer une demande au manager."}
             </div>
             <div style={{background:"#fff",borderRadius:12,border:"1px solid #e5e7eb",overflow:"auto"}}>
               <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
@@ -609,32 +635,36 @@ function PlanningApp({currentUser,onLogout}) {
                   })}
                 </tr></thead>
                 <tbody>
-                  {filteredAgents.map(agent=>(
-                    <tr key={agent.id} style={{borderBottom:"1px solid #f3f4f6"}}>
-                      <td style={{padding:"6px 12px",display:"flex",alignItems:"center",gap:8}}>
-                        <div style={{width:30,height:30,borderRadius:"50%",background:`hsl(${(agent.id*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700}}>{agent.avatar}</div>
-                        <div>
-                          <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#4f46e5":"#111827",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                          <div style={{fontSize:10,color:"#9ca3af"}}>{agent.team}</div>
-                        </div>
-                      </td>
-                      {Array.from({length:daysInMonth},(_,i)=>{
-                        const day=i+1,wk=isWeekend(year,month,day),leave=getLeave(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day,canInteract=isManager||currentUser.id===agent.id;
-                        return<td key={i} onClick={()=>canInteract&&handleCellClick(agent.id,day)} onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}} onMouseLeave={()=>setHoveredDay(null)}
-                          style={{padding:"3px 2px",textAlign:"center",cursor:wk||!canInteract?"default":"pointer",background:wk?"#f9fafb":inSel?"#c7d2fe":leave?leave.bg||hexToLight(leave.color):isToday?"#fafafa":"#fff",borderLeft:"1px solid #f3f4f6"}}>
-                          {leave&&!wk&&<div style={{width:"100%",height:22,background:leave.color,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",opacity:leave.status==="pending"?0.4:1}}>
-                            <span style={{fontSize:9,color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leave.label.slice(0,3).toUpperCase()}</span>
-                          </div>}
-                        </td>;
-                      })}
-                    </tr>
-                  ))}
+                  {filteredAgents.map(agent=>{
+                    const hue = Math.abs(agent.id.toString().split("").reduce((a,c)=>a+c.charCodeAt(0),0)) % 360;
+                    return(
+                      <tr key={agent.id} style={{borderBottom:"1px solid #f3f4f6"}}>
+                        <td style={{padding:"6px 12px",display:"flex",alignItems:"center",gap:8}}>
+                          <div style={{width:30,height:30,borderRadius:"50%",background:`hsl(${hue},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                          <div>
+                            <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#4f46e5":"#111827",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
+                            <div style={{fontSize:10,color:"#9ca3af"}}>{agent.team}</div>
+                          </div>
+                        </td>
+                        {Array.from({length:daysInMonth},(_,i)=>{
+                          const day=i+1,wk=isWeekend(year,month,day),leave=getLeave(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day,canInteract=isManager||currentUser.id===agent.id;
+                          return<td key={i} onClick={()=>canInteract&&handleCellClick(agent.id,day)} onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}} onMouseLeave={()=>setHoveredDay(null)}
+                            style={{padding:"3px 2px",textAlign:"center",cursor:wk||!canInteract?"default":"pointer",background:wk?"#f9fafb":inSel?"#c7d2fe":leave?leave.bg:isToday?"#fafafa":"#fff",borderLeft:"1px solid #f3f4f6"}}>
+                            {leave&&!wk&&<div style={{width:"100%",height:22,background:leave.color,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",opacity:leave.status==="pending"?0.4:1}}>
+                              <span style={{fontSize:9,color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leave.label.slice(0,3).toUpperCase()}</span>
+                            </div>}
+                          </td>;
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
+        {/* VALIDATIONS */}
         {view==="validations"&&(
           <div style={{padding:24}}>
             {isManager?(
@@ -653,6 +683,7 @@ function PlanningApp({currentUser,onLogout}) {
           </div>
         )}
 
+        {/* STATS */}
         {view==="stats"&&(
           <div style={{padding:24}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
@@ -669,11 +700,12 @@ function PlanningApp({currentUser,onLogout}) {
         )}
       </main>
 
-      {requestModal&&<Modal title="📝 Demande de congé" onClose={()=>setRequestModal(null)}>
+      {/* MODAL DEMANDE */}
+      {requestModal&&currentLT&&<Modal title="📝 Demande de congé" onClose={()=>setRequestModal(null)}>
         <p style={{color:"#6b7280",fontSize:13,margin:"0 0 16px"}}>Du <strong>{formatDate(requestModal.start)}</strong> au <strong>{formatDate(requestModal.end)}</strong></p>
         <div style={{marginBottom:16}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:6}}>Type de congé</label>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{leaveTypes.map(t=><button key={t.id} onClick={()=>setSelectedLeaveType(t.id)} style={{padding:"6px 12px",borderRadius:20,border:"2px solid",fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLeaveType===t.id?t.color:t.bg||hexToLight(t.color),color:selectedLeaveType===t.id?"#fff":t.color,borderColor:t.color}}>{t.label}</button>)}</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{leaveTypes.map(t=><button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 12px",borderRadius:20,border:"2px solid",fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:t.bg,color:selectedLTId===t.id?"#fff":t.color,borderColor:t.color}}>{t.label}</button>)}</div>
         </div>
         <div style={{marginBottom:20}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:6}}>Motif (optionnel)</label>
@@ -682,6 +714,7 @@ function PlanningApp({currentUser,onLogout}) {
         <ModalButtons onCancel={()=>setRequestModal(null)} onConfirm={submitRequest} confirmLabel="Envoyer" confirmColor="#4f46e5"/>
       </Modal>}
 
+      {/* MODAL REFUS */}
       {rejectModal&&<Modal title="❌ Refuser la demande" onClose={()=>setRejectModal(null)}>
         <textarea value={rejectComment} onChange={e=>setRejectComment(e.target.value)} placeholder="Motif du refus obligatoire..." rows={3} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid #d1d5db",fontSize:14,boxSizing:"border-box",resize:"none",outline:"none",marginBottom:20}}/>
         <ModalButtons onCancel={()=>setRejectModal(null)} onConfirm={()=>{setRequests(prev=>prev.map(r=>r.id===rejectModal?{...r,status:"rejected",comment:rejectComment}:r));setRejectModal(null);showNotif("Demande refusée","error");}} confirmLabel="Confirmer" confirmColor={rejectComment.trim()?"#ef4444":"#fca5a5"} disabled={!rejectComment.trim()}/>
@@ -692,16 +725,17 @@ function PlanningApp({currentUser,onLogout}) {
 
 function RequestCard({req,isManager,onApprove,onReject}){
   const s={pending:{label:"En attente",bg:"#fef3c7",color:"#92400e",icon:"🕐"},approved:{label:"Approuvée",bg:"#d1fae5",color:"#065f46",icon:"✅"},rejected:{label:"Refusée",bg:"#fee2e2",color:"#991b1b",icon:"❌"}}[req.status];
+  const ltBg = req.leaveType?.bg || hexToLight(req.leaveType?.color||"#6366f1");
   return(
     <div style={{background:"#fff",borderRadius:12,border:"1px solid #e5e7eb",padding:20,marginBottom:12}}>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-        <div style={{width:40,height:40,borderRadius:"50%",background:`hsl(${(req.agentId*47)%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{req.agentAvatar}</div>
+        <div style={{width:40,height:40,borderRadius:"50%",background:`hsl(${Math.abs((req.agentId||"").toString().split("").reduce((a,c)=>a+c.charCodeAt(0),0))%360},60%,55%)`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>{req.agentAvatar}</div>
         <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14}}>{req.agentName}</div><div style={{fontSize:12,color:"#6b7280"}}>{req.agentTeam}</div></div>
         <div style={{background:s.bg,color:s.color,padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:600}}>{s.icon} {s.label}</div>
       </div>
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:req.reason?10:0}}>
         <div style={{background:"#f9fafb",borderRadius:8,padding:"8px 14px"}}><div style={{fontSize:10,color:"#9ca3af",marginBottom:2}}>PÉRIODE</div><div style={{fontSize:13,fontWeight:600}}>{req.start===req.end?formatDate(req.start):`${formatDate(req.start)} → ${formatDate(req.end)}`}</div></div>
-        <div style={{background:req.leaveType.bg||hexToLight(req.leaveType.color),borderRadius:8,padding:"8px 14px"}}><div style={{fontSize:10,color:"#9ca3af",marginBottom:2}}>TYPE</div><div style={{fontSize:13,fontWeight:600,color:req.leaveType.color}}>{req.leaveType.label}</div></div>
+        <div style={{background:ltBg,borderRadius:8,padding:"8px 14px"}}><div style={{fontSize:10,color:"#9ca3af",marginBottom:2}}>TYPE</div><div style={{fontSize:13,fontWeight:600,color:req.leaveType?.color}}>{req.leaveType?.label}</div></div>
       </div>
       {req.reason&&<div style={{fontSize:12,color:"#6b7280",background:"#f9fafb",padding:"8px 12px",borderRadius:8,marginBottom:10}}>💬 {req.reason}</div>}
       {req.comment&&<div style={{fontSize:12,color:"#991b1b",background:"#fee2e2",padding:"8px 12px",borderRadius:8,marginBottom:10}}>❌ {req.comment}</div>}
@@ -715,6 +749,6 @@ function RequestCard({req,isManager,onApprove,onReject}){
 
 export default function App(){
   const [currentUser,setCurrentUser]=useState(null);
-  if(!currentUser)return<LoginPage onLogin={setCurrentUser}/>;
-  return<PlanningApp currentUser={currentUser} onLogout={()=>setCurrentUser(null)}/>;
+  if (!currentUser) return <LoginPage onLogin={setCurrentUser}/>;
+  return <PlanningApp currentUser={currentUser} onLogout={()=>setCurrentUser(null)}/>;
 }
