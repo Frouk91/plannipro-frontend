@@ -25,28 +25,16 @@ function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || ""
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 
 function leaveFromBackend(l) {
-  return {
-    id: l.leave_type_code,
-    code: l.leave_type_code,
-    label: l.leave_type_label,
-    color: l.color,
-    bg: hexToLight(l.color)
-  };
+  return { id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
 }
-
 function requestFromBackend(l) {
   return {
-    id: l.id,
-    agentId: l.agent_id,
+    id: l.id, agentId: l.agent_id,
     agentName: `${l.first_name || ""} ${l.last_name || ""}`.trim(),
     agentAvatar: l.avatar_initials || getInitials(`${l.first_name || ""} ${l.last_name || ""}`),
-    agentTeam: l.team_name || "",
-    leaveType: leaveFromBackend(l),
-    start: (l.start_date || "").split("T")[0],
-    end: (l.end_date || "").split("T")[0],
-    reason: l.reason || "",
-    status: l.status,
-    createdAt: l.created_at
+    agentTeam: l.team_name || "", leaveType: leaveFromBackend(l),
+    start: (l.start_date || "").split("T")[0], end: (l.end_date || "").split("T")[0],
+    reason: l.reason || "", status: l.status, createdAt: l.created_at
   };
 }
 
@@ -70,9 +58,8 @@ function LoginPage({ onLogin }) {
     setLoading(true);
     try {
       const data = await apiFetch("/auth/login", null, { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
-      if (data.accessToken) {
-        onLogin({ ...data.agent, token: data.accessToken });
-      } else { setError("Email ou mot de passe incorrect."); }
+      if (data.accessToken) { onLogin({ ...data.agent, token: data.accessToken }); }
+      else { setError("Email ou mot de passe incorrect."); }
     } catch { setError("Erreur de connexion au serveur."); }
     setLoading(false);
   }
@@ -122,7 +109,6 @@ function LoginPage({ onLogin }) {
   );
 }
 
-// ─── UTILITAIRES ───
 function Field({ label, value, onChange, placeholder, style = {} }) {
   return (<div style={style}>
     {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</label>}
@@ -374,6 +360,23 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   );
 }
 
+// ─── MENU CONTEXTUEL ───
+function ContextMenu({ x, y, leave, onDelete, onClose }) {
+  useEffect(() => {
+    const handler = () => onClose();
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, []);
+  return (
+    <div style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.15)", border: "1px solid #e5e7eb", zIndex: 9999, minWidth: 200, overflow: "hidden" }}>
+      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f3f4f6", fontSize: 12, color: "#6b7280", fontWeight: 600 }}>{leave.label}</div>
+      <button onClick={onDelete} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+        🗑 Supprimer ce congé
+      </button>
+    </div>
+  );
+}
+
 // ─── APP PRINCIPALE ───
 function PlanningApp({ currentUser, onLogout }) {
   const now = new Date();
@@ -383,6 +386,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [teams, setTeams] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaves, setLeaves] = useState({});
+  // leaves stocke aussi les IDs des congés : { agentId: { dateKey: { ...leaveInfo, leaveId: "uuid" } } }
   const [requests, setRequests] = useState([]);
   const [view, setView] = useState("planning");
   const [filterTeam, setFilterTeam] = useState("Tous");
@@ -396,6 +400,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [rejectComment, setRejectComment] = useState("");
   const [notification, setNotification] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null); // {x,y,agentId,day,leave,leaveId}
 
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
@@ -409,29 +414,20 @@ function PlanningApp({ currentUser, onLogout }) {
           apiFetch("/leave-types", token),
           apiFetch("/agents", token),
         ]);
-
         const teamsResult = Array.isArray(teamsData) ? teamsData : [];
         setTeams(teamsResult);
-
         const ltResult = Array.isArray(ltData) ? ltData : [];
         const ltFormatted = ltResult.map(lt => ({ ...lt, bg: hexToLight(lt.color) }));
         setLeaveTypes(ltFormatted);
         if (ltFormatted.length > 0) setSelectedLTId(ltFormatted[0].id);
-
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
         setAgents(agentsRaw.map(a => ({
           id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
-          email: a.email, role: a.role || "agent",
-          team: a.team_name || a.team || "",
+          email: a.email, role: a.role || "agent", team: a.team_name || a.team || "",
           avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`)
         })));
-
-        // Charger les congés du mois
         await loadLeaves(ltFormatted, token, now.getFullYear(), now.getMonth());
-
-        // Charger toutes les demandes (pending + historique)
         await loadRequests(token);
-
       } catch (e) { console.error("Erreur chargement:", e); }
       setDataLoaded(true);
     }
@@ -454,7 +450,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const start = new Date(l.start_date), end = new Date(l.end_date);
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-          leavesMap[l.agent_id][k] = { ...lt, status: l.status };
+          leavesMap[l.agent_id][k] = { ...lt, status: l.status, leaveId: l.id };
         }
       });
       setLeaves(leavesMap);
@@ -468,9 +464,7 @@ function PlanningApp({ currentUser, onLogout }) {
         apiFetch("/leaves", tok),
       ]);
       const pending = (pendingData.leaves || []).map(requestFromBackend);
-      const others = (allData.leaves || [])
-        .filter(l => l.status !== "pending")
-        .map(requestFromBackend);
+      const others = (allData.leaves || []).filter(l => l.status !== "pending").map(requestFromBackend);
       setRequests([...pending, ...others]);
     } catch (e) { console.error("Erreur demandes:", e); }
   }
@@ -500,18 +494,37 @@ function PlanningApp({ currentUser, onLogout }) {
         try {
           await apiFetch("/leaves", token, {
             method: "POST", body: JSON.stringify({
-              leave_type_code: currentLT.code,
-              start_date: dateKey(year, month, start),
-              end_date: dateKey(year, month, end),
-              agent_id: agentId
+              leave_type_code: currentLT.code, start_date: dateKey(year, month, start), end_date: dateKey(year, month, end), agent_id: agentId
             })
           });
+          await loadLeaves(leaveTypes, token, year, month);
           showNotif("Congé sauvegardé ✅");
         } catch { showNotif("Congé appliqué (erreur sauvegarde)", "error"); }
       } else {
         setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end) });
         setRequestReason("");
       }
+    }
+  }
+
+  function handleCellRightClick(e, agentId, day) {
+    e.preventDefault();
+    if (!isManager && currentUser.id !== agentId) return;
+    const leave = getLeave(agentId, day);
+    if (!leave) return;
+    setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId });
+  }
+
+  async function handleDeleteLeave() {
+    if (!contextMenu) return;
+    const { agentId, leaveId } = contextMenu;
+    setContextMenu(null);
+    try {
+      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+      await loadLeaves(leaveTypes, token, year, month);
+      showNotif("Congé supprimé", "error");
+    } catch {
+      showNotif("Erreur lors de la suppression", "error");
     }
   }
 
@@ -534,14 +547,13 @@ function PlanningApp({ currentUser, onLogout }) {
         })
       });
       if (data.leave) {
-        // Ajouter aux demandes locales avec les données retournées
         setRequests(prev => [...prev, {
           id: data.leave.id, agentId, agentName: agent.name, agentAvatar: agent.avatar,
           agentTeam: agent.team, leaveType: currentLT, start, end, reason: requestReason,
           status: "pending", createdAt: new Date().toISOString()
         }]);
       }
-    } catch (e) { }
+    } catch { }
     setRequestModal(null);
     showNotif("Demande envoyée au manager !");
   }
@@ -572,8 +584,7 @@ function PlanningApp({ currentUser, onLogout }) {
     try {
       await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment }) });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "rejected", comment: rejectComment } : r));
-      setRejectModal(null);
-      showNotif("Demande refusée", "error");
+      setRejectModal(null); showNotif("Demande refusée", "error");
     } catch { showNotif("Erreur", "error"); }
   }
 
@@ -596,8 +607,9 @@ function PlanningApp({ currentUser, onLogout }) {
   );
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }}>
+    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }} onClick={() => contextMenu && setContextMenu(null)}>
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "#ef4444" : "#10b981", color: "white", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>{notification.msg}</div>}
+      {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDelete={handleDeleteLeave} onClose={() => setContextMenu(null)} />}
 
       <aside style={{ width: 220, background: "#1a1d27", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0 }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "1px solid #2d3148" }}>
@@ -668,7 +680,7 @@ function PlanningApp({ currentUser, onLogout }) {
               {leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
             </div>}
             <div style={{ fontSize: 12, color: "#92400e", marginBottom: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 14px" }}>
-              {isManager ? "👑 1er clic = début, 2ème clic = fin. Congés sauvegardés automatiquement." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
+              {isManager ? "👑 Clic gauche : ajouter un congé. Clic droit sur un congé : le supprimer." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
             </div>
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
@@ -695,7 +707,11 @@ function PlanningApp({ currentUser, onLogout }) {
                       </td>
                       {Array.from({ length: daysInMonth }, (_, i) => {
                         const day = i + 1, wk = isWeekend(year, month, day), leave = getLeave(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day, canInteract = isManager || currentUser.id === agent.id;
-                        return <td key={i} onClick={() => canInteract && handleCellClick(agent.id, day)} onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }} onMouseLeave={() => setHoveredDay(null)}
+                        return <td key={i}
+                          onClick={() => canInteract && handleCellClick(agent.id, day)}
+                          onContextMenu={(e) => handleCellRightClick(e, agent.id, day)}
+                          onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
+                          onMouseLeave={() => setHoveredDay(null)}
                           style={{ padding: "3px 2px", textAlign: "center", cursor: wk || !canInteract ? "default" : "pointer", background: wk ? "#f9fafb" : inSel ? "#c7d2fe" : leave ? leave.bg : isToday ? "#fafafa" : "#fff", borderLeft: "1px solid #f3f4f6" }}>
                           {leave && !wk && <div style={{ width: "100%", height: 22, background: leave.color, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: leave.status === "pending" ? 0.4 : 1 }}>
                             <span style={{ fontSize: 9, color: "#fff", fontWeight: 700 }}>{leave.status === "pending" ? "?" : leave.label.slice(0, 3).toUpperCase()}</span>
