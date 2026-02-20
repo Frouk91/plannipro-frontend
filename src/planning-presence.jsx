@@ -395,7 +395,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
         const teamsResult = Array.isArray(teamsData) ? teamsData : [];
         const ltResult = Array.isArray(ltData) ? ltData : [];
-        const agentsResult = Array.isArray(agentsData) ? agentsData : [];
+        const agentsResult = Array.isArray(agentsData) ? agentsData : (agentsData.agents || []);
 
         setTeams(teamsResult);
 
