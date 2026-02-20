@@ -463,10 +463,15 @@ function PlanningApp({ currentUser, onLogout }) {
 
   async function loadRequests(tok) {
     try {
-      // Charger toutes les demandes visibles
-      const data = await apiFetch("/leaves", tok);
-      const all = data.leaves || [];
-      setRequests(all.map(requestFromBackend));
+      const [pendingData, allData] = await Promise.all([
+        apiFetch("/leaves?status=pending", tok),
+        apiFetch("/leaves", tok),
+      ]);
+      const pending = (pendingData.leaves || []).map(requestFromBackend);
+      const others = (allData.leaves || [])
+        .filter(l => l.status !== "pending")
+        .map(requestFromBackend);
+      setRequests([...pending, ...others]);
     } catch (e) { console.error("Erreur demandes:", e); }
   }
 
