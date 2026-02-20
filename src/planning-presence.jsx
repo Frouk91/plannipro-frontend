@@ -131,6 +131,30 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
   </div>);
 }
 
+// ─── MENU CONTEXTUEL ───
+function ContextMenu({ x, y, leave, onDelete, onClose }) {
+  return (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", border: "1px solid #e5e7eb", zIndex: 99999, minWidth: 200, overflow: "hidden" }}>
+      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f3f4f6", fontSize: 12, color: "#6b7280", fontWeight: 600, background: "#f9fafb" }}>
+        <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: leave.color, marginRight: 6 }}></span>
+        {leave.label}
+      </div>
+      <button
+        onClick={e => { e.stopPropagation(); onDelete(); }}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+        🗑 Supprimer ce congé
+      </button>
+      <button
+        onClick={e => { e.stopPropagation(); onClose(); }}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", borderTop: "1px solid #f3f4f6", background: "none", cursor: "pointer", fontSize: 13, color: "#6b7280" }}>
+        ✕ Annuler
+      </button>
+    </div>
+  );
+}
+
 // ─── ADMIN ───
 function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif }) {
   const [tab, setTab] = useState("agents");
@@ -360,23 +384,6 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   );
 }
 
-// ─── MENU CONTEXTUEL ───
-function ContextMenu({ x, y, leave, onDelete, onClose }) {
-  useEffect(() => {
-    const handler = () => onClose();
-    window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
-  }, []);
-  return (
-    <div style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.15)", border: "1px solid #e5e7eb", zIndex: 9999, minWidth: 200, overflow: "hidden" }}>
-      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f3f4f6", fontSize: 12, color: "#6b7280", fontWeight: 600 }}>{leave.label}</div>
-      <button onClick={onDelete} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
-        🗑 Supprimer ce congé
-      </button>
-    </div>
-  );
-}
-
 // ─── APP PRINCIPALE ───
 function PlanningApp({ currentUser, onLogout }) {
   const now = new Date();
@@ -386,7 +393,6 @@ function PlanningApp({ currentUser, onLogout }) {
   const [teams, setTeams] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaves, setLeaves] = useState({});
-  // leaves stocke aussi les IDs des congés : { agentId: { dateKey: { ...leaveInfo, leaveId: "uuid" } } }
   const [requests, setRequests] = useState([]);
   const [view, setView] = useState("planning");
   const [filterTeam, setFilterTeam] = useState("Tous");
@@ -400,7 +406,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [rejectComment, setRejectComment] = useState("");
   const [notification, setNotification] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null); // {x,y,agentId,day,leave,leaveId}
+  const [contextMenu, setContextMenu] = useState(null);
 
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
@@ -483,6 +489,7 @@ function PlanningApp({ currentUser, onLogout }) {
   function getLeave(agentId, day) { return leaves[agentId]?.[dateKey(year, month, day)]; }
 
   async function handleCellClick(agentId, day) {
+    if (contextMenu) { setContextMenu(null); return; }
     if (isWeekend(year, month, day)) return;
     if (!isManager && currentUser.id !== agentId) return;
     if (!selectedAgent || selectedAgent !== agentId) { setSelectedAgent(agentId); setSelectionStart(day); }
@@ -509,20 +516,21 @@ function PlanningApp({ currentUser, onLogout }) {
 
   function handleCellRightClick(e, agentId, day) {
     e.preventDefault();
+    e.stopPropagation();
     if (!isManager && currentUser.id !== agentId) return;
-    const leave = getLeave(agentId, day);
-    if (!leave) return;
+    const leave = leaves[agentId]?.[dateKey(year, month, day)];
+    if (!leave || !leave.leaveId) return;
     setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId });
   }
 
   async function handleDeleteLeave() {
     if (!contextMenu) return;
-    const { agentId, leaveId } = contextMenu;
+    const leaveId = contextMenu.leaveId;
     setContextMenu(null);
     try {
       await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
       await loadLeaves(leaveTypes, token, year, month);
-      showNotif("Congé supprimé", "error");
+      showNotif("Congé supprimé ✅");
     } catch {
       showNotif("Erreur lors de la suppression", "error");
     }
@@ -607,9 +615,19 @@ function PlanningApp({ currentUser, onLogout }) {
   );
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }} onClick={() => contextMenu && setContextMenu(null)}>
+    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }}
+      onClick={() => { if (contextMenu) setContextMenu(null); }}>
+
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "#ef4444" : "#10b981", color: "white", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>{notification.msg}</div>}
-      {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDelete={handleDeleteLeave} onClose={() => setContextMenu(null)} />}
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x} y={contextMenu.y}
+          leave={contextMenu.leave}
+          onDelete={handleDeleteLeave}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
 
       <aside style={{ width: 220, background: "#1a1d27", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0 }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "1px solid #2d3148" }}>
@@ -708,8 +726,8 @@ function PlanningApp({ currentUser, onLogout }) {
                       {Array.from({ length: daysInMonth }, (_, i) => {
                         const day = i + 1, wk = isWeekend(year, month, day), leave = getLeave(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day, canInteract = isManager || currentUser.id === agent.id;
                         return <td key={i}
-                          onClick={() => canInteract && handleCellClick(agent.id, day)}
-                          onContextMenu={(e) => handleCellRightClick(e, agent.id, day)}
+                          onClick={() => canInteract && !wk && handleCellClick(agent.id, day)}
+                          onContextMenu={(e) => !wk && handleCellRightClick(e, agent.id, day)}
                           onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                           onMouseLeave={() => setHoveredDay(null)}
                           style={{ padding: "3px 2px", textAlign: "center", cursor: wk || !canInteract ? "default" : "pointer", background: wk ? "#f9fafb" : inSel ? "#c7d2fe" : leave ? leave.bg : isToday ? "#fafafa" : "#fff", borderLeft: "1px solid #f3f4f6" }}>
