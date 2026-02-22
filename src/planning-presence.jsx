@@ -532,7 +532,7 @@ function PlanningApp({ currentUser, onLogout }) {
   function handleCellRightClick(e, agentId, day) {
     e.preventDefault();
     e.stopPropagation();
-    if (!isManager && currentUser.id !== agentId) return;
+    if (currentUser.id !== agentId && !isManager) return;
     const leave = leaves[agentId]?.[dateKey(year, month, day)];
     if (!leave || !leave.leaveId) return;
     setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId, clickedDate: dateKey(year, month, day) });
