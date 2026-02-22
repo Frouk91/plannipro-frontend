@@ -374,8 +374,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Équipe</label>
-            <input value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, boxSizing: "border-box", outline: "none" }} />
-          </div>
+            <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, outline: "none" }}>
+              <option value="">-- Aucune équipe --</option>
+              {teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
+            </select>          </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Rôle</label>
             <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, outline: "none" }}>
