@@ -763,7 +763,9 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
             </div>
             {leaveTypes.length > 0 && <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              {leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
+              {leaveTypes
+                .filter(t => isManager || ["cp", "demi_cp", "rtt", "demi_rtt", "pont"].includes(t.code))
+                .map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
             </div>}
             <div style={{ fontSize: 12, color: "#92400e", marginBottom: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 14px" }}>
               {isManager ? "👑 Clic gauche : ajouter. Clic droit sur un congé : supprimer un jour ou toute la période." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
