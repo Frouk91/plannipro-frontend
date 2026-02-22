@@ -532,7 +532,7 @@ function PlanningApp({ currentUser, onLogout }) {
   function handleCellRightClick(e, agentId, day) {
     e.preventDefault();
     e.stopPropagation();
-    if (currentUser.id !== agentId && !isManager) return;
+    if (!isManager && currentUser.id !== agentId) return;
     const leave = leaves[agentId]?.[dateKey(year, month, day)];
     if (!leave || !leave.leaveId) return;
     setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId, clickedDate: dateKey(year, month, day) });
@@ -787,8 +787,8 @@ function PlanningApp({ currentUser, onLogout }) {
                           onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                           onMouseLeave={() => setHoveredDay(null)}
                           style={{ padding: "3px 2px", textAlign: "center", cursor: wk || !canInteract ? "default" : "pointer", background: wk ? "#f9fafb" : inSel ? "#c7d2fe" : leave ? leave.bg : isToday ? "#fafafa" : "#fff", borderLeft: "1px solid #f3f4f6" }}>
-                          {leave && !wk && <div style={{ width: "100%", height: 22, background: leave.color, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: leave.status === "pending" ? 0.4 : 1 }}>
-                            <span style={{ fontSize: 9, color: "#fff", fontWeight: 700 }}>{leave.status === "pending" ? "?" : leave.label.slice(0, 3).toUpperCase()}</span>
+                          {leave && !wk && <div style={{ width: "100%", height: 22, background: leave.color, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: (leave.status === "pending" && leave.agentId !== currentUser.id) ? 0.4 : 1 }}>
+                            <span style={{ fontSize: 9, color: "#fff", fontWeight: 700 }}>{(leave.status === "pending" && leave.agentId !== currentUser.id) ? "?" : leave.label.slice(0, 3).toUpperCase()}</span>
                           </div>}
                         </td>;
                       })}
