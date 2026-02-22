@@ -535,6 +535,12 @@ function PlanningApp({ currentUser, onLogout }) {
           showNotif("Congé sauvegardé ✅");
         } catch { showNotif("Congé appliqué (erreur sauvegarde)", "error"); }
       } else {
+        // Pour les agents, forcer un type autorisé
+        const allowedCodes = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
+        const allowedTypes = leaveTypes.filter(t => allowedCodes.includes(t.code));
+        if (!allowedCodes.includes(currentLT?.code) && allowedTypes.length > 0) {
+          setSelectedLTId(allowedTypes[0].id);
+        }
         setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end) });
         setRequestReason("");
       }
