@@ -861,7 +861,7 @@ function PlanningApp({ currentUser, onLogout }) {
         <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 16px" }}>Du <strong>{formatDate(requestModal.start)}</strong> au <strong>{formatDate(requestModal.end)}</strong></p>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Type de congé</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{leaveTypes.filter(t => isManager || ["cp", "_cp", "rtt", "_rtt", "teletravail"].includes(t.code)).map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}</div>
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Motif (optionnel)</label>
