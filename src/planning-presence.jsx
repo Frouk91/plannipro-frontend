@@ -23,9 +23,17 @@ function isWeekend(y, m, d) { const w = new Date(y, m, d).getDay(); return w ===
 function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-"); return `${p[2]}/${p[1]}/${p[0]}`; }
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
+function addDays(dateStr, n) {
+  const d = new Date(dateStr); d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
 function leaveFromBackend(l) {
-  return { id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
+  return {
+    id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label,
+    color: l.color, bg: hexToLight(l.color)
+  };
 }
 function requestFromBackend(l) {
   return {
@@ -132,22 +140,26 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
 }
 
 // ─── MENU CONTEXTUEL ───
-function ContextMenu({ x, y, leave, onDelete, onClose }) {
+function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
+  const isMultiDay = leave.leaveStart !== leave.leaveEnd;
   return (
-    <div
-      onClick={e => e.stopPropagation()}
-      style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", border: "1px solid #e5e7eb", zIndex: 99999, minWidth: 200, overflow: "hidden" }}>
+    <div onClick={e => e.stopPropagation()}
+      style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", border: "1px solid #e5e7eb", zIndex: 99999, minWidth: 220, overflow: "hidden" }}>
       <div style={{ padding: "10px 14px", borderBottom: "1px solid #f3f4f6", fontSize: 12, color: "#6b7280", fontWeight: 600, background: "#f9fafb" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: leave.color, marginRight: 6 }}></span>
-        {leave.label}
+        {leave.label} — {formatDate(leave.leaveStart)} {isMultiDay ? `→ ${formatDate(leave.leaveEnd)}` : ""}
       </div>
-      <button
-        onClick={e => { e.stopPropagation(); onDelete(); }}
-        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
-        🗑 Supprimer ce congé
+      <button onClick={e => { e.stopPropagation(); onDeleteDay(); }}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#f59e0b", fontWeight: 600 }}>
+        ✂️ Supprimer ce jour seulement
       </button>
-      <button
-        onClick={e => { e.stopPropagation(); onClose(); }}
+      {isMultiDay && (
+        <button onClick={e => { e.stopPropagation(); onDeleteAll(); }}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", borderTop: "1px solid #f3f4f6", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+          🗑 Supprimer toute la période
+        </button>
+      )}
+      <button onClick={e => { e.stopPropagation(); onClose(); }}
         style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", borderTop: "1px solid #f3f4f6", background: "none", cursor: "pointer", fontSize: 13, color: "#6b7280" }}>
         ✕ Annuler
       </button>
@@ -448,15 +460,18 @@ function PlanningApp({ currentUser, onLogout }) {
     try {
       const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`;
       const data = await apiFetch(`/leaves?month=${monthStr}`, tok);
-      const leavesData = data.leaves || [];
+      const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled");
       const leavesMap = {};
-      leavesData.filter(l => l.status !== 'cancelled').forEach(l => {
+      leavesData.forEach(l => {
         if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
         const lt = leaveFromBackend(l);
+        const leaveStart = l.start_date.split("T")[0];
+        const leaveEnd = l.end_date.split("T")[0];
         const start = new Date(l.start_date), end = new Date(l.end_date);
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-          leavesMap[l.agent_id][k] = { ...lt, status: l.status, leaveId: l.id };
+          // On stocke leaveStart et leaveEnd pour pouvoir faire la suppression partielle
+          leavesMap[l.agent_id][k] = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
         }
       });
       setLeaves(leavesMap);
@@ -520,18 +535,58 @@ function PlanningApp({ currentUser, onLogout }) {
     if (!isManager && currentUser.id !== agentId) return;
     const leave = leaves[agentId]?.[dateKey(year, month, day)];
     if (!leave || !leave.leaveId) return;
-    setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId });
+    setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId, clickedDate: dateKey(year, month, day) });
   }
 
-  async function handleDeleteLeave() {
+  // Supprime toute la période
+  async function handleDeleteAll() {
     if (!contextMenu) return;
-    const leaveId = contextMenu.leaveId;
+    const { leaveId } = contextMenu;
     setContextMenu(null);
     try {
       await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
       await loadLeaves(leaveTypes, token, year, month);
       showNotif("Congé supprimé ✅");
-    } catch {
+    } catch { showNotif("Erreur lors de la suppression", "error"); }
+  }
+
+  // Supprime un seul jour : annule la demande + recrée avant et après
+  async function handleDeleteDay() {
+    if (!contextMenu) return;
+    const { leaveId, clickedDate, leave, agentId } = contextMenu;
+    setContextMenu(null);
+    try {
+      // 1. Supprimer la demande originale
+      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+
+      const start = leave.leaveStart;
+      const end = leave.leaveEnd;
+      const code = leave.leaveCode || leave.code;
+
+      // 2. Recréer la période AVANT le jour cliqué (si elle existe)
+      if (compareDates(start, clickedDate) < 0) {
+        const newEnd = addDays(clickedDate, -1);
+        await apiFetch("/leaves", token, {
+          method: "POST", body: JSON.stringify({
+            leave_type_code: code, start_date: start, end_date: newEnd, agent_id: agentId
+          })
+        });
+      }
+
+      // 3. Recréer la période APRÈS le jour cliqué (si elle existe)
+      if (compareDates(clickedDate, end) < 0) {
+        const newStart = addDays(clickedDate, 1);
+        await apiFetch("/leaves", token, {
+          method: "POST", body: JSON.stringify({
+            leave_type_code: code, start_date: newStart, end_date: end, agent_id: agentId
+          })
+        });
+      }
+
+      await loadLeaves(leaveTypes, token, year, month);
+      showNotif("Jour supprimé ✅");
+    } catch (e) {
+      console.error(e);
       showNotif("Erreur lors de la suppression", "error");
     }
   }
@@ -624,7 +679,8 @@ function PlanningApp({ currentUser, onLogout }) {
         <ContextMenu
           x={contextMenu.x} y={contextMenu.y}
           leave={contextMenu.leave}
-          onDelete={handleDeleteLeave}
+          onDeleteDay={handleDeleteDay}
+          onDeleteAll={handleDeleteAll}
           onClose={() => setContextMenu(null)}
         />
       )}
@@ -698,7 +754,7 @@ function PlanningApp({ currentUser, onLogout }) {
               {leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
             </div>}
             <div style={{ fontSize: 12, color: "#92400e", marginBottom: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 14px" }}>
-              {isManager ? "👑 Clic gauche : ajouter un congé. Clic droit sur un congé : le supprimer." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
+              {isManager ? "👑 Clic gauche : ajouter. Clic droit sur un congé : supprimer un jour ou toute la période." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
             </div>
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
