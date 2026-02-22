@@ -385,7 +385,17 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           </div>
         </div>
         <Field label="Nouveau mot de passe (laisser vide = inchangé)" value={editData.password} onChange={v => setEditData(p => ({ ...p, password: v }))} placeholder="••••••••" style={{ marginBottom: 20 }} />
-        <ModalButtons onCancel={() => setEditModal(null)} onConfirm={() => { onAgentUpdated(editModal.id, editData); setEditModal(null); showNotif("Agent modifié ✅"); }} confirmLabel="Enregistrer" confirmColor="#4f46e5" />
+        <ModalButtons onCancel={() => setEditModal(null)} onConfirm={async () => {
+          try {
+            await apiFetch(`/agents/${editModal.id}`, token, {
+              method: "PATCH", body: JSON.stringify({
+                team: editData.team, role: editData.role, email: editData.email,
+                ...(editData.password ? { password: editData.password } : {})
+              })
+            });
+          } catch (e) { console.error(e); }
+          onAgentUpdated(editModal.id, editData); setEditModal(null); showNotif("Agent modifié ✅");
+        }} confirmLabel="Enregistrer" confirmColor="#4f46e5" />
       </Modal>}
 
       {deleteModal && <Modal title="🗑 Supprimer l'agent">
