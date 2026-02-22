@@ -505,7 +505,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const allTeams = ["Tous", ...teams.filter(t => t.name !== "Admin").map(t => t.name)];
-  const filteredAgents = (filterTeam === "Tous" ? agents : agents.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
+  const filteredAgents = (filterTeam === "Tous" ? agents : agents.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin" || a.team);
   const pendingRequests = requests.filter(r => r.status === "pending");
   const myRequests = requests.filter(r => r.agentId === currentUser.id);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
