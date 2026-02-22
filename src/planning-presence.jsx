@@ -450,7 +450,7 @@ function PlanningApp({ currentUser, onLogout }) {
       const data = await apiFetch(`/leaves?month=${monthStr}`, tok);
       const leavesData = data.leaves || [];
       const leavesMap = {};
-      leavesData.forEach(l => {
+      leavesData.filter(l => l.status !== 'cancelled').forEach(l => {
         if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
         const lt = leaveFromBackend(l);
         const start = new Date(l.start_date), end = new Date(l.end_date);
