@@ -427,8 +427,10 @@ function PlanningApp({ currentUser, onLogout }) {
   const [notification, setNotification] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
-  const [seenRejected, setSeenRejected] = useState([]);
-
+  const [seenRejected, setSeenRejected] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`) || "[]"); }
+    catch { return []; }
+  });
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
   const isAdmin = currentUser.role === "admin";
@@ -703,7 +705,9 @@ function PlanningApp({ currentUser, onLogout }) {
               setView(item.id);
               // Marquer les demandes refusées comme vues quand l'agent consulte l'onglet
               if (item.id === "validations" && !isManager) {
-                setSeenRejected(myRequests.filter(r => r.status === "rejected").map(r => r.id));
+                const newSeen = myRequests.filter(r => r.status === "rejected").map(r => r.id);
+                setSeenRejected(newSeen);
+                localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
               }
             }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 20px", border: "none", background: view === item.id ? "#2d3148" : "transparent", color: view === item.id ? "#818cf8" : "#9ca3af", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, borderLeft: view === item.id ? "3px solid #818cf8" : "3px solid transparent" }}>
               <span>{item.icon}</span><span style={{ flex: 1 }}>{item.label}</span>
