@@ -32,6 +32,12 @@ const GLOBAL_STYLE = `
   input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important; outline: none; }
 `;
 
+function leaveAbbr(label){
+  if(!label)return"???";
+  const map={"½ CP":"½CP","½ RTT":"½RTT","Congé payé":"CP","RTT":"RTT","Pont":"PON","Formation":"FOR","Absence":"ABS"};
+  if(map[label])return map[label];
+  return label.replace(/[^a-zA-Z0-9½]/g,"").slice(0,4).toUpperCase()||label.slice(0,3).toUpperCase();
+}
 function hexToLight(hex){
   try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},0.1)`;}
   catch{return "#f3f4f6";}
@@ -732,7 +738,7 @@ function PlanningApp({currentUser,onLogout}){
                           style={{padding:"3px 2px",textAlign:"center",cursor:wk||!canInteract?"default":"pointer",background:wk?"#fafafa":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc"}}>
                           {leave&&!wk&&(
                             <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"&&leave.agentId!==currentUser.id?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"&&leave.agentId!==currentUser.id?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"&&leave.agentId!==currentUser.id?`1.5px dashed ${leave.color}`:"none"}}>
-                              <span style={{fontSize:8,color:leave.status==="pending"&&leave.agentId!==currentUser.id?leave.color:"#fff",fontWeight:700,letterSpacing:"0.3px"}}>{leave.status==="pending"&&leave.agentId!==currentUser.id?"?":leave.label.slice(0,3).toUpperCase()}</span>
+                              <span style={{fontSize:8,color:leave.status==="pending"&&leave.agentId!==currentUser.id?leave.color:"#fff",fontWeight:700,letterSpacing:"0.3px"}}>{leave.status==="pending"&&leave.agentId!==currentUser.id?"?":leaveAbbr(leave.label)}</span>
                             </div>
                           )}
                           {inSel&&!leave&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,background:"#c7d2fe",border:"1.5px solid #818cf8"}}/>}
