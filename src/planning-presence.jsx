@@ -4,6 +4,7 @@ const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const MONTHS_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 const COLORS = ["#6366f1", "#0ea5e9", "#f59e0b", "#10b981", "#8b5cf6", "#ef4444", "#ec4899", "#14b8a6", "#f97316", "#84cc16"];
+const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
 
 const DEMO_USERS = [
   { email: "redouane@entreprise.fr", password: "admin1234" },
@@ -23,17 +24,11 @@ function isWeekend(y, m, d) { const w = new Date(y, m, d).getDay(); return w ===
 function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-"); return `${p[2]}/${p[1]}/${p[0]}`; }
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
-function addDays(dateStr, n) {
-  const d = new Date(dateStr); d.setDate(d.getDate() + n);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
+function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 
 function leaveFromBackend(l) {
-  return {
-    id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label,
-    color: l.color, bg: hexToLight(l.color)
-  };
+  return { id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
 }
 function requestFromBackend(l) {
   return {
@@ -377,7 +372,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
             <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, outline: "none" }}>
               <option value="">-- Aucune équipe --</option>
               {teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
-            </select>          </div>
+            </select>
+          </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Rôle</label>
             <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, outline: "none" }}>
@@ -431,6 +427,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [notification, setNotification] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
+  const [seenRejected, setSeenRejected] = useState([]);
 
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
@@ -449,7 +446,8 @@ function PlanningApp({ currentUser, onLogout }) {
         const ltResult = Array.isArray(ltData) ? ltData : [];
         const ltFormatted = ltResult.map(lt => ({ ...lt, bg: hexToLight(lt.color) }));
         setLeaveTypes(ltFormatted);
-        if (ltFormatted.length > 0) setSelectedLTId(ltFormatted[0].id);
+        const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
+        if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
         setAgents(agentsRaw.map(a => ({
           id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
@@ -482,7 +480,6 @@ function PlanningApp({ currentUser, onLogout }) {
         const start = new Date(l.start_date), end = new Date(l.end_date);
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-          // On stocke leaveStart et leaveEnd pour pouvoir faire la suppression partielle
           leavesMap[l.agent_id][k] = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
         }
       });
@@ -513,6 +510,11 @@ function PlanningApp({ currentUser, onLogout }) {
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
   const currentLT = leaveTypes.find(t => t.id === selectedLTId) || leaveTypes[0];
 
+  // Badge : pour les agents, compte les demandes en attente + les refusées non encore vues
+  const validationBadge = isManager
+    ? pendingRequests.length
+    : myRequests.filter(r => r.status === "pending" || (r.status === "rejected" && !seenRejected.includes(r.id))).length;
+
   function getLeave(agentId, day) { return leaves[agentId]?.[dateKey(year, month, day)]; }
 
   async function handleCellClick(agentId, day) {
@@ -536,9 +538,8 @@ function PlanningApp({ currentUser, onLogout }) {
         } catch { showNotif("Congé appliqué (erreur sauvegarde)", "error"); }
       } else {
         // Pour les agents, forcer un type autorisé
-        const allowedCodes = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
-        const allowedTypes = leaveTypes.filter(t => allowedCodes.includes(t.code));
-        if (!allowedCodes.includes(currentLT?.code) && allowedTypes.length > 0) {
+        const allowedTypes = leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code));
+        if (!AGENT_ALLOWED_CODES.includes(currentLT?.code) && allowedTypes.length > 0) {
           setSelectedLTId(allowedTypes[0].id);
         }
         setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end) });
@@ -550,13 +551,12 @@ function PlanningApp({ currentUser, onLogout }) {
   function handleCellRightClick(e, agentId, day) {
     e.preventDefault();
     e.stopPropagation();
-    if (!isManager && currentUser.id !== agentId) return;
+    if (currentUser.id !== agentId && !isManager) return;
     const leave = leaves[agentId]?.[dateKey(year, month, day)];
     if (!leave || !leave.leaveId) return;
     setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId, clickedDate: dateKey(year, month, day) });
   }
 
-  // Supprime toute la période
   async function handleDeleteAll() {
     if (!contextMenu) return;
     const { leaveId } = contextMenu;
@@ -568,45 +568,24 @@ function PlanningApp({ currentUser, onLogout }) {
     } catch { showNotif("Erreur lors de la suppression", "error"); }
   }
 
-  // Supprime un seul jour : annule la demande + recrée avant et après
   async function handleDeleteDay() {
     if (!contextMenu) return;
     const { leaveId, clickedDate, leave, agentId } = contextMenu;
     setContextMenu(null);
     try {
-      // 1. Supprimer la demande originale
       await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
-
-      const start = leave.leaveStart;
-      const end = leave.leaveEnd;
-      const code = leave.leaveCode || leave.code;
-
-      // 2. Recréer la période AVANT le jour cliqué (si elle existe)
+      const start = leave.leaveStart, end = leave.leaveEnd, code = leave.leaveCode || leave.code;
       if (compareDates(start, clickedDate) < 0) {
         const newEnd = addDays(clickedDate, -1);
-        await apiFetch("/leaves", token, {
-          method: "POST", body: JSON.stringify({
-            leave_type_code: code, start_date: start, end_date: newEnd, agent_id: agentId
-          })
-        });
+        await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: start, end_date: newEnd, agent_id: agentId }) });
       }
-
-      // 3. Recréer la période APRÈS le jour cliqué (si elle existe)
       if (compareDates(clickedDate, end) < 0) {
         const newStart = addDays(clickedDate, 1);
-        await apiFetch("/leaves", token, {
-          method: "POST", body: JSON.stringify({
-            leave_type_code: code, start_date: newStart, end_date: end, agent_id: agentId
-          })
-        });
+        await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: newStart, end_date: end, agent_id: agentId }) });
       }
-
       await loadLeaves(leaveTypes, token, year, month);
       showNotif("Jour supprimé ✅");
-    } catch (e) {
-      console.error(e);
-      showNotif("Erreur lors de la suppression", "error");
-    }
+    } catch (e) { console.error(e); showNotif("Erreur lors de la suppression", "error"); }
   }
 
   function applyLeaveLocal(agentId, startDay, endDay, type, status) {
@@ -677,7 +656,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   const navItems = [
     { id: "planning", icon: "🗓", label: "Planning" },
-    { id: "validations", icon: "✅", label: "Validations", badge: isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending" || r.status === "rejected").length },
+    { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
     { id: "stats", icon: "📊", label: "Statistiques" },
     ...(isAdmin ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
   ];
@@ -695,13 +674,8 @@ function PlanningApp({ currentUser, onLogout }) {
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "#ef4444" : "#10b981", color: "white", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>{notification.msg}</div>}
 
       {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x} y={contextMenu.y}
-          leave={contextMenu.leave}
-          onDeleteDay={handleDeleteDay}
-          onDeleteAll={handleDeleteAll}
-          onClose={() => setContextMenu(null)}
-        />
+        <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave}
+          onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />
       )}
 
       <aside style={{ width: 220, background: "#1a1d27", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0 }}>
@@ -725,7 +699,13 @@ function PlanningApp({ currentUser, onLogout }) {
         </div>
         <nav style={{ padding: "16px 0", flex: 1 }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setView(item.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 20px", border: "none", background: view === item.id ? "#2d3148" : "transparent", color: view === item.id ? "#818cf8" : "#9ca3af", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, borderLeft: view === item.id ? "3px solid #818cf8" : "3px solid transparent" }}>
+            <button key={item.id} onClick={() => {
+              setView(item.id);
+              // Marquer les demandes refusées comme vues quand l'agent consulte l'onglet
+              if (item.id === "validations" && !isManager) {
+                setSeenRejected(myRequests.filter(r => r.status === "rejected").map(r => r.id));
+              }
+            }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 20px", border: "none", background: view === item.id ? "#2d3148" : "transparent", color: view === item.id ? "#818cf8" : "#9ca3af", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, borderLeft: view === item.id ? "3px solid #818cf8" : "3px solid transparent" }}>
               <span>{item.icon}</span><span style={{ flex: 1 }}>{item.label}</span>
               {item.badge > 0 && <span style={{ background: "#e94560", color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>{item.badge}</span>}
             </button>
@@ -749,7 +729,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
         {view === "admin" && isAdmin && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
-          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team || a.team, role: data.role || a.role } : a))}
+          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
@@ -771,7 +751,7 @@ function PlanningApp({ currentUser, onLogout }) {
             </div>
             {leaveTypes.length > 0 && <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
               {leaveTypes
-                .filter(t => isManager || ["cp", "_cp", "rtt", "_rtt", "teletravail"].includes(t.code))
+                .filter(t => isManager || AGENT_ALLOWED_CODES.includes(t.code))
                 .map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
             </div>}
             <div style={{ fontSize: 12, color: "#92400e", marginBottom: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 14px" }}>
@@ -868,7 +848,9 @@ function PlanningApp({ currentUser, onLogout }) {
         <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 16px" }}>Du <strong>{formatDate(requestModal.start)}</strong> au <strong>{formatDate(requestModal.end)}</strong></p>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Type de congé</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{leaveTypes.filter(t => isManager || ["cp", "_cp", "rtt", "_rtt", "teletravail"].includes(t.code)).map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {leaveTypes.filter(t => isManager || AGENT_ALLOWED_CODES.includes(t.code)).map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
+          </div>
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Motif (optionnel)</label>
