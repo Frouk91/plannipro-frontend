@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const COLORS = ["#818cf8","#38bdf8","#fb923c","#34d399","#a78bfa","#f87171","#f472b6","#2dd4bf","#fb923c","#a3e635"];
+const COLORS = ["#6366f1","#0ea5e9","#f59e0b","#10b981","#8b5cf6","#ef4444","#ec4899","#14b8a6","#f97316","#84cc16"];
 const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail"];
 
 const DEMO_USERS = [
@@ -13,31 +13,28 @@ const DEMO_USERS = [
   { email: "emma@entreprise.fr", password: "emma1234" },
 ];
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');`;
-
 const GLOBAL_STYLE = `
-  ${FONTS}
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #07070f; font-family: 'Outfit', sans-serif; }
+  body { font-family: 'Outfit', sans-serif; background: #f5f6fa; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #0d0d1a; }
-  ::-webkit-scrollbar-thumb { background: #2d2d4e; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #4c4c7f; }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
-  @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(124,58,237,0.3); } 50% { box-shadow: 0 0 40px rgba(124,58,237,0.6); } }
-  @keyframes slideIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
-  .cell-hover:hover { background: rgba(124,58,237,0.08) !important; transition: background 0.15s ease; }
-  .btn-glow:hover { box-shadow: 0 0 20px rgba(124,58,237,0.4); transform: translateY(-1px); transition: all 0.2s ease; }
-  .nav-item { transition: all 0.2s ease; }
-  .nav-item:hover { background: rgba(255,255,255,0.05) !important; }
-  .card-hover { transition: all 0.2s ease; }
-  .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  .cell-hover:hover { background: #f0f1ff !important; cursor: pointer; }
+  .btn-primary { transition: all 0.2s ease; }
+  .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.3) !important; }
+  .nav-btn { transition: all 0.15s ease; }
+  .nav-btn:hover { background: rgba(99,102,241,0.08) !important; }
+  .card { transition: all 0.2s ease; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
+  input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important; outline: none; }
 `;
 
-function hexToLight(hex) {
-  try { const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},0.15)`; }
-  catch { return "rgba(124,58,237,0.15)"; }
+function hexToLight(hex){
+  try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},0.1)`;}
+  catch{return "#f3f4f6";}
 }
 function getDaysInMonth(y,m){return new Date(y,m+1,0).getDate();}
 function getFirstDayOfMonth(y,m){let d=new Date(y,m,1).getDay();return d===0?6:d-1;}
@@ -49,25 +46,16 @@ function agentHue(id){return Math.abs((id||"").toString().split("").reduce((a,c)
 function addDays(dateStr,n){const d=new Date(dateStr);d.setDate(d.getDate()+n);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
 function compareDates(a,b){return a<b?-1:a>b?1:0;}
 
-function leaveFromBackend(l){
-  return {id:l.leave_type_code,code:l.leave_type_code,label:l.leave_type_label,color:l.color,bg:hexToLight(l.color)};
-}
+function leaveFromBackend(l){return {id:l.leave_type_code,code:l.leave_type_code,label:l.leave_type_label,color:l.color,bg:hexToLight(l.color)};}
 function requestFromBackend(l){
-  return {
-    id:l.id,agentId:l.agent_id,
-    agentName:`${l.first_name||""} ${l.last_name||""}`.trim(),
+  return {id:l.id,agentId:l.agent_id,agentName:`${l.first_name||""} ${l.last_name||""}`.trim(),
     agentAvatar:l.avatar_initials||getInitials(`${l.first_name||""} ${l.last_name||""}`),
     agentTeam:l.team_name||"",leaveType:leaveFromBackend(l),
     start:(l.start_date||"").split("T")[0],end:(l.end_date||"").split("T")[0],
-    reason:l.reason||"",status:l.status,createdAt:l.created_at
-  };
+    reason:l.reason||"",status:l.status,createdAt:l.created_at};
 }
-
 async function apiFetch(path,token,options={}){
-  const res=await fetch(`${API}${path}`,{
-    ...options,
-    headers:{"Content-Type":"application/json",...(token?{Authorization:`Bearer ${token}`}:{}),...(options.headers||{})}
-  });
+  const res=await fetch(`${API}${path}`,{...options,headers:{"Content-Type":"application/json",...(token?{Authorization:`Bearer ${token}`}:{}),...(options.headers||{})}});
   return res.json();
 }
 
@@ -90,52 +78,43 @@ function LoginPage({onLogin}){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif",position:"relative",overflow:"hidden"}}>
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#667eea 0%,#764ba2 100%)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif"}}>
       <style>{GLOBAL_STYLE}</style>
-      {/* Orbs décoratifs */}
-      <div style={{position:"absolute",width:600,height:600,borderRadius:"50%",background:"radial-gradient(circle,rgba(124,58,237,0.12) 0%,transparent 70%)",top:-200,left:-200,pointerEvents:"none"}}/>
-      <div style={{position:"absolute",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%)",bottom:-100,right:-100,pointerEvents:"none"}}/>
-
-      <div style={{width:"100%",maxWidth:440,padding:"0 24px",animation:"fadeIn 0.6s ease"}}>
-        {/* Logo */}
-        <div style={{textAlign:"center",marginBottom:40}}>
-          <div style={{width:64,height:64,borderRadius:20,background:"linear-gradient(135deg,#7c3aed,#3b82f6)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16,boxShadow:"0 0 40px rgba(124,58,237,0.4)"}}>📅</div>
-          <h1 style={{color:"#fff",fontSize:30,fontWeight:800,margin:0,letterSpacing:"-0.5px"}}>PlanniPro</h1>
-          <p style={{color:"#4b5563",fontSize:14,margin:"6px 0 0",fontWeight:400}}>Gestion des présences et congés</p>
+      <div style={{width:"100%",maxWidth:440,padding:"0 24px",animation:"fadeIn 0.5s ease"}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{width:64,height:64,borderRadius:20,background:"rgba(255,255,255,0.2)",backdropFilter:"blur(10px)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16,border:"1px solid rgba(255,255,255,0.3)"}}>📅</div>
+          <h1 style={{color:"#fff",fontSize:28,fontWeight:800,margin:0,letterSpacing:"-0.5px"}}>PlanniPro</h1>
+          <p style={{color:"rgba(255,255,255,0.7)",fontSize:14,margin:"6px 0 0"}}>Gestion des présences et congés</p>
         </div>
-
-        {/* Card login */}
-        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:36,backdropFilter:"blur(20px)",boxShadow:"0 25px 60px rgba(0,0,0,0.5)"}}>
-          <h2 style={{margin:"0 0 24px",fontSize:18,fontWeight:700,color:"#f9fafb"}}>Connexion</h2>
+        <div style={{background:"#fff",borderRadius:24,padding:36,boxShadow:"0 25px 50px rgba(0,0,0,0.15)"}}>
+          <h2 style={{margin:"0 0 24px",fontSize:20,fontWeight:700,color:"#111827"}}>Connexion</h2>
           <div style={{marginBottom:16}}>
-            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#9ca3af",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Email</label>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Email</label>
             <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="prenom@entreprise.fr"
-              style={{width:"100%",padding:"12px 16px",borderRadius:10,border:error?"1.5px solid rgba(239,68,68,0.5)":"1.5px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",outline:"none",transition:"border 0.2s"}}/>
+              style={{width:"100%",padding:"12px 16px",borderRadius:10,border:error?"1.5px solid #fca5a5":"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
           </div>
           <div style={{marginBottom:8}}>
-            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#9ca3af",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Mot de passe</label>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Mot de passe</label>
             <div style={{position:"relative"}}>
               <input type={showPwd?"text":"password"} value={password} onChange={e=>{setPassword(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="••••••••"
-                style={{width:"100%",padding:"12px 44px 12px 16px",borderRadius:10,border:error?"1.5px solid rgba(239,68,68,0.5)":"1.5px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",outline:"none"}}/>
-              <button onClick={()=>setShowPwd(!showPwd)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#6b7280"}}>{showPwd?"🙈":"👁"}</button>
+                style={{width:"100%",padding:"12px 44px 12px 16px",borderRadius:10,border:error?"1.5px solid #fca5a5":"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
+              <button onClick={()=>setShowPwd(!showPwd)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#9ca3af"}}>{showPwd?"🙈":"👁"}</button>
             </div>
           </div>
-          {error&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:13,color:"#fca5a5"}}>⚠️ {error}</div>}
-          <button onClick={handleLogin} disabled={loading} className="btn-glow"
-            style={{width:"100%",padding:"13px 0",borderRadius:10,border:"none",background:loading?"rgba(124,58,237,0.5)":"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",marginTop:16,letterSpacing:"0.3px"}}>
+          {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:13,color:"#dc2626"}}>⚠️ {error}</div>}
+          <button onClick={handleLogin} disabled={loading} className="btn-primary"
+            style={{width:"100%",padding:"13px 0",borderRadius:10,border:"none",background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",marginTop:16}}>
             {loading?"Connexion...":"Se connecter →"}
           </button>
         </div>
-
-        {/* Comptes démo */}
-        <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:16,padding:20,marginTop:16}}>
-          <div style={{fontSize:11,color:"#4b5563",marginBottom:12,textAlign:"center",textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Comptes demo</div>
+        <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(10px)",borderRadius:16,padding:20,marginTop:16,border:"1px solid rgba(255,255,255,0.2)"}}>
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginBottom:12,textAlign:"center",textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Comptes demo</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {DEMO_USERS.map((u,i)=>(
               <button key={i} onClick={()=>{setEmail(u.email);setPassword(u.password);setError("");}}
-                style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:10,padding:"8px 12px",cursor:"pointer",textAlign:"left",transition:"all 0.2s"}}>
-                <div style={{color:"#e2e8f0",fontSize:11,fontWeight:600}}>{u.email.split("@")[0]}</div>
-                <div style={{color:"#4b5563",fontSize:10,marginTop:2}}>{u.email}</div>
+                style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:10,padding:"8px 12px",cursor:"pointer",textAlign:"left",transition:"all 0.2s"}}>
+                <div style={{color:"#fff",fontSize:11,fontWeight:600}}>{u.email.split("@")[0]}</div>
+                <div style={{color:"rgba(255,255,255,0.5)",fontSize:10,marginTop:1}}>{u.email}</div>
               </button>
             ))}
           </div>
@@ -147,27 +126,25 @@ function LoginPage({onLogin}){
 
 function Modal({title,children}){
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(4px)"}}>
-      <div style={{background:"#12121e",border:"1px solid rgba(255,255,255,0.08)",borderRadius:20,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 25px 60px rgba(0,0,0,0.7)",maxHeight:"90vh",overflowY:"auto",animation:"slideIn 0.2s ease"}}>
-        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700,color:"#f9fafb"}}>{title}</h2>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(3px)"}}>
+      <div style={{background:"#fff",borderRadius:20,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 25px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto",animation:"slideIn 0.2s ease"}}>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700,color:"#111827"}}>{title}</h2>
         {children}
       </div>
     </div>
   );
 }
-
 function ModalButtons({onCancel,onConfirm,confirmLabel,confirmColor,disabled}){
   return(<div style={{display:"flex",gap:10}}>
-    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1px solid rgba(255,255,255,0.1)",background:"transparent",cursor:"pointer",fontSize:14,color:"#9ca3af",fontWeight:500}}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",cursor:disabled?"default":"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.5:1}}>{confirmLabel}</button>
+    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1.5px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:14,color:"#6b7280",fontWeight:500}}>Annuler</button>
+    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",cursor:disabled?"default":"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.5:1}}>{confirmLabel}</button>
   </div>);
 }
-
 function Field({label,value,onChange,placeholder,style={}}){
   return(<div style={style}>
-    {label&&<label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>{label}</label>}
+    {label&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>{label}</label>}
     <input value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-      style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",outline:"none"}}/>
+      style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
   </div>);
 }
 
@@ -176,23 +153,17 @@ function ContextMenu({x,y,leave,onDeleteDay,onDeleteAll,onClose}){
   const isMultiDay=leave.leaveStart!==leave.leaveEnd;
   return(
     <div onClick={e=>e.stopPropagation()}
-      style={{position:"fixed",top:y,left:x,background:"#1a1a2e",border:"1px solid rgba(255,255,255,0.1)",borderRadius:12,boxShadow:"0 20px 60px rgba(0,0,0,0.6)",zIndex:99999,minWidth:240,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
-      <div style={{padding:"12px 16px",borderBottom:"1px solid rgba(255,255,255,0.06)",fontSize:12,color:"#6b7280",fontWeight:600,background:"rgba(255,255,255,0.02)"}}>
-        <span style={{display:"inline-block",width:10,height:10,borderRadius:3,background:leave.color,marginRight:8,boxShadow:`0 0 8px ${leave.color}`}}></span>
-        {leave.label}
+      style={{position:"fixed",top:y,left:x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:230,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
+      <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#64748b",fontWeight:600,background:"#f8fafc"}}>
+        <span style={{display:"inline-block",width:10,height:10,borderRadius:3,background:leave.color,marginRight:8}}></span>{leave.label}
       </div>
-      <button onClick={e=>{e.stopPropagation();onDeleteDay();}}
-        style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 16px",border:"none",background:"none",cursor:"pointer",fontSize:13,color:"#fbbf24",fontWeight:500,transition:"background 0.15s"}}>
+      <button onClick={e=>{e.stopPropagation();onDeleteDay();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",background:"none",cursor:"pointer",fontSize:13,color:"#d97706",fontWeight:500}}>
         ✂️ Supprimer ce jour seulement
       </button>
-      {isMultiDay&&(
-        <button onClick={e=>{e.stopPropagation();onDeleteAll();}}
-          style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"12px 16px",border:"none",borderTop:"1px solid rgba(255,255,255,0.05)",background:"none",cursor:"pointer",fontSize:13,color:"#f87171",fontWeight:500}}>
-          🗑 Supprimer toute la période
-        </button>
-      )}
-      <button onClick={e=>{e.stopPropagation();onClose();}}
-        style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"10px 16px",border:"none",borderTop:"1px solid rgba(255,255,255,0.05)",background:"none",cursor:"pointer",fontSize:13,color:"#4b5563"}}>
+      {isMultiDay&&<button onClick={e=>{e.stopPropagation();onDeleteAll();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",borderTop:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:13,color:"#ef4444",fontWeight:500}}>
+        🗑 Supprimer toute la période
+      </button>}
+      <button onClick={e=>{e.stopPropagation();onClose();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",borderTop:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:13,color:"#9ca3af"}}>
         ✕ Annuler
       </button>
     </div>
@@ -217,85 +188,56 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
     setLoading(true);
     try{
       const data=await apiFetch("/auth/register",token,{method:"POST",body:JSON.stringify(newAgent)});
-      if(data.agent){
-        onAgentAdded({id:data.agent.id,name:`${newAgent.first_name} ${newAgent.last_name}`,email:newAgent.email,role:newAgent.role,team:newAgent.team,avatar:getInitials(`${newAgent.first_name} ${newAgent.last_name}`)});
-        setAddModal(false);setNewAgent({first_name:"",last_name:"",email:"",password:"",role:"agent",team:""});
-        showNotif("Agent ajouté ✅");
-      }else{showNotif(data.errors?.[0]?.msg||"Erreur","error");}
+      if(data.agent){onAgentAdded({id:data.agent.id,name:`${newAgent.first_name} ${newAgent.last_name}`,email:newAgent.email,role:newAgent.role,team:newAgent.team,avatar:getInitials(`${newAgent.first_name} ${newAgent.last_name}`)});setAddModal(false);setNewAgent({first_name:"",last_name:"",email:"",password:"",role:"agent",team:""});showNotif("Agent ajouté ✅");}
+      else{showNotif(data.errors?.[0]?.msg||"Erreur","error");}
     }catch{showNotif("Erreur","error");}
     setLoading(false);
   }
-
-  async function handleAddTeam(){
-    if(!newTeam.trim())return;
-    try{const data=await apiFetch("/teams",token,{method:"POST",body:JSON.stringify({name:newTeam.trim()})});
-    if(data.id){onTeamAdded(data);setNewTeam("");showNotif("Équipe ajoutée ✅");}}
-    catch{showNotif("Erreur","error");}
-  }
-
-  async function handleDeleteTeam(team){
-    try{await apiFetch(`/teams/${team.id}`,token,{method:"DELETE"});onTeamDeleted(team.id);showNotif("Équipe supprimée","error");}
-    catch{showNotif("Erreur","error");}
-  }
-
-  async function handleAddLT(){
-    if(!newLT.label.trim())return;
-    try{const data=await apiFetch("/leave-types",token,{method:"POST",body:JSON.stringify({label:newLT.label.trim(),color:newLT.color})});
-    if(data.id){onLeaveTypeAdded({...data,bg:hexToLight(data.color)});setNewLT({label:"",color:COLORS[0]});showNotif("Type ajouté ✅");}}
-    catch{showNotif("Erreur","error");}
-  }
-
-  async function handleUpdateLT(lt,newLabel){
-    try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"PATCH",body:JSON.stringify({label:newLabel})});onLeaveTypeUpdated(lt.id,{label:newLabel});setEditLT(null);showNotif("Modifié ✅");}
-    catch{showNotif("Erreur","error");}
-  }
-
-  async function handleDeleteLT(lt){
-    try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"DELETE"});onLeaveTypeDeleted(lt.id);showNotif("Type supprimé","error");}
-    catch{showNotif("Erreur","error");}
-  }
-
-  const tabStyle=(id)=>({padding:"8px 16px",borderRadius:8,border:"none",background:tab===id?"rgba(124,58,237,0.2)":"transparent",color:tab===id?"#a78bfa":"#4b5563",cursor:"pointer",fontSize:13,fontWeight:600,border:tab===id?"1px solid rgba(124,58,237,0.3)":"1px solid transparent",transition:"all 0.2s"});
+  async function handleAddTeam(){if(!newTeam.trim())return;try{const data=await apiFetch("/teams",token,{method:"POST",body:JSON.stringify({name:newTeam.trim()})});if(data.id){onTeamAdded(data);setNewTeam("");showNotif("Équipe ajoutée ✅");}}catch{showNotif("Erreur","error");}}
+  async function handleDeleteTeam(team){try{await apiFetch(`/teams/${team.id}`,token,{method:"DELETE"});onTeamDeleted(team.id);showNotif("Équipe supprimée","error");}catch{showNotif("Erreur","error");}}
+  async function handleAddLT(){if(!newLT.label.trim())return;try{const data=await apiFetch("/leave-types",token,{method:"POST",body:JSON.stringify({label:newLT.label.trim(),color:newLT.color})});if(data.id){onLeaveTypeAdded({...data,bg:hexToLight(data.color)});setNewLT({label:"",color:COLORS[0]});showNotif("Type ajouté ✅");}}catch{showNotif("Erreur","error");}}
+  async function handleUpdateLT(lt,newLabel){try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"PATCH",body:JSON.stringify({label:newLabel})});onLeaveTypeUpdated(lt.id,{label:newLabel});setEditLT(null);showNotif("Modifié ✅");}catch{showNotif("Erreur","error");}}
+  async function handleDeleteLT(lt){try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"DELETE"});onLeaveTypeDeleted(lt.id);showNotif("Type supprimé","error");}catch{showNotif("Erreur","error");}}
 
   return(
-    <div style={{padding:24,animation:"fadeIn 0.4s ease"}}>
+    <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
       <div style={{display:"flex",gap:8,marginBottom:24}}>
         {[{id:"agents",icon:"👥",label:"Agents"},{id:"teams",icon:"🏢",label:"Équipes"},{id:"leavetypes",icon:"🏷",label:"Types de congés"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={tabStyle(t.id)}>{t.icon} {t.label}</button>
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"8px 18px",borderRadius:10,border:"none",background:tab===t.id?"linear-gradient(135deg,#667eea,#764ba2)":"#fff",color:tab===t.id?"#fff":"#6b7280",cursor:"pointer",fontSize:13,fontWeight:600,boxShadow:tab===t.id?"0 4px 14px rgba(102,126,234,0.3)":"0 1px 4px rgba(0,0,0,0.06)"}}>{t.icon} {t.label}</button>
         ))}
       </div>
 
       {tab==="agents"&&(
         <div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <span style={{fontSize:13,color:"#4b5563"}}>{agents.length} agents</span>
-            <button onClick={()=>setAddModal(true)} className="btn-glow" style={{background:"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",border:"none",borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
+            <span style={{fontSize:14,color:"#6b7280"}}>{agents.length} agents</span>
+            <button onClick={()=>setAddModal(true)} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"8px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
           </div>
-          <div style={{background:"rgba(255,255,255,0.02)",borderRadius:12,border:"1px solid rgba(255,255,255,0.06)",overflow:"hidden"}}>
+          <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
             <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr style={{borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-                {["Agent","Email","Équipe","Rôle","Actions"].map(h=><th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:"#4b5563",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.5px"}}>{h}</th>)}
+              <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #f1f5f9"}}>
+                {["Agent","Email","Équipe","Rôle","Actions"].map(h=><th key={h} style={{padding:"12px 16px",textAlign:"left",fontSize:11,color:"#94a3b8",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.5px"}}>{h}</th>)}
               </tr></thead>
               <tbody>
                 {agents.map(a=>(
-                  <tr key={a.id} style={{borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                  <tr key={a.id} style={{borderBottom:"1px solid #f8fafc"}}>
                     <td style={{padding:"12px 16px"}}>
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <div style={{width:34,height:34,borderRadius:10,background:`linear-gradient(135deg,hsl(${agentHue(a.id)},60%,40%),hsl(${agentHue(a.id)+40},70%,55%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,boxShadow:`0 0 12px hsla(${agentHue(a.id)},60%,50%,0.3)`}}>{a.avatar}</div>
-                        <span style={{fontWeight:600,fontSize:13,color:"#e2e8f0"}}>{a.name}</span>
+                        <div style={{width:34,height:34,borderRadius:10,background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div>
+                        <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span>
                       </div>
                     </td>
-                    <td style={{padding:"12px 16px",fontSize:12,color:"#4b5563"}}>{a.email}</td>
-                    <td style={{padding:"12px 16px",fontSize:12,color:"#6b7280"}}>{a.team||"—"}</td>
+                    <td style={{padding:"12px 16px",fontSize:12,color:"#94a3b8"}}>{a.email}</td>
+                    <td style={{padding:"12px 16px",fontSize:12,color:"#64748b"}}>{a.team||"—"}</td>
                     <td style={{padding:"12px 16px"}}>
-                      <span style={{background:a.role==="admin"?"rgba(251,191,36,0.15)":a.role==="manager"?"rgba(124,58,237,0.15)":"rgba(52,211,153,0.15)",color:a.role==="admin"?"#fbbf24":a.role==="manager"?"#a78bfa":"#34d399",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,border:`1px solid ${a.role==="admin"?"rgba(251,191,36,0.2)":a.role==="manager"?"rgba(124,58,237,0.2)":"rgba(52,211,153,0.2)"}`}}>
+                      <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#dcfce7",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#166534",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}}>
                         {a.role==="admin"?"👑 Admin":a.role==="manager"?"👑 Manager":"Agent"}
                       </span>
                     </td>
                     <td style={{padding:"12px 16px"}}>
                       <div style={{display:"flex",gap:6}}>
-                        <button onClick={()=>{setEditModal(a);setEditData({name:a.name,email:a.email,team:a.team,role:a.role,password:""}); }} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#9ca3af"}}>✏️ Modifier</button>
-                        {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#f87171"}}>🗑</button>}
+                        <button onClick={()=>{setEditModal(a);setEditData({name:a.name,email:a.email,team:a.team,role:a.role,password:""}); }} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#64748b"}}>✏️ Modifier</button>
+                        {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#ef4444"}}>🗑</button>}
                       </div>
                     </td>
                   </tr>
@@ -310,20 +252,17 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <div>
           <div style={{display:"flex",gap:10,marginBottom:20}}>
             <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()}
-              style={{flex:1,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",outline:"none"}}/>
-            <button onClick={handleAddTeam} className="btn-glow" style={{background:"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
+              style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
+            <button onClick={handleAddTeam} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
             {teams.map(team=>(
-              <div key={team.id||team.name} className="card-hover" style={{background:"rgba(255,255,255,0.03)",borderRadius:12,border:"1px solid rgba(255,255,255,0.06)",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div key={team.id||team.name} className="card" style={{background:"#fff",borderRadius:12,border:"1px solid #f1f5f9",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:"rgba(124,58,237,0.15)",border:"1px solid rgba(124,58,237,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🏢</div>
-                  <div>
-                    <div style={{fontWeight:600,color:"#e2e8f0",fontSize:14}}>{team.name}</div>
-                    <div style={{fontSize:11,color:"#4b5563"}}>{agents.filter(a=>a.team===team.name).length} agents</div>
-                  </div>
+                  <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🏢</div>
+                  <div><div style={{fontWeight:600,color:"#1e293b",fontSize:14}}>{team.name}</div><div style={{fontSize:11,color:"#94a3b8"}}>{agents.filter(a=>a.team===team.name).length} agents</div></div>
                 </div>
-                {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#f87171",fontWeight:600}}>🗑</button>}
+                {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#ef4444",fontWeight:600}}>🗑</button>}
               </div>
             ))}
           </div>
@@ -332,37 +271,37 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
 
       {tab==="leavetypes"&&(
         <div>
-          <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,border:"1px solid rgba(255,255,255,0.06)",padding:20,marginBottom:16}}>
-            <h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#e2e8f0"}}>➕ Nouveau type de congé</h3>
+          <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",padding:20,marginBottom:16,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
+            <h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1e293b"}}>➕ Nouveau type de congé</h3>
             <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
               <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Ex: Congé sans solde"
-                style={{flex:1,minWidth:160,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",outline:"none"}}/>
+                style={{flex:1,minWidth:160,padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:26,height:26,borderRadius:8,background:c,border:newLT.color===c?"3px solid #fff":"2px solid transparent",cursor:"pointer",boxShadow:newLT.color===c?`0 0 12px ${c}`:"none",transition:"all 0.2s"}}/>)}
+                {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:26,height:26,borderRadius:8,background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.15s"}}/>)}
               </div>
-              <button onClick={handleAddLT} className="btn-glow" style={{background:"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",border:"none",borderRadius:8,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>Ajouter</button>
+              <button onClick={handleAddLT} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>Ajouter</button>
             </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:12}}>
             {leaveTypes.map(lt=>(
-              <div key={lt.id} className="card-hover" style={{background:"rgba(255,255,255,0.03)",borderRadius:12,border:`1px solid ${lt.color}30`,padding:16}}>
+              <div key={lt.id} className="card" style={{background:"#fff",borderRadius:12,border:`1.5px solid ${lt.color}30`,padding:16,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
                 {editLT===lt.id?(
                   <div>
-                    <input defaultValue={lt.label} id={`elt-${lt.id}`} style={{width:"100%",padding:"8px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:"rgba(255,255,255,0.05)",fontSize:13,color:"#f9fafb",boxSizing:"border-box",marginBottom:8,outline:"none"}}/>
+                    <input defaultValue={lt.label} id={`elt-${lt.id}`} style={{width:"100%",padding:"8px",borderRadius:6,border:"1.5px solid #e5e7eb",fontSize:13,boxSizing:"border-box",marginBottom:8,transition:"all 0.2s"}}/>
                     <div style={{display:"flex",gap:6}}>
-                      <button onClick={()=>handleUpdateLT(lt,document.getElementById(`elt-${lt.id}`).value)} style={{flex:1,padding:"6px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#7c3aed,#3b82f6)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>Enregistrer</button>
-                      <button onClick={()=>setEditLT(null)} style={{flex:1,padding:"6px",borderRadius:6,border:"1px solid rgba(255,255,255,0.1)",background:"transparent",color:"#9ca3af",cursor:"pointer",fontSize:12}}>Annuler</button>
+                      <button onClick={()=>handleUpdateLT(lt,document.getElementById(`elt-${lt.id}`).value)} style={{flex:1,padding:"6px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>Enregistrer</button>
+                      <button onClick={()=>setEditLT(null)} style={{flex:1,padding:"6px",borderRadius:6,border:"1px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:12,color:"#6b7280"}}>Annuler</button>
                     </div>
                   </div>
                 ):(
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:14,height:14,borderRadius:4,background:lt.color,boxShadow:`0 0 8px ${lt.color}`}}/>
-                      <span style={{fontWeight:600,fontSize:14,color:"#e2e8f0"}}>{lt.label}</span>
+                      <div style={{width:14,height:14,borderRadius:4,background:lt.color}}/>
+                      <span style={{fontWeight:600,fontSize:14,color:"#1e293b"}}>{lt.label}</span>
                     </div>
                     <div style={{display:"flex",gap:4}}>
-                      <button onClick={()=>setEditLT(lt.id)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#9ca3af"}}>✏️</button>
-                      <button onClick={()=>handleDeleteLT(lt)} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.15)",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#f87171"}}>🗑</button>
+                      <button onClick={()=>setEditLT(lt.id)} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#64748b"}}>✏️</button>
+                      <button onClick={()=>handleDeleteLT(lt)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#ef4444"}}>🗑</button>
                     </div>
                   </div>
                 )}
@@ -381,21 +320,21 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v=>setNewAgent(p=>({...p,password:v}))} placeholder="motdepasse123" style={{marginBottom:12}}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
           <div>
-            <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Équipe</label>
-            <select value={newAgent.team} onChange={e=>setNewAgent(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"#12121e",fontSize:14,color:"#f9fafb",outline:"none"}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Équipe</label>
+            <select value={newAgent.team} onChange={e=>setNewAgent(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
               <option value="">-- Choisir --</option>
               {teams.map(t=><option key={t.id||t.name} value={t.name}>{t.name}</option>)}
             </select>
           </div>
           <div>
-            <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Rôle</label>
-            <select value={newAgent.role} onChange={e=>setNewAgent(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"#12121e",fontSize:14,color:"#f9fafb",outline:"none"}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Rôle</label>
+            <select value={newAgent.role} onChange={e=>setNewAgent(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
               <option value="agent">Agent</option>
               <option value="manager">Manager 👑</option>
             </select>
           </div>
         </div>
-        <ModalButtons onCancel={()=>setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading?"En cours...":"Ajouter"} confirmColor="linear-gradient(135deg,#7c3aed,#3b82f6)" disabled={loading}/>
+        <ModalButtons onCancel={()=>setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading?"En cours...":"Ajouter"} disabled={loading}/>
       </Modal>}
 
       {editModal&&<Modal title={`✏️ Modifier — ${editModal.name}`}>
@@ -403,15 +342,15 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <Field label="Email" value={editData.email} onChange={v=>setEditData(p=>({...p,email:v}))} style={{marginBottom:12}}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
           <div>
-            <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Équipe</label>
-            <select value={editData.team||""} onChange={e=>setEditData(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"#12121e",fontSize:14,color:"#f9fafb",outline:"none"}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Équipe</label>
+            <select value={editData.team||""} onChange={e=>setEditData(p=>({...p,team:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
               <option value="">-- Aucune équipe --</option>
               {teams.map(t=><option key={t.id||t.name} value={t.name}>{t.name}</option>)}
             </select>
           </div>
           <div>
-            <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Rôle</label>
-            <select value={editData.role||"agent"} onChange={e=>setEditData(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"#12121e",fontSize:14,color:"#f9fafb",outline:"none"}}>
+            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Rôle</label>
+            <select value={editData.role||"agent"} onChange={e=>setEditData(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
               <option value="agent">Agent</option>
               <option value="manager">Manager 👑</option>
             </select>
@@ -421,11 +360,11 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <ModalButtons onCancel={()=>setEditModal(null)} onConfirm={async()=>{
           try{await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({team:editData.team,role:editData.role,email:editData.email,...(editData.password?{password:editData.password}:{})})});}catch(e){console.error(e);}
           onAgentUpdated(editModal.id,editData);setEditModal(null);showNotif("Agent modifié ✅");
-        }} confirmLabel="Enregistrer" confirmColor="linear-gradient(135deg,#7c3aed,#3b82f6)"/>
+        }} confirmLabel="Enregistrer"/>
       </Modal>}
 
       {deleteModal&&<Modal title="🗑 Supprimer l'agent">
-        <p style={{color:"#6b7280",fontSize:14,margin:"0 0 20px"}}>Supprimer <strong style={{color:"#e2e8f0"}}>{deleteModal.name}</strong> ? Cette action est irréversible.</p>
+        <p style={{color:"#6b7280",fontSize:14,margin:"0 0 20px"}}>Supprimer <strong>{deleteModal.name}</strong> ? Cette action est irréversible.</p>
         <ModalButtons onCancel={()=>setDeleteModal(null)} onConfirm={()=>{onAgentDeleted(deleteModal.id);setDeleteModal(null);showNotif("Agent supprimé","error");}} confirmLabel="Supprimer" confirmColor="#ef4444"/>
       </Modal>}
     </div>
@@ -538,10 +477,8 @@ function PlanningApp({currentUser,onLogout}){
       setSelectionStart(null);setSelectedAgent(null);
       if(isManager){
         applyLeaveLocal(agentId,start,end,currentLT,"approved");
-        try{
-          await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});
-          await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");
-        }catch{showNotif("Congé appliqué (erreur sauvegarde)","error");}
+        try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
+        catch{showNotif("Congé appliqué (erreur sauvegarde)","error");}
       }else{
         const allowedTypes=leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code));
         if(!AGENT_ALLOWED_CODES.includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
@@ -623,95 +560,95 @@ function PlanningApp({currentUser,onLogout}){
   ];
 
   if(!dataLoaded)return(
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#07070f",fontFamily:"'Outfit',sans-serif"}}>
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f5f6fa",fontFamily:"'Outfit',sans-serif"}}>
       <style>{GLOBAL_STYLE}</style>
       <div style={{textAlign:"center"}}>
-        <div style={{width:64,height:64,borderRadius:20,background:"linear-gradient(135deg,#7c3aed,#3b82f6)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:20,animation:"glow 2s infinite"}}>📅</div>
-        <div style={{fontSize:16,color:"#4b5563",fontWeight:500}}>Chargement en cours...</div>
+        <div style={{width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:24,marginBottom:16}}>📅</div>
+        <div style={{fontSize:15,color:"#94a3b8",fontWeight:500}}>Chargement en cours...</div>
       </div>
     </div>
   );
 
   return(
-    <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#07070f",display:"flex"}}
+    <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
       onClick={()=>{if(contextMenu)setContextMenu(null);}}>
       <style>{GLOBAL_STYLE}</style>
 
       {/* Notification */}
-      {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"rgba(239,68,68,0.15)":"rgba(52,211,153,0.15)",border:`1px solid ${notification.type==="error"?"rgba(239,68,68,0.3)":"rgba(52,211,153,0.3)"}`,color:notification.type==="error"?"#f87171":"#34d399",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,backdropFilter:"blur(20px)",animation:"slideIn 0.3s ease",boxShadow:"0 8px 30px rgba(0,0,0,0.4)"}}>{notification.msg}</div>}
+      {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
 
       {contextMenu&&<ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={()=>setContextMenu(null)}/>}
 
       {/* SIDEBAR */}
-      <aside style={{width:230,background:"linear-gradient(180deg,#0d0d1a 0%,#0a0a14 100%)",borderRight:"1px solid rgba(255,255,255,0.05)",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0}}>
+      <aside style={{width:230,background:"linear-gradient(180deg,#1e1b4b 0%,#312e81 100%)",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0,boxShadow:"4px 0 20px rgba(0,0,0,0.1)"}}>
         {/* Logo */}
-        <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+        <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#7c3aed,#3b82f6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 0 20px rgba(124,58,237,0.3)"}}>📅</div>
+            <div style={{width:38,height:38,borderRadius:12,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 4px 12px rgba(102,126,234,0.4)"}}>📅</div>
             <div>
-              <div style={{fontSize:16,fontWeight:800,color:"#f9fafb",letterSpacing:"-0.3px"}}>PlanniPro</div>
-              <div style={{fontSize:10,color:"#374151",fontWeight:400}}>Gestion des présences</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#fff",letterSpacing:"-0.3px"}}>PlanniPro</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Gestion des présences</div>
             </div>
           </div>
         </div>
 
         {/* User */}
-        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{position:"relative"}}>
-              <div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},60%,35%),hsl(${agentHue(currentUser.id)+40},70%,50%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,boxShadow:`0 0 15px hsla(${agentHue(currentUser.id)},60%,50%,0.3)`}}>
+              <div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id)+40},65%,60%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>
                 {currentUser.avatar_initials||getInitials(`${currentUser.first_name||""} ${currentUser.last_name||""}`)}
               </div>
-              <div style={{position:"absolute",bottom:0,right:0,width:9,height:9,borderRadius:"50%",background:"#34d399",border:"2px solid #0d0d1a"}}/>
+              <div style={{position:"absolute",bottom:0,right:0,width:10,height:10,borderRadius:"50%",background:"#34d399",border:"2px solid #1e1b4b"}}/>
             </div>
             <div style={{flex:1,overflow:"hidden"}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#f9fafb",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.first_name} {currentUser.last_name}</div>
-              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#a78bfa":"#34d399",fontWeight:500}}>
+              <div style={{fontSize:13,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.first_name} {currentUser.last_name}</div>
+              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#c4b5fd":"#6ee7b7",fontWeight:500}}>
                 {currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"}
               </div>
             </div>
           </div>
-          <button onClick={onLogout} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.06)",color:"#4b5563",fontSize:11,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.5)",fontSize:11,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>🚪 Déconnexion</button>
         </div>
 
         {/* Nav */}
-        <nav style={{padding:"12px 12px",flex:1}}>
+        <nav style={{padding:"12px",flex:1}}>
           {navItems.map(item=>(
-            <button key={item.id} className="nav-item" onClick={()=>{
+            <button key={item.id} className="nav-btn" onClick={()=>{
               setView(item.id);
               if(item.id==="validations"&&!isManager){
                 const newSeen=myRequests.filter(r=>r.status==="rejected").map(r=>r.id);
                 setSeenRejected(newSeen);
                 localStorage.setItem(`seenRejected_${currentUser.id}`,JSON.stringify(newSeen));
               }
-            }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:view===item.id?"rgba(124,58,237,0.15)":"transparent",color:view===item.id?"#a78bfa":"#4b5563",cursor:"pointer",fontSize:14,fontWeight:view===item.id?600:400,marginBottom:2,borderLeft:view===item.id?"none":"none",boxShadow:view===item.id?"inset 0 0 0 1px rgba(124,58,237,0.2)":"none"}}>
+            }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:view===item.id?"rgba(255,255,255,0.12)":"transparent",color:view===item.id?"#fff":"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:14,fontWeight:view===item.id?600:400,marginBottom:2,boxShadow:view===item.id?"inset 0 0 0 1px rgba(255,255,255,0.15)":"none"}}>
               <span style={{fontSize:16}}>{item.icon}</span>
               <span style={{flex:1,textAlign:"left"}}>{item.label}</span>
-              {item.badge>0&&<span style={{background:"#e94560",color:"#fff",borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:700,boxShadow:"0 0 10px rgba(233,69,96,0.4)"}}>{item.badge}</span>}
+              {item.badge>0&&<span style={{background:"#e94560",color:"#fff",borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
             </button>
           ))}
         </nav>
 
         {/* Légende */}
-        <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,0.05)"}}>
-          <div style={{fontSize:10,color:"#374151",marginBottom:10,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Légende</div>
+        <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:10,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Légende</div>
           {leaveTypes.map(t=>(
             <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-              <div style={{width:10,height:10,borderRadius:3,background:t.color,boxShadow:`0 0 6px ${t.color}60`}}/>
-              <span style={{fontSize:11,color:"#374151"}}>{t.label}</span>
+              <div style={{width:10,height:10,borderRadius:3,background:t.color}}/>
+              <span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
             </div>
           ))}
         </div>
       </aside>
 
       {/* MAIN */}
-      <main style={{flex:1,overflow:"auto",background:"#07070f"}}>
+      <main style={{flex:1,overflow:"auto"}}>
         {/* Header */}
-        <div style={{background:"rgba(255,255,255,0.02)",borderBottom:"1px solid rgba(255,255,255,0.05)",padding:"18px 28px",backdropFilter:"blur(10px)",position:"sticky",top:0,zIndex:10}}>
-          <h1 style={{margin:0,fontSize:20,fontWeight:800,color:"#f9fafb",letterSpacing:"-0.3px"}}>
+        <div style={{background:"#fff",borderBottom:"1px solid #f1f5f9",padding:"18px 28px",boxShadow:"0 1px 8px rgba(0,0,0,0.04)"}}>
+          <h1 style={{margin:0,fontSize:20,fontWeight:800,color:"#1e293b",letterSpacing:"-0.3px"}}>
             {view==="planning"?"📅 Planning mensuel":view==="validations"?"✅ Demandes de congés":view==="stats"?"📊 Statistiques":"⚙️ Administration"}
           </h1>
-          <p style={{margin:"2px 0 0",fontSize:13,color:"#374151"}}>
+          <p style={{margin:"2px 0 0",fontSize:13,color:"#94a3b8"}}>
             {view==="planning"?`${MONTHS_FR[month]} ${year}`:view==="validations"?(isManager?`${pendingRequests.length} demande(s) en attente`:`${myRequests.length} demande(s) au total`):""}
           </p>
         </div>
@@ -731,57 +668,57 @@ function PlanningApp({currentUser,onLogout}){
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
             {/* Controls */}
             <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,flexWrap:"wrap"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:12,padding:"6px 12px"}}>
-                <button onClick={()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"#6b7280",lineHeight:1,padding:"0 4px"}}>‹</button>
-                <span style={{fontWeight:700,fontSize:16,color:"#f9fafb",minWidth:150,textAlign:"center",letterSpacing:"-0.3px"}}>{MONTHS_FR[month]} {year}</span>
-                <button onClick={()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"#6b7280",lineHeight:1,padding:"0 4px"}}>›</button>
+              <div style={{display:"flex",alignItems:"center",gap:4,background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,padding:"6px 10px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+                <button onClick={()=>{if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#94a3b8",lineHeight:1,padding:"0 4px"}}>‹</button>
+                <span style={{fontWeight:700,fontSize:15,color:"#1e293b",minWidth:160,textAlign:"center"}}>{MONTHS_FR[month]} {year}</span>
+                <button onClick={()=>{if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#94a3b8",lineHeight:1,padding:"0 4px"}}>›</button>
               </div>
-              <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());}} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12,fontWeight:600,color:"#6b7280",transition:"all 0.2s"}}>Aujourd'hui</button>
+              <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());}} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12,fontWeight:600,color:"#64748b",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",transition:"all 0.2s"}}>Aujourd'hui</button>
               <div style={{marginLeft:"auto",display:"flex",gap:6,flexWrap:"wrap"}}>
-                {allTeams.map(t=><button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"6px 14px",borderRadius:20,border:"1px solid",fontSize:12,cursor:"pointer",fontWeight:500,background:filterTeam===t?"rgba(124,58,237,0.2)":"transparent",color:filterTeam===t?"#a78bfa":"#4b5563",borderColor:filterTeam===t?"rgba(124,58,237,0.4)":"rgba(255,255,255,0.07)",transition:"all 0.2s"}}>{t}</button>)}
+                {allTeams.map(t=><button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"6px 14px",borderRadius:20,border:"1.5px solid",fontSize:12,cursor:"pointer",fontWeight:500,background:filterTeam===t?"linear-gradient(135deg,#667eea,#764ba2)":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#667eea":"#e2e8f0",transition:"all 0.2s",boxShadow:filterTeam===t?"0 4px 12px rgba(102,126,234,0.3)":"0 1px 3px rgba(0,0,0,0.05)"}}>{t}</button>)}
               </div>
             </div>
 
-            {/* Types de congés */}
+            {/* Types */}
             {leaveTypes.length>0&&<div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
               {leaveTypes.filter(t=>isManager||AGENT_ALLOWED_CODES.includes(t.code)).map(t=>(
                 <button key={t.id} onClick={()=>setSelectedLTId(t.id)}
-                  style={{padding:"5px 14px",borderRadius:20,border:`1.5px solid ${selectedLTId===t.id?t.color:t.color+"40"}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color+"25":"transparent",color:selectedLTId===t.id?t.color:t.color+"80",transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 0 15px ${t.color}30`:"none"}}>
+                  style={{padding:"5px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 4px 12px ${t.color}50`:"none"}}>
                   {t.label}
                 </button>
               ))}
             </div>}
 
             {/* Hint */}
-            <div style={{fontSize:12,color:"#374151",marginBottom:12,background:"rgba(251,191,36,0.05)",border:"1px solid rgba(251,191,36,0.1)",borderRadius:8,padding:"8px 14px"}}>
+            <div style={{fontSize:12,color:"#78350f",marginBottom:12,background:"#fffbeb",border:"1px solid #fde68a",borderRadius:8,padding:"8px 14px"}}>
               {isManager?"👑 Clic gauche : ajouter un congé — Clic droit : supprimer un jour ou toute la période":"👤 Sélectionnez des dates pour envoyer une demande de validation au manager"}
             </div>
 
-            {/* Table planning */}
-            <div style={{background:"rgba(255,255,255,0.02)",borderRadius:14,border:"1px solid rgba(255,255,255,0.05)",overflow:"auto",boxShadow:"0 4px 30px rgba(0,0,0,0.3)"}}>
+            {/* Table */}
+            <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
               <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                 <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                 <thead>
                   <tr>
-                    <th style={{padding:"14px 16px",textAlign:"left",fontSize:10,color:"#374151",fontWeight:600,borderBottom:"1px solid rgba(255,255,255,0.05)",background:"rgba(255,255,255,0.02)",textTransform:"uppercase",letterSpacing:"0.5px"}}>AGENT</th>
+                    <th style={{padding:"14px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px"}}>AGENT</th>
                     {Array.from({length:daysInMonth},(_,i)=>{
                       const day=i+1,wk=isWeekend(year,month,day),isToday=todayDay===day;
-                      return<th key={i} style={{padding:"8px 2px",textAlign:"center",fontSize:9,fontWeight:600,background:isToday?"rgba(124,58,237,0.15)":wk?"rgba(255,255,255,0.01)":"rgba(255,255,255,0.02)",color:isToday?"#a78bfa":wk?"#1f2937":"#374151",borderBottom:`1px solid ${isToday?"rgba(124,58,237,0.3)":"rgba(255,255,255,0.05)"}`,borderLeft:"1px solid rgba(255,255,255,0.03)"}}>
+                      return<th key={i} style={{padding:"6px 2px",textAlign:"center",fontSize:9,fontWeight:600,background:isToday?"#eef2ff":wk?"#fafafa":"#f8fafc",color:isToday?"#6366f1":wk?"#d1d5db":"#94a3b8",borderBottom:`2px solid ${isToday?"#6366f1":"#f1f5f9"}`,borderLeft:"1px solid #f8fafc"}}>
                         <div style={{textTransform:"uppercase",letterSpacing:"0.3px"}}>{DAYS_FR[(i+firstDay)%7].slice(0,1)}</div>
-                        <div style={{fontSize:11,fontWeight:700,color:isToday?"#a78bfa":wk?"#1f2937":"#6b7280",marginTop:1}}>{day}</div>
-                        {isToday&&<div style={{width:4,height:4,borderRadius:"50%",background:"#7c3aed",margin:"2px auto 0",boxShadow:"0 0 6px #7c3aed"}}/>}
+                        <div style={{fontSize:12,fontWeight:700,color:isToday?"#6366f1":wk?"#e2e8f0":"#475569",marginTop:1}}>{day}</div>
+                        {isToday&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1",margin:"2px auto 0"}}/>}
                       </th>;
                     })}
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAgents.map((agent,idx)=>(
-                    <tr key={agent.id} style={{borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
-                      <td style={{padding:"8px 12px",display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.01)"}}>
-                        <div style={{width:30,height:30,borderRadius:9,background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,30%),hsl(${agentHue(agent.id)+40},65%,45%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:`0 0 10px hsla(${agentHue(agent.id)},60%,50%,0.2)`}}>{agent.avatar}</div>
+                  {filteredAgents.map(agent=>(
+                    <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}>
+                      <td style={{padding:"8px 12px",display:"flex",alignItems:"center",gap:8,background:"#fff"}}>
+                        <div style={{width:30,height:30,borderRadius:9,background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
                         <div>
-                          <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#a78bfa":"#d1d5db",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                          <div style={{fontSize:10,color:"#374151"}}>{agent.team}</div>
+                          <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
+                          <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
                         </div>
                       </td>
                       {Array.from({length:daysInMonth},(_,i)=>{
@@ -792,13 +729,13 @@ function PlanningApp({currentUser,onLogout}){
                           onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}}
                           onMouseLeave={()=>setHoveredDay(null)}
                           className={!wk&&canInteract?"cell-hover":""}
-                          style={{padding:"3px 2px",textAlign:"center",cursor:wk||!canInteract?"default":"pointer",background:wk?"rgba(255,255,255,0.005)":inSel?"rgba(124,58,237,0.2)":isToday?"rgba(124,58,237,0.04)":"transparent",borderLeft:"1px solid rgba(255,255,255,0.03)",transition:"background 0.1s"}}>
+                          style={{padding:"3px 2px",textAlign:"center",cursor:wk||!canInteract?"default":"pointer",background:wk?"#fafafa":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc"}}>
                           {leave&&!wk&&(
-                            <div style={{width:"calc(100% - 2px)",height:24,margin:"0 1px",background:leave.color+(leave.status==="pending"&&leave.agentId!==currentUser.id?"30":""),border:`1px solid ${leave.color}${leave.status==="pending"&&leave.agentId!==currentUser.id?"40":"80"}`,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"&&leave.agentId!==currentUser.id?"none":`0 0 8px ${leave.color}30`}}>
-                              <span style={{fontSize:8,color:"#fff",fontWeight:700,letterSpacing:"0.3px",opacity:leave.status==="pending"&&leave.agentId!==currentUser.id?0.4:1}}>{leave.status==="pending"&&leave.agentId!==currentUser.id?"?":leave.label.slice(0,3).toUpperCase()}</span>
+                            <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"&&leave.agentId!==currentUser.id?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"&&leave.agentId!==currentUser.id?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"&&leave.agentId!==currentUser.id?`1.5px dashed ${leave.color}`:"none"}}>
+                              <span style={{fontSize:8,color:leave.status==="pending"&&leave.agentId!==currentUser.id?leave.color:"#fff",fontWeight:700,letterSpacing:"0.3px"}}>{leave.status==="pending"&&leave.agentId!==currentUser.id?"?":leave.label.slice(0,3).toUpperCase()}</span>
                             </div>
                           )}
-                          {inSel&&!leave&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,background:"rgba(124,58,237,0.3)",border:"1px solid rgba(124,58,237,0.5)"}}/>}
+                          {inSel&&!leave&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,background:"#c7d2fe",border:"1.5px solid #818cf8"}}/>}
                         </td>;
                       })}
                     </tr>
@@ -814,23 +751,23 @@ function PlanningApp({currentUser,onLogout}){
             {isManager?(
               <>
                 {pendingRequests.length===0&&requests.filter(r=>r.status!=="pending").length===0&&
-                  <div style={{background:"rgba(255,255,255,0.02)",borderRadius:16,border:"1px solid rgba(255,255,255,0.06)",padding:60,textAlign:"center",color:"#374151"}}>
+                  <div style={{background:"#fff",borderRadius:16,border:"1px solid #f1f5f9",padding:60,textAlign:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}>
                     <div style={{fontSize:"3rem",marginBottom:12}}>🎉</div>
-                    <div style={{fontSize:16,fontWeight:600,color:"#6b7280"}}>Aucune demande en attente</div>
+                    <div style={{fontSize:16,fontWeight:600,color:"#94a3b8"}}>Aucune demande en attente</div>
                   </div>}
                 {pendingRequests.length>0&&<>
-                  <h3 style={{fontSize:14,fontWeight:700,marginBottom:16,color:"#fbbf24",textTransform:"uppercase",letterSpacing:"0.5px"}}>🕐 En attente · {pendingRequests.length}</h3>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:16,color:"#d97706",textTransform:"uppercase",letterSpacing:"0.5px"}}>🕐 En attente · {pendingRequests.length}</div>
                   {pendingRequests.map(req=><RequestCard key={req.id} req={req} isManager onApprove={()=>approveRequest(req.id)} onReject={()=>{setRejectModal(req.id);setRejectComment("");}}/>)}
                 </>}
                 {requests.filter(r=>r.status!=="pending").length>0&&<>
-                  <h3 style={{fontSize:14,fontWeight:700,margin:"28px 0 16px",color:"#374151",textTransform:"uppercase",letterSpacing:"0.5px"}}>📋 Historique</h3>
+                  <div style={{fontSize:13,fontWeight:700,margin:"28px 0 16px",color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px"}}>📋 Historique</div>
                   {requests.filter(r=>r.status!=="pending").map(req=><RequestCard key={req.id} req={req} isManager/>)}
                 </>}
               </>
             ):(
               <>
-                <div style={{background:"rgba(124,58,237,0.08)",border:"1px solid rgba(124,58,237,0.2)",borderRadius:12,padding:16,marginBottom:24,fontSize:13,color:"#a78bfa"}}>💡 Sélectionnez des dates dans le planning pour envoyer une demande de congé.</div>
-                {myRequests.length===0&&<div style={{background:"rgba(255,255,255,0.02)",borderRadius:16,border:"1px solid rgba(255,255,255,0.06)",padding:60,textAlign:"center"}}><div style={{fontSize:"3rem",marginBottom:12}}>📝</div><div style={{fontSize:16,fontWeight:600,color:"#6b7280"}}>Aucune demande</div></div>}
+                <div style={{background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:12,padding:16,marginBottom:24,fontSize:13,color:"#4338ca"}}>💡 Sélectionnez des dates dans le planning pour envoyer une demande de congé.</div>
+                {myRequests.length===0&&<div style={{background:"#fff",borderRadius:16,border:"1px solid #f1f5f9",padding:60,textAlign:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}><div style={{fontSize:"3rem",marginBottom:12}}>📝</div><div style={{fontSize:16,fontWeight:600,color:"#94a3b8"}}>Aucune demande</div></div>}
                 {myRequests.map(req=><RequestCard key={req.id} req={req}/>)}
               </>
             )}
@@ -842,14 +779,13 @@ function PlanningApp({currentUser,onLogout}){
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
               {leaveTypes.map(t=>{
                 let count=0;agents.forEach(a=>{Object.values(leaves[a.id]||{}).forEach(l=>{if(l.code===t.code||l.id===t.id)count++;});});
-                return<div key={t.id} className="card-hover" style={{background:"rgba(255,255,255,0.02)",borderRadius:14,border:`1px solid ${t.color}20`,padding:24,position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:0,right:0,width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle,${t.color}15 0%,transparent 70%)`,transform:"translate(30%,-30%)"}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-                    <div style={{width:12,height:12,borderRadius:4,background:t.color,boxShadow:`0 0 8px ${t.color}`}}/>
-                    <span style={{fontSize:12,color:"#6b7280",fontWeight:500}}>{t.label}</span>
+                return<div key={t.id} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${t.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${t.color}15`}}/>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                    <div style={{width:12,height:12,borderRadius:4,background:t.color}}/><span style={{fontSize:12,color:"#64748b",fontWeight:500}}>{t.label}</span>
                   </div>
-                  <div style={{fontSize:42,fontWeight:800,color:t.color,letterSpacing:"-1px"}}>{count}</div>
-                  <div style={{fontSize:11,color:"#374151",marginTop:4,fontWeight:500}}>jours ce mois</div>
+                  <div style={{fontSize:40,fontWeight:800,color:t.color,letterSpacing:"-1px"}}>{count}</div>
+                  <div style={{fontSize:11,color:"#94a3b8",marginTop:4,fontWeight:500}}>jours ce mois</div>
                 </div>;
               })}
             </div>
@@ -857,32 +793,31 @@ function PlanningApp({currentUser,onLogout}){
         )}
       </main>
 
-      {/* Modal demande congé */}
       {requestModal&&currentLT&&<Modal title="📝 Nouvelle demande de congé">
-        <p style={{color:"#4b5563",fontSize:13,margin:"0 0 20px"}}>Du <strong style={{color:"#e2e8f0"}}>{formatDate(requestModal.start)}</strong> au <strong style={{color:"#e2e8f0"}}>{formatDate(requestModal.end)}</strong></p>
+        <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>Du <strong style={{color:"#1e293b"}}>{formatDate(requestModal.start)}</strong> au <strong style={{color:"#1e293b"}}>{formatDate(requestModal.end)}</strong></p>
         <div style={{marginBottom:16}}>
-          <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.5px"}}>Type de congé</label>
+          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {leaveTypes.filter(t=>isManager||AGENT_ALLOWED_CODES.includes(t.code)).map(t=>(
               <button key={t.id} onClick={()=>setSelectedLTId(t.id)}
-                style={{padding:"6px 14px",borderRadius:20,border:`1.5px solid ${selectedLTId===t.id?t.color:t.color+"40"}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color+"25":"transparent",color:selectedLTId===t.id?t.color:t.color+"80",transition:"all 0.2s"}}>
+                style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>
                 {t.label}
               </button>
             ))}
           </div>
         </div>
         <div style={{marginBottom:20}}>
-          <label style={{display:"block",fontSize:11,fontWeight:600,color:"#6b7280",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.5px"}}>Motif (optionnel)</label>
+          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Motif (optionnel)</label>
           <textarea value={requestReason} onChange={e=>setRequestReason(e.target.value)} rows={3} placeholder="Précisez si nécessaire..."
-            style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",boxSizing:"border-box",resize:"none",outline:"none"}}/>
+            style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,boxSizing:"border-box",resize:"none",transition:"all 0.2s"}}/>
         </div>
-        <ModalButtons onCancel={()=>setRequestModal(null)} onConfirm={submitRequest} confirmLabel="Envoyer la demande" confirmColor="linear-gradient(135deg,#7c3aed,#3b82f6)"/>
+        <ModalButtons onCancel={()=>setRequestModal(null)} onConfirm={submitRequest} confirmLabel="Envoyer la demande"/>
       </Modal>}
 
       {rejectModal&&<Modal title="❌ Refuser la demande">
         <textarea value={rejectComment} onChange={e=>setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3}
-          style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.08)",background:"rgba(255,255,255,0.04)",fontSize:14,color:"#f9fafb",boxSizing:"border-box",resize:"none",outline:"none",marginBottom:20}}/>
-        <ModalButtons onCancel={()=>setRejectModal(null)} onConfirm={()=>rejectRequest(rejectModal)} confirmLabel="Confirmer le refus" confirmColor={rejectComment.trim()?"#ef4444":"rgba(239,68,68,0.3)"} disabled={!rejectComment.trim()}/>
+          style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,boxSizing:"border-box",resize:"none",marginBottom:20,transition:"all 0.2s"}}/>
+        <ModalButtons onCancel={()=>setRejectModal(null)} onConfirm={()=>rejectRequest(rejectModal)} confirmLabel="Confirmer le refus" confirmColor={rejectComment.trim()?"#ef4444":"#fca5a5"} disabled={!rejectComment.trim()}/>
       </Modal>}
     </div>
   );
@@ -890,36 +825,33 @@ function PlanningApp({currentUser,onLogout}){
 
 function RequestCard({req,isManager,onApprove,onReject}){
   const s={
-    pending:{label:"En attente",bg:"rgba(251,191,36,0.1)",color:"#fbbf24",border:"rgba(251,191,36,0.2)",icon:"🕐"},
-    approved:{label:"Approuvée",bg:"rgba(52,211,153,0.1)",color:"#34d399",border:"rgba(52,211,153,0.2)",icon:"✅"},
-    rejected:{label:"Refusée",bg:"rgba(248,113,113,0.1)",color:"#f87171",border:"rgba(248,113,113,0.2)",icon:"❌"}
-  }[req.status]||{label:req.status,bg:"rgba(255,255,255,0.05)",color:"#6b7280",border:"rgba(255,255,255,0.1)",icon:"•"};
+    pending:{label:"En attente",bg:"#fffbeb",color:"#d97706",border:"#fde68a",icon:"🕐"},
+    approved:{label:"Approuvée",bg:"#f0fdf4",color:"#16a34a",border:"#bbf7d0",icon:"✅"},
+    rejected:{label:"Refusée",bg:"#fef2f2",color:"#dc2626",border:"#fecaca",icon:"❌"}
+  }[req.status]||{label:req.status,bg:"#f8fafc",color:"#64748b",border:"#e2e8f0",icon:"•"};
 
   return(
-    <div className="card-hover" style={{background:"rgba(255,255,255,0.02)",borderRadius:14,border:"1px solid rgba(255,255,255,0.06)",padding:20,marginBottom:12}}>
+    <div className="card" style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",padding:20,marginBottom:12,boxShadow:"0 2px 10px rgba(0,0,0,0.05)"}}>
       <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-        <div style={{width:42,height:42,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},55%,30%),hsl(${agentHue(req.agentId)+40},65%,45%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700,boxShadow:`0 0 15px hsla(${agentHue(req.agentId)},60%,50%,0.25)`}}>{req.agentAvatar}</div>
-        <div style={{flex:1}}>
-          <div style={{fontWeight:700,fontSize:14,color:"#e2e8f0"}}>{req.agentName}</div>
-          <div style={{fontSize:12,color:"#374151"}}>{req.agentTeam}</div>
-        </div>
+        <div style={{width:42,height:42,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},55%,55%),hsl(${agentHue(req.agentId)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{req.agentAvatar}</div>
+        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14,color:"#1e293b"}}>{req.agentName}</div><div style={{fontSize:12,color:"#94a3b8"}}>{req.agentTeam}</div></div>
         <div style={{background:s.bg,color:s.color,padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:600,border:`1px solid ${s.border}`}}>{s.icon} {s.label}</div>
       </div>
       <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:req.reason?10:0}}>
-        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:8,padding:"8px 14px"}}>
-          <div style={{fontSize:10,color:"#374151",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Période</div>
-          <div style={{fontSize:13,fontWeight:600,color:"#d1d5db"}}>{req.start===req.end?formatDate(req.start):`${formatDate(req.start)} → ${formatDate(req.end)}`}</div>
+        <div style={{background:"#f8fafc",border:"1px solid #f1f5f9",borderRadius:8,padding:"8px 14px"}}>
+          <div style={{fontSize:10,color:"#94a3b8",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Période</div>
+          <div style={{fontSize:13,fontWeight:600,color:"#475569"}}>{req.start===req.end?formatDate(req.start):`${formatDate(req.start)} → ${formatDate(req.end)}`}</div>
         </div>
-        <div style={{background:`${req.leaveType?.color}15`,border:`1px solid ${req.leaveType?.color}30`,borderRadius:8,padding:"8px 14px"}}>
-          <div style={{fontSize:10,color:"#374151",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Type</div>
+        <div style={{background:hexToLight(req.leaveType?.color||"#6366f1"),border:`1px solid ${req.leaveType?.color||"#6366f1"}30`,borderRadius:8,padding:"8px 14px"}}>
+          <div style={{fontSize:10,color:"#94a3b8",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Type</div>
           <div style={{fontSize:13,fontWeight:600,color:req.leaveType?.color}}>{req.leaveType?.label}</div>
         </div>
       </div>
-      {req.reason&&<div style={{fontSize:12,color:"#4b5563",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.04)",padding:"8px 12px",borderRadius:8,marginBottom:10}}>💬 {req.reason}</div>}
-      {req.comment&&<div style={{fontSize:12,color:"#f87171",background:"rgba(248,113,113,0.06)",border:"1px solid rgba(248,113,113,0.15)",padding:"8px 12px",borderRadius:8,marginBottom:10}}>❌ {req.comment}</div>}
+      {req.reason&&<div style={{fontSize:12,color:"#64748b",background:"#f8fafc",border:"1px solid #f1f5f9",padding:"8px 12px",borderRadius:8,marginBottom:10}}>💬 {req.reason}</div>}
+      {req.comment&&<div style={{fontSize:12,color:"#dc2626",background:"#fef2f2",border:"1px solid #fecaca",padding:"8px 12px",borderRadius:8,marginBottom:10}}>❌ {req.comment}</div>}
       {isManager&&req.status==="pending"&&<div style={{display:"flex",gap:8,marginTop:14}}>
-        <button onClick={onApprove} className="btn-glow" style={{flex:1,padding:"9px 0",borderRadius:8,border:"none",background:"rgba(52,211,153,0.15)",color:"#34d399",cursor:"pointer",fontSize:13,fontWeight:600,border:"1px solid rgba(52,211,153,0.2)"}}>✅ Approuver</button>
-        <button onClick={onReject} style={{flex:1,padding:"9px 0",borderRadius:8,border:"1px solid rgba(248,113,113,0.2)",background:"rgba(248,113,113,0.1)",color:"#f87171",cursor:"pointer",fontSize:13,fontWeight:600}}>❌ Refuser</button>
+        <button onClick={onApprove} className="btn-primary" style={{flex:1,padding:"9px 0",borderRadius:8,border:"none",background:"linear-gradient(135deg,#10b981,#059669)",color:"#fff",cursor:"pointer",fontSize:13,fontWeight:600}}>✅ Approuver</button>
+        <button onClick={onReject} style={{flex:1,padding:"9px 0",borderRadius:8,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:13,fontWeight:600,transition:"all 0.2s"}}>❌ Refuser</button>
       </div>}
     </div>
   );
