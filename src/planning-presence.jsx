@@ -677,7 +677,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   const navItems = [
     { id: "planning", icon: "🗓", label: "Planning" },
-    { id: "validations", icon: "✅", label: "Validations", badge: isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending").length },
+    { id: "validations", icon: "✅", label: "Validations", badge: isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending" || r.status === "rejected").length },
     { id: "stats", icon: "📊", label: "Statistiques" },
     ...(isAdmin ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
   ];
