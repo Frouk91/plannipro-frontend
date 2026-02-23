@@ -4,6 +4,7 @@ const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const MONTHS_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 const COLORS = ["#6366f1", "#0ea5e9", "#f59e0b", "#10b981", "#8b5cf6", "#ef4444", "#ec4899", "#14b8a6", "#f97316", "#84cc16"];
+const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
 
 const DEMO_USERS = [
   { email: "redouane@entreprise.fr", password: "admin1234" },
@@ -20,8 +21,25 @@ function getDaysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
 function getFirstDayOfMonth(y, m) { let d = new Date(y, m, 1).getDay(); return d === 0 ? 6 : d - 1; }
 function dateKey(y, m, d) { return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`; }
 function isWeekend(y, m, d) { const w = new Date(y, m, d).getDay(); return w === 0 || w === 6; }
-function formatDate(s) { const [y, m, d] = s.split("-"); return `${d}/${m}/${y}`; }
+function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-"); return `${p[2]}/${p[1]}/${p[0]}`; }
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
+function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
+function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+
+function leaveFromBackend(l) {
+  return { id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
+}
+function requestFromBackend(l) {
+  return {
+    id: l.id, agentId: l.agent_id,
+    agentName: `${l.first_name || ""} ${l.last_name || ""}`.trim(),
+    agentAvatar: l.avatar_initials || getInitials(`${l.first_name || ""} ${l.last_name || ""}`),
+    agentTeam: l.team_name || "", leaveType: leaveFromBackend(l),
+    start: (l.start_date || "").split("T")[0], end: (l.end_date || "").split("T")[0],
+    reason: l.reason || "", status: l.status, createdAt: l.created_at
+  };
+}
 
 async function apiFetch(path, token, options = {}) {
   const res = await fetch(`${API}${path}`, {
@@ -43,12 +61,8 @@ function LoginPage({ onLogin }) {
     setLoading(true);
     try {
       const data = await apiFetch("/auth/login", null, { method: "POST", body: JSON.stringify({ email: email.trim().toLowerCase(), password }) });
-      if (data.accessToken) {
-        const agentData = data.agent;
-        // Correction temporaire du rôle admin
-        if (agentData.email === "redouane@entreprise.fr") agentData.role = "admin";
-        onLogin({ email: email.trim().toLowerCase(), token: data.accessToken, ...agentData });
-      } else { setError("Email ou mot de passe incorrect."); }
+      if (data.accessToken) { onLogin({ ...data.agent, token: data.accessToken }); }
+      else { setError("Email ou mot de passe incorrect."); }
     } catch { setError("Erreur de connexion au serveur."); }
     setLoading(false);
   }
@@ -98,15 +112,14 @@ function LoginPage({ onLogin }) {
   );
 }
 
-// ─── COMPOSANTS UTILITAIRES ───
-function Field({ label, value, onChange, placeholder, type = "text", style = {} }) {
+function Field({ label, value, onChange, placeholder, style = {} }) {
   return (<div style={style}>
     {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>{label}</label>}
-    <input type={type} value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+    <input value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
       style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, boxSizing: "border-box", outline: "none" }} />
   </div>);
 }
-function Modal({ title, children, onClose }) {
+function Modal({ title, children }) {
   return (<div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
     <div style={{ background: "#fff", borderRadius: 16, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
       <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700 }}>{title}</h2>
@@ -119,6 +132,34 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
     <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14 }}>Annuler</button>
     <button onClick={onConfirm} disabled={disabled} style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: confirmColor || "#4f46e5", color: "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, opacity: disabled ? 0.7 : 1 }}>{confirmLabel}</button>
   </div>);
+}
+
+// ─── MENU CONTEXTUEL ───
+function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
+  const isMultiDay = leave.leaveStart !== leave.leaveEnd;
+  return (
+    <div onClick={e => e.stopPropagation()}
+      style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", border: "1px solid #e5e7eb", zIndex: 99999, minWidth: 220, overflow: "hidden" }}>
+      <div style={{ padding: "10px 14px", borderBottom: "1px solid #f3f4f6", fontSize: 12, color: "#6b7280", fontWeight: 600, background: "#f9fafb" }}>
+        <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: leave.color, marginRight: 6 }}></span>
+        {leave.label} — {formatDate(leave.leaveStart)} {isMultiDay ? `→ ${formatDate(leave.leaveEnd)}` : ""}
+      </div>
+      <button onClick={e => { e.stopPropagation(); onDeleteDay(); }}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#f59e0b", fontWeight: 600 }}>
+        ✂️ Supprimer ce jour seulement
+      </button>
+      {isMultiDay && (
+        <button onClick={e => { e.stopPropagation(); onDeleteAll(); }}
+          style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 14px", border: "none", borderTop: "1px solid #f3f4f6", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 600 }}>
+          🗑 Supprimer toute la période
+        </button>
+      )}
+      <button onClick={e => { e.stopPropagation(); onClose(); }}
+        style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 14px", border: "none", borderTop: "1px solid #f3f4f6", background: "none", cursor: "pointer", fontSize: 13, color: "#6b7280" }}>
+        ✕ Annuler
+      </button>
+    </div>
+  );
 }
 
 // ─── ADMIN ───
@@ -144,7 +185,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         setAddModal(false); setNewAgent({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" });
         showNotif("Agent ajouté ✅");
       } else { showNotif(data.errors?.[0]?.msg || "Erreur", "error"); }
-    } catch { showNotif("Erreur de connexion", "error"); }
+    } catch { showNotif("Erreur", "error"); }
     setLoading(false);
   }
 
@@ -157,10 +198,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
 
   async function handleDeleteTeam(team) {
-    try {
-      await apiFetch(`/teams/${team.id}`, token, { method: "DELETE" });
-      onTeamDeleted(team.id); showNotif("Équipe supprimée", "error");
-    } catch { showNotif("Erreur", "error"); }
+    try { await apiFetch(`/teams/${team.id}`, token, { method: "DELETE" }); onTeamDeleted(team.id); showNotif("Équipe supprimée", "error"); }
+    catch { showNotif("Erreur", "error"); }
   }
 
   async function handleAddLT() {
@@ -172,17 +211,13 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
 
   async function handleUpdateLT(lt, newLabel) {
-    try {
-      await apiFetch(`/leave-types/${lt.id}`, token, { method: "PATCH", body: JSON.stringify({ label: newLabel }) });
-      onLeaveTypeUpdated(lt.id, { label: newLabel }); setEditLT(null); showNotif("Modifié ✅");
-    } catch { showNotif("Erreur", "error"); }
+    try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "PATCH", body: JSON.stringify({ label: newLabel }) }); onLeaveTypeUpdated(lt.id, { label: newLabel }); setEditLT(null); showNotif("Modifié ✅"); }
+    catch { showNotif("Erreur", "error"); }
   }
 
   async function handleDeleteLT(lt) {
-    try {
-      await apiFetch(`/leave-types/${lt.id}`, token, { method: "DELETE" });
-      onLeaveTypeDeleted(lt.id); showNotif("Type supprimé", "error");
-    } catch { showNotif("Erreur", "error"); }
+    try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "DELETE" }); onLeaveTypeDeleted(lt.id); showNotif("Type supprimé", "error"); }
+    catch { showNotif("Erreur", "error"); }
   }
 
   return (
@@ -211,7 +246,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <tr key={a.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
                     <td style={{ padding: "10px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: `hsl(${Math.abs(a.id.toString().charCodeAt(0) * 47) % 360},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700 }}>{a.avatar}</div>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: `hsl(${agentHue(a.id)},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700 }}>{a.avatar}</div>
                         <span style={{ fontWeight: 600, fontSize: 13 }}>{a.name}</span>
                       </div>
                     </td>
@@ -302,7 +337,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         </div>
       )}
 
-      {addModal && <Modal title="➕ Ajouter un agent" onClose={() => setAddModal(false)}>
+      {addModal && <Modal title="➕ Ajouter un agent">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <Field label="Prénom" value={newAgent.first_name} onChange={v => setNewAgent(p => ({ ...p, first_name: v }))} placeholder="Jean" />
           <Field label="Nom" value={newAgent.last_name} onChange={v => setNewAgent(p => ({ ...p, last_name: v }))} placeholder="Dupont" />
@@ -328,13 +363,16 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <ModalButtons onCancel={() => setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading ? "En cours..." : "Ajouter"} confirmColor="#4f46e5" disabled={loading} />
       </Modal>}
 
-      {editModal && <Modal title={`✏️ Modifier — ${editModal.name}`} onClose={() => setEditModal(null)}>
+      {editModal && <Modal title={`✏️ Modifier — ${editModal.name}`}>
         <Field label="Nom complet" value={editData.name} onChange={v => setEditData(p => ({ ...p, name: v }))} style={{ marginBottom: 12 }} />
         <Field label="Email" value={editData.email} onChange={v => setEditData(p => ({ ...p, email: v }))} style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Équipe</label>
-            <input value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, boxSizing: "border-box", outline: "none" }} />
+            <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, outline: "none" }}>
+              <option value="">-- Aucune équipe --</option>
+              {teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
+            </select>
           </div>
           <div>
             <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Rôle</label>
@@ -345,10 +383,20 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           </div>
         </div>
         <Field label="Nouveau mot de passe (laisser vide = inchangé)" value={editData.password} onChange={v => setEditData(p => ({ ...p, password: v }))} placeholder="••••••••" style={{ marginBottom: 20 }} />
-        <ModalButtons onCancel={() => setEditModal(null)} onConfirm={() => { onAgentUpdated(editModal.id, editData); setEditModal(null); showNotif("Agent modifié ✅"); }} confirmLabel="Enregistrer" confirmColor="#4f46e5" />
+        <ModalButtons onCancel={() => setEditModal(null)} onConfirm={async () => {
+          try {
+            await apiFetch(`/agents/${editModal.id}`, token, {
+              method: "PATCH", body: JSON.stringify({
+                team: editData.team, role: editData.role, email: editData.email,
+                ...(editData.password ? { password: editData.password } : {})
+              })
+            });
+          } catch (e) { console.error(e); }
+          onAgentUpdated(editModal.id, editData); setEditModal(null); showNotif("Agent modifié ✅");
+        }} confirmLabel="Enregistrer" confirmColor="#4f46e5" />
       </Modal>}
 
-      {deleteModal && <Modal title="🗑 Supprimer l'agent" onClose={() => setDeleteModal(null)}>
+      {deleteModal && <Modal title="🗑 Supprimer l'agent">
         <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 20px" }}>Supprimer <strong>{deleteModal.name}</strong> ? Cette action est irréversible.</p>
         <ModalButtons onCancel={() => setDeleteModal(null)} onConfirm={() => { onAgentDeleted(deleteModal.id); setDeleteModal(null); showNotif("Agent supprimé", "error"); }} confirmLabel="Supprimer" confirmColor="#ef4444" />
       </Modal>}
@@ -378,12 +426,15 @@ function PlanningApp({ currentUser, onLogout }) {
   const [rejectComment, setRejectComment] = useState("");
   const [notification, setNotification] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-
+  const [contextMenu, setContextMenu] = useState(null);
+  const [seenRejected, setSeenRejected] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`) || "[]"); }
+    catch { return []; }
+  });
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
   const isAdmin = currentUser.role === "admin";
 
-  // Charger toutes les données au démarrage
   useEffect(() => {
     async function loadAll() {
       try {
@@ -392,50 +443,62 @@ function PlanningApp({ currentUser, onLogout }) {
           apiFetch("/leave-types", token),
           apiFetch("/agents", token),
         ]);
-
         const teamsResult = Array.isArray(teamsData) ? teamsData : [];
-        const ltResult = Array.isArray(ltData) ? ltData : [];
-        const agentsResult = Array.isArray(agentsData) ? agentsData : (agentsData.agents || []);
-
         setTeams(teamsResult);
-
+        const ltResult = Array.isArray(ltData) ? ltData : [];
         const ltFormatted = ltResult.map(lt => ({ ...lt, bg: hexToLight(lt.color) }));
         setLeaveTypes(ltFormatted);
-        if (ltFormatted.length > 0) setSelectedLTId(ltFormatted[0].id);
-
-        const agentsFormatted = agentsResult.map(a => ({
-          id: a.id,
-          name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
-          email: a.email,
-          role: a.role || "agent",
-          team: a.team_name || a.team || "",
-          avatar: getInitials(`${a.first_name || ""} ${a.last_name || ""}`)
-        }));
-        setAgents(agentsFormatted);
-
-        // Charger les congés du mois
-        await loadLeaves(ltFormatted, token);
-      } catch (e) {
-        console.error("Erreur chargement:", e);
-      }
+        const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
+        if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
+        const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
+        setAgents(agentsRaw.map(a => ({
+          id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
+          email: a.email, role: a.role || "agent", team: a.team_name || a.team || "",
+          avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`)
+        })));
+        await loadLeaves(ltFormatted, token, now.getFullYear(), now.getMonth());
+        await loadRequests(token);
+      } catch (e) { console.error("Erreur chargement:", e); }
       setDataLoaded(true);
     }
     loadAll();
   }, [token]);
 
-  async function loadLeaves(ltList, tok) {
+  useEffect(() => {
+    if (dataLoaded && leaveTypes.length > 0) loadLeaves(leaveTypes, token, year, month);
+  }, [year, month]);
+
+  async function loadLeaves(ltList, tok, y, m) {
     try {
-      const leavesData = await apiFetch(`/leaves?year=${year}&month=${month + 1}`, tok || token);
-      if (!Array.isArray(leavesData)) return;
+      const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`;
+      const data = await apiFetch(`/leaves?month=${monthStr}`, tok);
+      const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled" && l.status !== "rejected");
       const leavesMap = {};
       leavesData.forEach(l => {
         if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
-        const lt = (ltList || leaveTypes).find(t => t.id === l.leave_type_id) || { label: "Congé", color: "#6366f1", bg: "#eef2ff" };
-        const dateStr = l.date || l.start_date;
-        if (dateStr) leavesMap[l.agent_id][dateStr] = { ...lt, bg: lt.bg || hexToLight(lt.color), status: l.status || "approved" };
+        const lt = leaveFromBackend(l);
+        const leaveStart = l.start_date.split("T")[0];
+        const leaveEnd = l.end_date.split("T")[0];
+        const start = new Date(l.start_date), end = new Date(l.end_date);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+          leavesMap[l.agent_id][k] = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
+        }
       });
       setLeaves(leavesMap);
     } catch (e) { console.error("Erreur congés:", e); }
+  }
+
+  async function loadRequests(tok) {
+    try {
+      const [pendingData, allData] = await Promise.all([
+        apiFetch("/leaves?status=pending", tok),
+        apiFetch("/leaves", tok),
+      ]);
+      const pending = (pendingData.leaves || []).map(requestFromBackend);
+      const others = (allData.leaves || []).filter(l => l.status !== "pending").map(requestFromBackend);
+      setRequests([...pending, ...others]);
+    } catch (e) { console.error("Erreur demandes:", e); }
   }
 
   function showNotif(msg, type = "success") { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); }
@@ -443,44 +506,88 @@ function PlanningApp({ currentUser, onLogout }) {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
   const allTeams = ["Tous", ...teams.filter(t => t.name !== "Admin").map(t => t.name)];
-  const filteredAgents = (filterTeam === "Tous" ? agents : agents.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
+  const filteredAgents = (filterTeam === "Tous" ? agents : agents.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin" || a.team);
   const pendingRequests = requests.filter(r => r.status === "pending");
   const myRequests = requests.filter(r => r.agentId === currentUser.id);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
   const currentLT = leaveTypes.find(t => t.id === selectedLTId) || leaveTypes[0];
 
+  // Badge : pour les agents, compte les demandes en attente + les refusées non encore vues
+  const validationBadge = isManager
+    ? pendingRequests.length
+    : myRequests.filter(r => r.status === "pending" || (r.status === "rejected" && !seenRejected.includes(r.id))).length;
+
   function getLeave(agentId, day) { return leaves[agentId]?.[dateKey(year, month, day)]; }
 
   async function handleCellClick(agentId, day) {
+    if (contextMenu) { setContextMenu(null); return; }
     if (isWeekend(year, month, day)) return;
     if (!isManager && currentUser.id !== agentId) return;
     if (!selectedAgent || selectedAgent !== agentId) { setSelectedAgent(agentId); setSelectionStart(day); }
     else {
       const start = Math.min(selectionStart, day), end = Math.max(selectionStart, day);
+      setSelectionStart(null); setSelectedAgent(null);
       if (isManager) {
-        // Appliquer localement
         applyLeaveLocal(agentId, start, end, currentLT, "approved");
-        // Sauvegarder en base
         try {
           await apiFetch("/leaves", token, {
             method: "POST", body: JSON.stringify({
-              agent_id: agentId,
-              leave_type_id: currentLT.id,
-              start_date: dateKey(year, month, start),
-              end_date: dateKey(year, month, end),
-              status: "approved"
+              leave_type_code: currentLT.code, start_date: dateKey(year, month, start), end_date: dateKey(year, month, end), agent_id: agentId
             })
           });
-          showNotif("Congé appliqué et sauvegardé ✅");
-        } catch (e) {
-          showNotif("Congé appliqué (erreur sauvegarde)", "error");
-        }
+          await loadLeaves(leaveTypes, token, year, month);
+          showNotif("Congé sauvegardé ✅");
+        } catch { showNotif("Congé appliqué (erreur sauvegarde)", "error"); }
       } else {
+        // Pour les agents, forcer un type autorisé
+        const allowedTypes = leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code));
+        if (!AGENT_ALLOWED_CODES.includes(currentLT?.code) && allowedTypes.length > 0) {
+          setSelectedLTId(allowedTypes[0].id);
+        }
         setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end) });
         setRequestReason("");
       }
-      setSelectionStart(null); setSelectedAgent(null);
     }
+  }
+
+  function handleCellRightClick(e, agentId, day) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (currentUser.id !== agentId && !isManager) return;
+    const leave = leaves[agentId]?.[dateKey(year, month, day)];
+    if (!leave || !leave.leaveId) return;
+    setContextMenu({ x: e.clientX, y: e.clientY, agentId, day, leave, leaveId: leave.leaveId, clickedDate: dateKey(year, month, day) });
+  }
+
+  async function handleDeleteAll() {
+    if (!contextMenu) return;
+    const { leaveId } = contextMenu;
+    setContextMenu(null);
+    try {
+      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+      await loadLeaves(leaveTypes, token, year, month);
+      showNotif("Congé supprimé ✅");
+    } catch { showNotif("Erreur lors de la suppression", "error"); }
+  }
+
+  async function handleDeleteDay() {
+    if (!contextMenu) return;
+    const { leaveId, clickedDate, leave, agentId } = contextMenu;
+    setContextMenu(null);
+    try {
+      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+      const start = leave.leaveStart, end = leave.leaveEnd, code = leave.leaveCode || leave.code;
+      if (compareDates(start, clickedDate) < 0) {
+        const newEnd = addDays(clickedDate, -1);
+        await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: start, end_date: newEnd, agent_id: agentId }) });
+      }
+      if (compareDates(clickedDate, end) < 0) {
+        const newStart = addDays(clickedDate, 1);
+        await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: newStart, end_date: end, agent_id: agentId }) });
+      }
+      await loadLeaves(leaveTypes, token, year, month);
+      showNotif("Jour supprimé ✅");
+    } catch (e) { console.error(e); showNotif("Erreur lors de la suppression", "error"); }
   }
 
   function applyLeaveLocal(agentId, startDay, endDay, type, status) {
@@ -495,35 +602,53 @@ function PlanningApp({ currentUser, onLogout }) {
     if (!requestModal || !currentLT) return;
     const { agentId, start, end } = requestModal;
     const agent = agents.find(a => a.id === agentId);
-    setRequests(prev => [...prev, { id: Date.now(), agentId, agentName: agent.name, agentAvatar: agent.avatar, agentTeam: agent.team, leaveType: currentLT, start, end, reason: requestReason, status: "pending", createdAt: new Date().toISOString() }]);
-    setRequestModal(null); showNotif("Demande envoyée au manager !");
+    try {
+      const data = await apiFetch("/leaves", token, {
+        method: "POST", body: JSON.stringify({
+          leave_type_code: currentLT.code, start_date: start, end_date: end, reason: requestReason, agent_id: agentId
+        })
+      });
+      if (data.leave) {
+        setRequests(prev => [...prev, {
+          id: data.leave.id, agentId, agentName: agent.name, agentAvatar: agent.avatar,
+          agentTeam: agent.team, leaveType: currentLT, start, end, reason: requestReason,
+          status: "pending", createdAt: new Date().toISOString()
+        }]);
+      }
+    } catch { }
+    setRequestModal(null);
+    showNotif("Demande envoyée au manager !");
   }
 
   async function approveRequest(reqId) {
-    const req = requests.find(r => r.id === reqId);
-    if (!req) return;
-    setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "approved" } : r));
-    const [sy, sm, sd] = req.start.split("-").map(Number), [ey, em, ed] = req.end.split("-").map(Number);
-    setLeaves(prev => {
-      const al = { ...(prev[req.agentId] || {}) };
-      for (let d = new Date(sy, sm - 1, sd); d <= new Date(ey, em - 1, ed); d.setDate(d.getDate() + 1)) {
-        if (d.getDay() !== 0 && d.getDay() !== 6) {
-          const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-          al[k] = { ...req.leaveType, status: "approved" };
-        }
-      }
-      return { ...prev, [req.agentId]: al };
-    });
-    // Sauvegarder en base
     try {
-      await apiFetch("/leaves", token, {
-        method: "POST", body: JSON.stringify({
-          agent_id: req.agentId, leave_type_id: req.leaveType.id,
-          start_date: req.start, end_date: req.end, status: "approved"
-        })
-      });
-    } catch (e) { }
-    showNotif("Demande approuvée ✅");
+      await apiFetch(`/leaves/${reqId}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
+      setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "approved" } : r));
+      const req = requests.find(r => r.id === reqId);
+      if (req) {
+        const [sy, sm, sd] = req.start.split("-").map(Number), [ey, em, ed] = req.end.split("-").map(Number);
+        setLeaves(prev => {
+          const al = { ...(prev[req.agentId] || {}) };
+          for (let d = new Date(sy, sm - 1, sd); d <= new Date(ey, em - 1, ed); d.setDate(d.getDate() + 1)) {
+            if (d.getDay() !== 0 && d.getDay() !== 6) {
+              const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+              al[k] = { ...req.leaveType, status: "approved" };
+            }
+          }
+          return { ...prev, [req.agentId]: al };
+        });
+      }
+      showNotif("Demande approuvée ✅");
+    } catch { showNotif("Erreur", "error"); }
+  }
+
+  async function rejectRequest(reqId) {
+    try {
+      await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment }) });
+      setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "rejected", comment: rejectComment } : r));
+      await loadLeaves(leaveTypes, token, year, month);
+      setRejectModal(null); showNotif("Demande refusée", "error");
+    } catch { showNotif("Erreur", "error"); }
   }
 
   function isInSelection(agentId, day) {
@@ -533,25 +658,28 @@ function PlanningApp({ currentUser, onLogout }) {
 
   const navItems = [
     { id: "planning", icon: "🗓", label: "Planning" },
-    { id: "validations", icon: "✅", label: "Validations", badge: isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending").length },
+    { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
     { id: "stats", icon: "📊", label: "Statistiques" },
     ...(isAdmin ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
   ];
 
   if (!dataLoaded) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f0f2f7", fontFamily: "'DM Sans',sans-serif" }}>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📅</div>
-        <div style={{ fontSize: 16, color: "#6b7280", fontWeight: 500 }}>Chargement en cours...</div>
-      </div>
+      <div style={{ textAlign: "center" }}><div style={{ fontSize: 48, marginBottom: 16 }}>📅</div><div style={{ fontSize: 16, color: "#6b7280", fontWeight: 500 }}>Chargement en cours...</div></div>
     </div>
   );
 
   return (
-    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }}>
+    <div style={{ fontFamily: "'DM Sans','Segoe UI',sans-serif", minHeight: "100vh", background: "#f0f2f7", display: "flex" }}
+      onClick={() => { if (contextMenu) setContextMenu(null); }}>
+
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "#ef4444" : "#10b981", color: "white", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>{notification.msg}</div>}
 
-      {/* SIDEBAR */}
+      {contextMenu && (
+        <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave}
+          onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />
+      )}
+
       <aside style={{ width: 220, background: "#1a1d27", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0 }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "1px solid #2d3148" }}>
           <div style={{ fontSize: 20, fontWeight: 700 }}>📅 PlanniPro</div>
@@ -560,12 +688,10 @@ function PlanningApp({ currentUser, onLogout }) {
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #2d3148" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
-              {getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || currentUser.email || ""}`)}
+              {currentUser.avatar_initials || getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`)}
             </div>
             <div style={{ flex: 1, overflow: "hidden" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {currentUser.first_name ? `${currentUser.first_name} ${currentUser.last_name || ""}` : currentUser.email}
-              </div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.first_name} {currentUser.last_name}</div>
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#f59e0b" : currentUser.role === "manager" ? "#818cf8" : "#9ca3af" }}>
                 {currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : "👤 Agent"}
               </div>
@@ -575,7 +701,15 @@ function PlanningApp({ currentUser, onLogout }) {
         </div>
         <nav style={{ padding: "16px 0", flex: 1 }}>
           {navItems.map(item => (
-            <button key={item.id} onClick={() => setView(item.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 20px", border: "none", background: view === item.id ? "#2d3148" : "transparent", color: view === item.id ? "#818cf8" : "#9ca3af", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, borderLeft: view === item.id ? "3px solid #818cf8" : "3px solid transparent" }}>
+            <button key={item.id} onClick={() => {
+              setView(item.id);
+              // Marquer les demandes refusées comme vues quand l'agent consulte l'onglet
+              if (item.id === "validations" && !isManager) {
+                const newSeen = myRequests.filter(r => r.status === "rejected").map(r => r.id);
+                setSeenRejected(newSeen);
+                localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
+              }
+            }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 20px", border: "none", background: view === item.id ? "#2d3148" : "transparent", color: view === item.id ? "#818cf8" : "#9ca3af", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, borderLeft: view === item.id ? "3px solid #818cf8" : "3px solid transparent" }}>
               <span>{item.icon}</span><span style={{ flex: 1 }}>{item.label}</span>
               {item.badge > 0 && <span style={{ background: "#e94560", color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>{item.badge}</span>}
             </button>
@@ -591,17 +725,15 @@ function PlanningApp({ currentUser, onLogout }) {
         </div>
       </aside>
 
-      {/* MAIN */}
       <main style={{ flex: 1, overflow: "auto" }}>
         <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "16px 28px" }}>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#111827" }}>{view === "planning" ? "Planning mensuel" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Statistiques" : "Administration"}</h1>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "#6b7280" }}>{view === "planning" ? `${MONTHS_FR[month]} ${year}` : view === "validations" ? (isManager ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`) : ""}</p>
         </div>
 
-        {/* ADMIN */}
         {view === "admin" && isAdmin && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
-          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team || a.team, role: data.role || a.role } : a))}
+          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
@@ -610,7 +742,6 @@ function PlanningApp({ currentUser, onLogout }) {
           onLeaveTypeDeleted={id => setLeaveTypes(prev => prev.filter(lt => lt.id !== id))}
         />}
 
-        {/* PLANNING */}
         {view === "planning" && (
           <div style={{ padding: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
@@ -623,10 +754,12 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
             </div>
             {leaveTypes.length > 0 && <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              {leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
+              {leaveTypes
+                .filter(t => isManager || AGENT_ALLOWED_CODES.includes(t.code))
+                .map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "5px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
             </div>}
             <div style={{ fontSize: 12, color: "#92400e", marginBottom: 12, background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "8px 14px" }}>
-              {isManager ? "👑 1er clic = début, 2ème clic = fin. Les congés sont sauvegardés automatiquement." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
+              {isManager ? "👑 Clic gauche : ajouter. Clic droit sur un congé : supprimer un jour ou toute la période." : "👤 Sélectionnez des dates pour envoyer une demande au manager."}
             </div>
             <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", overflow: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
@@ -642,43 +775,52 @@ function PlanningApp({ currentUser, onLogout }) {
                   })}
                 </tr></thead>
                 <tbody>
-                  {filteredAgents.map(agent => {
-                    const hue = Math.abs(agent.id.toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360;
-                    return (
-                      <tr key={agent.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                        <td style={{ padding: "6px 12px", display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 30, height: 30, borderRadius: "50%", background: `hsl(${hue},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: agent.id === currentUser.id ? "#4f46e5" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
-                            <div style={{ fontSize: 10, color: "#9ca3af" }}>{agent.team}</div>
-                          </div>
-                        </td>
-                        {Array.from({ length: daysInMonth }, (_, i) => {
-                          const day = i + 1, wk = isWeekend(year, month, day), leave = getLeave(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day, canInteract = isManager || currentUser.id === agent.id;
-                          return <td key={i} onClick={() => canInteract && handleCellClick(agent.id, day)} onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }} onMouseLeave={() => setHoveredDay(null)}
-                            style={{ padding: "3px 2px", textAlign: "center", cursor: wk || !canInteract ? "default" : "pointer", background: wk ? "#f9fafb" : inSel ? "#c7d2fe" : leave ? leave.bg : isToday ? "#fafafa" : "#fff", borderLeft: "1px solid #f3f4f6" }}>
-                            {leave && !wk && <div style={{ width: "100%", height: 22, background: leave.color, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: leave.status === "pending" ? 0.4 : 1 }}>
-                              <span style={{ fontSize: 9, color: "#fff", fontWeight: 700 }}>{leave.status === "pending" ? "?" : leave.label.slice(0, 3).toUpperCase()}</span>
-                            </div>}
-                          </td>;
-                        })}
-                      </tr>
-                    );
-                  })}
+                  {filteredAgents.map(agent => (
+                    <tr key={agent.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "6px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 30, height: 30, borderRadius: "50%", background: `hsl(${agentHue(agent.id)},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: agent.id === currentUser.id ? "#4f46e5" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
+                          <div style={{ fontSize: 10, color: "#9ca3af" }}>{agent.team}</div>
+                        </div>
+                      </td>
+                      {Array.from({ length: daysInMonth }, (_, i) => {
+                        const day = i + 1, wk = isWeekend(year, month, day), leave = getLeave(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day, canInteract = isManager || currentUser.id === agent.id;
+                        return <td key={i}
+                          onClick={() => canInteract && !wk && handleCellClick(agent.id, day)}
+                          onContextMenu={(e) => !wk && handleCellRightClick(e, agent.id, day)}
+                          onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
+                          onMouseLeave={() => setHoveredDay(null)}
+                          style={{ padding: "3px 2px", textAlign: "center", cursor: wk || !canInteract ? "default" : "pointer", background: wk ? "#f9fafb" : inSel ? "#c7d2fe" : leave ? leave.bg : isToday ? "#fafafa" : "#fff", borderLeft: "1px solid #f3f4f6" }}>
+                          {leave && !wk && <div style={{ width: "100%", height: 22, background: leave.color, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", opacity: (leave.status === "pending" && leave.agentId !== currentUser.id) ? 0.4 : 1 }}>
+                            <span style={{ fontSize: 9, color: "#fff", fontWeight: 700 }}>{(leave.status === "pending" && leave.agentId !== currentUser.id) ? "?" : leave.label.slice(0, 3).toUpperCase()}</span>
+                          </div>}
+                        </td>;
+                      })}
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         )}
 
-        {/* VALIDATIONS */}
         {view === "validations" && (
           <div style={{ padding: 24 }}>
             {isManager ? (
               <>
-                {pendingRequests.length === 0 && requests.length === 0 && <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 40, textAlign: "center", color: "#9ca3af" }}><div style={{ fontSize: "3rem" }}>🎉</div><div style={{ fontSize: 16, fontWeight: 600, marginTop: 12 }}>Aucune demande en attente</div></div>}
-                {pendingRequests.length > 0 && <><h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>🕐 En attente ({pendingRequests.length})</h3>{pendingRequests.map(req => <RequestCard key={req.id} req={req} isManager onApprove={() => approveRequest(req.id)} onReject={() => { setRejectModal(req.id); setRejectComment(""); }} />)}</>}
-                {requests.filter(r => r.status !== "pending").length > 0 && <><h3 style={{ fontSize: 15, fontWeight: 700, margin: "24px 0 16px" }}>📋 Historique</h3>{requests.filter(r => r.status !== "pending").map(req => <RequestCard key={req.id} req={req} isManager />)}</>}
+                {pendingRequests.length === 0 && requests.filter(r => r.status !== "pending").length === 0 &&
+                  <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 40, textAlign: "center", color: "#9ca3af" }}>
+                    <div style={{ fontSize: "3rem" }}>🎉</div><div style={{ fontSize: 16, fontWeight: 600, marginTop: 12 }}>Aucune demande</div>
+                  </div>}
+                {pendingRequests.length > 0 && <>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>🕐 En attente ({pendingRequests.length})</h3>
+                  {pendingRequests.map(req => <RequestCard key={req.id} req={req} isManager onApprove={() => approveRequest(req.id)} onReject={() => { setRejectModal(req.id); setRejectComment(""); }} />)}
+                </>}
+                {requests.filter(r => r.status !== "pending").length > 0 && <>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, margin: "24px 0 16px" }}>📋 Historique</h3>
+                  {requests.filter(r => r.status !== "pending").map(req => <RequestCard key={req.id} req={req} isManager />)}
+                </>}
               </>
             ) : (
               <>
@@ -690,12 +832,11 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
         )}
 
-        {/* STATS */}
         {view === "stats" && (
           <div style={{ padding: 24 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 16 }}>
               {leaveTypes.map(t => {
-                let count = 0; agents.forEach(a => { Object.values(leaves[a.id] || {}).forEach(l => { if (l.id === t.id) count++; }); });
+                let count = 0; agents.forEach(a => { Object.values(leaves[a.id] || {}).forEach(l => { if (l.code === t.code || l.id === t.id) count++; }); });
                 return <div key={t.id} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 20 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}><div style={{ width: 12, height: 12, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 13, color: "#6b7280" }}>{t.label}</span></div>
                   <div style={{ fontSize: 36, fontWeight: 800, color: t.color }}>{count}</div>
@@ -707,12 +848,13 @@ function PlanningApp({ currentUser, onLogout }) {
         )}
       </main>
 
-      {/* MODAL DEMANDE */}
-      {requestModal && currentLT && <Modal title="📝 Demande de congé" onClose={() => setRequestModal(null)}>
+      {requestModal && currentLT && <Modal title="📝 Demande de congé">
         <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 16px" }}>Du <strong>{formatDate(requestModal.start)}</strong> au <strong>{formatDate(requestModal.end)}</strong></p>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Type de congé</label>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{leaveTypes.map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {leaveTypes.filter(t => isManager || AGENT_ALLOWED_CODES.includes(t.code)).map(t => <button key={t.id} onClick={() => setSelectedLTId(t.id)} style={{ padding: "6px 12px", borderRadius: 20, border: "2px solid", fontSize: 12, cursor: "pointer", fontWeight: 600, background: selectedLTId === t.id ? t.color : t.bg, color: selectedLTId === t.id ? "#fff" : t.color, borderColor: t.color }}>{t.label}</button>)}
+          </div>
         </div>
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Motif (optionnel)</label>
@@ -721,22 +863,21 @@ function PlanningApp({ currentUser, onLogout }) {
         <ModalButtons onCancel={() => setRequestModal(null)} onConfirm={submitRequest} confirmLabel="Envoyer" confirmColor="#4f46e5" />
       </Modal>}
 
-      {/* MODAL REFUS */}
-      {rejectModal && <Modal title="❌ Refuser la demande" onClose={() => setRejectModal(null)}>
+      {rejectModal && <Modal title="❌ Refuser la demande">
         <textarea value={rejectComment} onChange={e => setRejectComment(e.target.value)} placeholder="Motif du refus obligatoire..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid #d1d5db", fontSize: 14, boxSizing: "border-box", resize: "none", outline: "none", marginBottom: 20 }} />
-        <ModalButtons onCancel={() => setRejectModal(null)} onConfirm={() => { setRequests(prev => prev.map(r => r.id === rejectModal ? { ...r, status: "rejected", comment: rejectComment } : r)); setRejectModal(null); showNotif("Demande refusée", "error"); }} confirmLabel="Confirmer" confirmColor={rejectComment.trim() ? "#ef4444" : "#fca5a5"} disabled={!rejectComment.trim()} />
+        <ModalButtons onCancel={() => setRejectModal(null)} onConfirm={() => rejectRequest(rejectModal)} confirmLabel="Confirmer" confirmColor={rejectComment.trim() ? "#ef4444" : "#fca5a5"} disabled={!rejectComment.trim()} />
       </Modal>}
     </div>
   );
 }
 
 function RequestCard({ req, isManager, onApprove, onReject }) {
-  const s = { pending: { label: "En attente", bg: "#fef3c7", color: "#92400e", icon: "🕐" }, approved: { label: "Approuvée", bg: "#d1fae5", color: "#065f46", icon: "✅" }, rejected: { label: "Refusée", bg: "#fee2e2", color: "#991b1b", icon: "❌" } }[req.status];
+  const s = { pending: { label: "En attente", bg: "#fef3c7", color: "#92400e", icon: "🕐" }, approved: { label: "Approuvée", bg: "#d1fae5", color: "#065f46", icon: "✅" }, rejected: { label: "Refusée", bg: "#fee2e2", color: "#991b1b", icon: "❌" } }[req.status] || { label: req.status, bg: "#f3f4f6", color: "#374151", icon: "•" };
   const ltBg = req.leaveType?.bg || hexToLight(req.leaveType?.color || "#6366f1");
   return (
     <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 20, marginBottom: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `hsl(${Math.abs((req.agentId || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700 }}>{req.agentAvatar}</div>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", background: `hsl(${agentHue(req.agentId)},60%,55%)`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700 }}>{req.agentAvatar}</div>
         <div style={{ flex: 1 }}><div style={{ fontWeight: 700, fontSize: 14 }}>{req.agentName}</div><div style={{ fontSize: 12, color: "#6b7280" }}>{req.agentTeam}</div></div>
         <div style={{ background: s.bg, color: s.color, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600 }}>{s.icon} {s.label}</div>
       </div>
