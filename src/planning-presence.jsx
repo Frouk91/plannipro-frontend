@@ -665,6 +665,7 @@ function PlanningApp({ currentUser, onLogout }) {
     try {
       await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment }) });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "rejected", comment: rejectComment } : r));
+      await loadLeaves(leaveTypes, token, year, month);
       setRejectModal(null); showNotif("Demande refusée", "error");
     } catch { showNotif("Erreur", "error"); }
   }
