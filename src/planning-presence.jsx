@@ -241,7 +241,11 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                   <td style={{padding:"12px 16px",fontSize:12,color:"#64748b"}}>{a.team||"—"}</td>
                   <td style={{padding:"12px 16px"}}><span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#dcfce7",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#166534",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}}>{a.role==="admin"?"👑 Admin":a.role==="manager"?"👑 Manager":"Agent"}</span></td>
                   <td style={{padding:"12px 16px"}}><div style={{display:"flex",gap:6}}>
-                    <button onClick={()=>{setEditModal(a);setEditData({name:a.name,email:a.email,team:a.team,role:a.role,password:""}); }} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#64748b"}}>✏️ Modifier</button>
+                    <button onClick={()=>{
+                      const parts=a.name.split(" ");
+                      setEditModal(a);
+                      setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:""});
+                    }} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#64748b"}}>✏️ Modifier</button>
                     {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#ef4444"}}>🗑</button>}
                   </div></td>
                 </tr>
@@ -320,7 +324,10 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <ModalButtons onCancel={()=>setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading?"En cours...":"Ajouter"} disabled={loading}/>
       </Modal>}
       {editModal&&<Modal title={`✏️ Modifier — ${editModal.name}`}>
-        <Field label="Nom complet" value={editData.name} onChange={v=>setEditData(p=>({...p,name:v}))} style={{marginBottom:12}}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+          <Field label="Prénom" value={editData.first_name} onChange={v=>setEditData(p=>({...p,first_name:v}))} placeholder="Jean"/>
+          <Field label="Nom" value={editData.last_name} onChange={v=>setEditData(p=>({...p,last_name:v}))} placeholder="Dupont"/>
+        </div>
         <Field label="Email" value={editData.email} onChange={v=>setEditData(p=>({...p,email:v}))} style={{marginBottom:12}}/>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
           <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Équipe</label>
@@ -335,12 +342,11 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
         <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:20}}/>
         <ModalButtons onCancel={()=>setEditModal(null)} onConfirm={async()=>{
           try{
-            const nameParts=(editData.name||"").trim().split(" ");
-            const first_name=nameParts[0]||"";
-            const last_name=nameParts.slice(1).join(" ")||"";
-            await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({first_name,last_name,team:editData.team,role:editData.role,email:editData.email,...(editData.password?{password:editData.password}:{})})});
+            await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({first_name:editData.first_name,last_name:editData.last_name,team:editData.team,role:editData.role,email:editData.email,...(editData.password?{password:editData.password}:{})})});
           }catch(e){console.error(e);}
-          onAgentUpdated(editModal.id,editData);setEditModal(null);showNotif("Agent modifié ✅");
+          const newName=`${editData.first_name} ${editData.last_name}`.trim();
+          onAgentUpdated(editModal.id,{...editData,name:newName,avatar:getInitials(newName)});
+          setEditModal(null);showNotif("Agent modifié ✅");
         }} confirmLabel="Enregistrer"/>
       </Modal>}
       {deleteModal&&<Modal title="🗑 Supprimer l'agent">
