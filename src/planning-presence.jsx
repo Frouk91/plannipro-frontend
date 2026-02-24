@@ -795,12 +795,39 @@ function PlanningApp({currentUser,onLogout}){
             {/* Types congés + filtre statut */}
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
               {filterMode==="presence"?(
-                // En mode présence: afficher uniquement Rueil et Paris
-                leaveTypes.filter(t=>PRESENCE_CODES.includes(t.code)).map(t=>(
-                  <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"5px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:700,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 4px 12px ${t.color}50`:"none",display:"flex",alignItems:"center",gap:5}}>
-                    🏢 {t.label}
-                  </button>
-                ))
+                // En mode présence: gros boutons Rueil / Paris, réservés manager/admin
+                <>
+                  {isManager?(
+                    leaveTypes.filter(t=>PRESENCE_CODES.includes(t.code)).map(t=>{
+                      const isSelected=selectedLTId===t.id;
+                      const isRueil=t.code==="rueil";
+                      return(
+                        <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{
+                          padding:"9px 22px",borderRadius:12,border:`2.5px solid ${t.color}`,
+                          fontSize:14,cursor:"pointer",fontWeight:700,
+                          background:isSelected?t.color:hexToLight(t.color),
+                          color:isSelected?"#fff":t.color,
+                          transition:"all 0.2s",
+                          boxShadow:isSelected?`0 6px 18px ${t.color}60`:"none",
+                          display:"flex",alignItems:"center",gap:8,
+                          transform:isSelected?"translateY(-1px)":"none"
+                        }}>
+                          <span style={{fontSize:18}}>{isRueil?"🏙":"🗼"}</span>
+                          <div style={{textAlign:"left"}}>
+                            <div style={{fontSize:14,fontWeight:800}}>{t.label}</div>
+                            <div style={{fontSize:10,opacity:0.8,fontWeight:400}}>{isRueil?"La Défense / Rueil":"Paris Centre"}</div>
+                          </div>
+                          {isSelected&&<span style={{fontSize:12,marginLeft:4}}>✓</span>}
+                        </button>
+                      );
+                    })
+                  ):(
+                    // Agents : message bloqué
+                    <div style={{display:"flex",alignItems:"center",gap:8,background:"#fef9ec",border:"1.5px solid #fde68a",borderRadius:10,padding:"8px 16px",fontSize:12,color:"#92400e"}}>
+                      🔒 La saisie des présences sur site est réservée aux managers et administrateurs.
+                    </div>
+                  )}
+                </>
               ):(
                 leaveTypes.filter(t=>isManager||AGENT_ALLOWED_CODES.includes(t.code)).map(t=>(
                   <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"5px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 4px 12px ${t.color}50`:"none"}}>{t.label}</button>
@@ -815,7 +842,7 @@ function PlanningApp({currentUser,onLogout}){
 
             {/* Hint */}
             <div style={{fontSize:12,color:filterMode==="presence"?"#065f46":"#78350f",marginBottom:12,background:filterMode==="presence"?"#d1fae5":"#fffbeb",border:`1px solid ${filterMode==="presence"?"#6ee7b7":"#fde68a"}`,borderRadius:8,padding:"8px 14px"}}>
-              {filterMode==="presence"?"🏢 Mode présences site — cliquez pour marquer Rueil ou Paris — limite de 2 jours/semaine par agent":isManager?"👑 Clic gauche : ajouter — Clic droit : supprimer — 🗓 Jours fériés modifiables par manager":"👤 Sélectionnez des dates pour demander un congé — 🗓 Jours fériés bloqués"}
+              {filterMode==="presence"?(isManager?"🏢 Sélectionnez Rueil ou Paris puis cliquez sur les jours — limite 2 jours/semaine par agent":"🔒 Consultation uniquement — la saisie des présences est réservée aux managers"):isManager?"👑 Clic gauche : ajouter — Clic droit : supprimer — 🗓 Jours fériés modifiables par manager":"👤 Sélectionnez des dates pour demander un congé — 🗓 Jours fériés bloqués"}
             </div>
 
             {/* ─── VUE MOIS ─── */}
@@ -858,7 +885,7 @@ function PlanningApp({currentUser,onLogout}){
                         {Array.from({length:daysInMonth},(_,i)=>{
                           const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
                           const leave=getLeaveForDay(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day;
-                          const canInteract=(isManager||currentUser.id===agent.id)&&!wk&&(!isFer||isManager);
+                          const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                           return<td key={i}
                             onClick={()=>canInteract&&handleCellClick(agent.id,day)}
                             onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
@@ -935,7 +962,7 @@ function PlanningApp({currentUser,onLogout}){
                           const leave=getLeaveForKey(agent.id,k);
                           const inSel=isWeekInSel(agent.id,k);
                           const isToday=k===dKey(now);
-                          const canInteract=(isManager||currentUser.id===agent.id)&&!wk&&(!isFer||isManager);
+                          const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                           return<td key={i}
                             onClick={()=>canInteract&&handleWeekCellClick(agent.id,d)}
                             onContextMenu={e=>!wk&&handleWeekCellRightClick(e,agent.id,d)}
