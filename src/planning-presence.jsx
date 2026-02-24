@@ -914,8 +914,12 @@ function PlanningApp({currentUser,onLogout}){
                                   background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
                                   borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",
                                   border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
-                                  opacity:filterMode==="presence"?0.75:1}}>
-                                  <span style={{fontSize:8,color:leave.color,fontWeight:600,letterSpacing:"0.3px"}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                  opacity:filterMode==="presence"?0.75:1,
+                                  boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 2px 6px ${leave.color}50`:"none"}}>
+                                  <span style={{fontSize:8,fontWeight:700,letterSpacing:"0.3px",
+                                    color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
+                                    {leave.status==="pending"?"?":leaveAbbr(leave.label)}
+                                  </span>
                                 </div>
                               )
                             )}
@@ -1002,8 +1006,12 @@ function PlanningApp({currentUser,onLogout}){
                                   background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
                                   borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
                                   border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
-                                  opacity:filterMode==="presence"?0.75:1}}>
-                                  <span style={{fontSize:10,color:leave.color,fontWeight:600}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                  opacity:filterMode==="presence"?0.75:1,
+                                  boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 2px 8px ${leave.color}50`:"none"}}>
+                                  <span style={{fontSize:10,fontWeight:700,
+                                    color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
+                                    {leave.status==="pending"?"?":leaveAbbr(leave.label)}
+                                  </span>
                                 </div>
                               )
                             )}
