@@ -470,7 +470,7 @@ function PlanningApp({currentUser,onLogout}){
     const k=dateKey(year,month,day);
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label))return null;
+    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
     return leave;
@@ -479,7 +479,7 @@ function PlanningApp({currentUser,onLogout}){
   function getLeaveForKey(agentId,k){
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label))return null;
+    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
     return leave;
@@ -899,13 +899,17 @@ function PlanningApp({currentUser,onLogout}){
                                   {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.15)"}}/>}
                                   <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
                                     <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.5px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
-                                      {leave.status==="pending"?"…":leave.label}
+                                      {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
                                     </span>
                                   </div>
                                 </div>
                               ):(
-                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"}}>
-                                  <span style={{fontSize:8,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700,letterSpacing:"0.3px"}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",
+                                  background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
+                                  borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",
+                                  border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
+                                  opacity:filterMode==="presence"?0.75:1}}>
+                                  <span style={{fontSize:8,color:leave.color,fontWeight:600,letterSpacing:"0.3px"}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
                                 </div>
                               )
                             )}
@@ -983,13 +987,17 @@ function PlanningApp({currentUser,onLogout}){
                                   {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.12)"}}/>}
                                   <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
                                     <span style={{fontSize:11,fontWeight:800,letterSpacing:"0.3px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
-                                      {leave.status==="pending"?"…":leave.label}
+                                      {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
                                     </span>
                                   </div>
                                 </div>
                               ):(
-                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"}}>
-                                  <span style={{fontSize:10,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",
+                                  background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
+                                  borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
+                                  border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
+                                  opacity:filterMode==="presence"?0.75:1}}>
+                                  <span style={{fontSize:10,color:leave.color,fontWeight:600}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
                                 </div>
                               )
                             )}
