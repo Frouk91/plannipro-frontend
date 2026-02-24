@@ -6,6 +6,8 @@ const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","A
 const COLORS = ["#6366f1","#0ea5e9","#f59e0b","#10b981","#8b5cf6","#ef4444","#ec4899","#14b8a6","#f97316","#84cc16"];
 const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail","rueil","paris"];
 const PRESENCE_CODES = ["rueil","paris"];
+function isPresenceType(t){ return PRESENCE_CODES.includes((t.code||"").toLowerCase()) || ["rueil","paris"].includes((t.label||"").toLowerCase()); }
+function isPresenceCode(code,label){ return PRESENCE_CODES.includes((code||"").toLowerCase()) || ["rueil","paris"].includes((label||"").toLowerCase()); }
 const PRESENCE_COLORS = { rueil: "#0d9488", paris: "#7c3aed" };
 const PRESENCE_MAX_PER_WEEK = 2;
 const DEMO_USERS = [
@@ -468,7 +470,7 @@ function PlanningApp({currentUser,onLogout}){
     const k=dateKey(year,month,day);
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    if(filterMode==="presence"&&!PRESENCE_CODES.includes(leave.code))return null;
+    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label))return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
     return leave;
@@ -477,7 +479,7 @@ function PlanningApp({currentUser,onLogout}){
   function getLeaveForKey(agentId,k){
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    if(filterMode==="presence"&&!PRESENCE_CODES.includes(leave.code))return null;
+    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label))return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
     return leave;
@@ -489,7 +491,7 @@ function PlanningApp({currentUser,onLogout}){
     days.forEach(d=>{
       const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
       const l=leaves[agentId]?.[k];
-      if(l&&PRESENCE_CODES.includes(l.code)&&(l.status==="approved"||l.status==="pending"))count++;
+      if(l&&isPresenceCode(l.code,l.label)&&(l.status==="approved"||l.status==="pending"))count++;
     });
     return count;
   }
@@ -693,15 +695,15 @@ function PlanningApp({currentUser,onLogout}){
         </nav>
         <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
           <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:10,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Légende</div>
-          {leaveTypes.filter(t=>!PRESENCE_CODES.includes(t.code)).map(t=>(
+          {leaveTypes.filter(t=>!isPresenceType(t)).map(t=>(
             <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
               <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
             </div>
           ))}
-          {leaveTypes.filter(t=>PRESENCE_CODES.includes(t.code)).length>0&&(
+          {leaveTypes.filter(t=>isPresenceType(t)).length>0&&(
             <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🏢 Présences site</div>
-              {leaveTypes.filter(t=>PRESENCE_CODES.includes(t.code)).map(t=>(
+              {leaveTypes.filter(t=>isPresenceType(t)).map(t=>(
                 <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                   <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
                 </div>
@@ -764,7 +766,7 @@ function PlanningApp({currentUser,onLogout}){
                 const newMode=filterMode==="presence"?"all":"presence";
                 setFilterMode(newMode);
                 if(newMode==="presence"){
-                  const pt=leaveTypes.find(t=>PRESENCE_CODES.includes(t.code));
+                  const pt=leaveTypes.find(t=>isPresenceType(t));
                   if(pt)setSelectedLTId(pt.id);
                 }
               }} style={{padding:"7px 16px",borderRadius:10,border:`2px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"linear-gradient(135deg,#0d9488,#7c3aed)":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:6,transition:"all 0.2s",boxShadow:filterMode==="presence"?"0 4px 14px rgba(13,148,136,0.3)":"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -798,7 +800,7 @@ function PlanningApp({currentUser,onLogout}){
                 // En mode présence: gros boutons Rueil / Paris, réservés manager/admin
                 <>
                   {isManager?(
-                    leaveTypes.filter(t=>PRESENCE_CODES.includes(t.code)).map(t=>{
+                    leaveTypes.filter(t=>isPresenceType(t)).map(t=>{
                       const isSelected=selectedLTId===t.id;
                       const isRueil=t.code==="rueil";
                       return(
@@ -896,7 +898,7 @@ function PlanningApp({currentUser,onLogout}){
                             style={{padding:"3px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc"}}>
                             {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                             {leave&&!wk&&!isFer&&(
-                              filterMode==="presence"&&PRESENCE_CODES.includes(leave.code)?(
+                              filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
                                 <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none",gap:2}}>
                                   <span style={{fontSize:9}}>🏢</span>
                                   <span style={{fontSize:8,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
@@ -973,7 +975,7 @@ function PlanningApp({currentUser,onLogout}){
                             style={{padding:"4px 3px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:50,verticalAlign:"middle"}}>
                             {isFer&&!wk&&<div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:10,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                             {leave&&!wk&&!isFer&&(
-                              filterMode==="presence"&&PRESENCE_CODES.includes(leave.code)?(
+                              filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
                                 <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none",gap:3}}>
                                   <span style={{fontSize:12}}>🏢</span>
                                   <span style={{fontSize:10,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
