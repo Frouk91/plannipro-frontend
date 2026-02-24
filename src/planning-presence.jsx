@@ -470,6 +470,9 @@ function PlanningApp({currentUser,onLogout}){
     const k=dateKey(year,month,day);
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
+    // Hors mode présence : masquer Rueil/Paris
+    if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
+    // En mode présence : masquer les autres congés pour les agents
     if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
@@ -479,6 +482,9 @@ function PlanningApp({currentUser,onLogout}){
   function getLeaveForKey(agentId,k){
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
+    // Hors mode présence : masquer Rueil/Paris
+    if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
+    // En mode présence : masquer les autres congés pour les agents
     if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
