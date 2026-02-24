@@ -4,7 +4,7 @@ const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const COLORS = ["#6366f1","#0ea5e9","#f59e0b","#10b981","#8b5cf6","#ef4444","#ec4899","#14b8a6","#f97316","#84cc16"];
-const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail","rueil","paris"];
+const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail"];
 const PRESENCE_CODES = ["rueil","paris"];
 function isPresenceType(t){ return PRESENCE_CODES.includes((t.code||"").toLowerCase()) || ["rueil","paris"].includes((t.label||"").toLowerCase()); }
 function isPresenceCode(code,label){ return PRESENCE_CODES.includes((code||"").toLowerCase()) || ["rueil","paris"].includes((label||"").toLowerCase()); }
@@ -830,7 +830,7 @@ function PlanningApp({currentUser,onLogout}){
                   )}
                 </>
               ):(
-                leaveTypes.filter(t=>isManager||AGENT_ALLOWED_CODES.includes(t.code)).map(t=>(
+                leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>(
                   <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"5px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 4px 12px ${t.color}50`:"none"}}>{t.label}</button>
                 ))
               )}
@@ -1067,7 +1067,7 @@ function PlanningApp({currentUser,onLogout}){
         <div style={{marginBottom:16}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {leaveTypes.filter(t=>isManager||AGENT_ALLOWED_CODES.includes(t.code)).map(t=>(
+            {leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>(
               <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>{t.label}</button>
             ))}
           </div>
