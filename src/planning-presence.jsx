@@ -797,29 +797,22 @@ function PlanningApp({currentUser,onLogout}){
             {/* Types congés + filtre statut */}
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
               {filterMode==="presence"?(
-                // En mode présence: gros boutons Rueil / Paris, réservés manager/admin
+                // En mode présence: boutons Rueil / Paris, réservés manager/admin
                 <>
                   {isManager?(
                     leaveTypes.filter(t=>isPresenceType(t)).map(t=>{
                       const isSelected=selectedLTId===t.id;
-                      const isRueil=t.code==="rueil";
                       return(
                         <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{
-                          padding:"9px 22px",borderRadius:12,border:`2.5px solid ${t.color}`,
-                          fontSize:14,cursor:"pointer",fontWeight:700,
-                          background:isSelected?t.color:hexToLight(t.color),
+                          padding:"8px 20px",borderRadius:10,border:`2px solid ${t.color}`,
+                          fontSize:13,cursor:"pointer",fontWeight:700,
+                          background:isSelected?t.color:"#fff",
                           color:isSelected?"#fff":t.color,
-                          transition:"all 0.2s",
-                          boxShadow:isSelected?`0 6px 18px ${t.color}60`:"none",
-                          display:"flex",alignItems:"center",gap:8,
+                          transition:"all 0.15s",
+                          boxShadow:isSelected?`0 4px 14px ${t.color}50`:"0 1px 4px rgba(0,0,0,0.06)",
                           transform:isSelected?"translateY(-1px)":"none"
                         }}>
-                          <span style={{fontSize:18}}>{isRueil?"🏙":"🗼"}</span>
-                          <div style={{textAlign:"left"}}>
-                            <div style={{fontSize:14,fontWeight:800}}>{t.label}</div>
-                            <div style={{fontSize:10,opacity:0.8,fontWeight:400}}>{isRueil?"La Défense / Rueil":"Paris Centre"}</div>
-                          </div>
-                          {isSelected&&<span style={{fontSize:12,marginLeft:4}}>✓</span>}
+                          {t.label}
                         </button>
                       );
                     })
@@ -899,9 +892,16 @@ function PlanningApp({currentUser,onLogout}){
                             {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                             {leave&&!wk&&!isFer&&(
                               filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
-                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none",gap:2}}>
-                                  <span style={{fontSize:9}}>🏢</span>
-                                  <span style={{fontSize:8,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,overflow:"hidden",position:"relative",
+                                  background:leave.status==="pending"?"#fff":leave.color,
+                                  border:`2px solid ${leave.color}`,
+                                  boxShadow:leave.status==="pending"?"none":`0 1px 4px ${leave.color}60`}}>
+                                  {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.15)"}}/>}
+                                  <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                    <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.5px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
+                                      {leave.status==="pending"?"…":leave.label}
+                                    </span>
+                                  </div>
                                 </div>
                               ):(
                                 <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 6px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"}}>
@@ -976,9 +976,16 @@ function PlanningApp({currentUser,onLogout}){
                             {isFer&&!wk&&<div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:10,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                             {leave&&!wk&&!isFer&&(
                               filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
-                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none",gap:3}}>
-                                  <span style={{fontSize:12}}>🏢</span>
-                                  <span style={{fontSize:10,color:leave.status==="pending"?leave.color:"#fff",fontWeight:700}}>{leave.status==="pending"?"?":leaveAbbr(leave.label)}</span>
+                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",borderRadius:6,overflow:"hidden",position:"relative",
+                                  background:leave.status==="pending"?"#fff":leave.color,
+                                  border:`2px solid ${leave.color}`,
+                                  boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`}}>
+                                  {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.12)"}}/>}
+                                  <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                    <span style={{fontSize:11,fontWeight:800,letterSpacing:"0.3px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
+                                      {leave.status==="pending"?"…":leave.label}
+                                    </span>
+                                  </div>
                                 </div>
                               ):(
                                 <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:leave.status==="pending"?hexToLight(leave.color):leave.color,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`,border:leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"}}>
