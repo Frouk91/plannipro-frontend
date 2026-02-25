@@ -986,21 +986,14 @@ function PlanningApp({currentUser,onLogout}){
         )}
 
         {view==="validations"&&(
-          <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
-            {isManager?(
-              <>
-                {pendingRequests.length===0&&requests.filter(r=>r.status!=="pending").length===0&&<div style={{background:"#fff",borderRadius:16,border:"1px solid #f1f5f9",padding:60,textAlign:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}><div style={{fontSize:"3rem",marginBottom:12}}>🎉</div><div style={{fontSize:16,fontWeight:600,color:"#94a3b8"}}>Aucune demande</div></div>}
-                {pendingRequests.length>0&&<><div style={{fontSize:13,fontWeight:700,marginBottom:16,color:"#d97706",textTransform:"uppercase",letterSpacing:"0.5px"}}>🕐 En attente · {pendingRequests.length}</div>{pendingRequests.map(req=><RequestCard key={req.id} req={req} isManager onApprove={()=>approveRequest(req.id)} onReject={()=>{setRejectModal(req.id);setRejectComment("");}}/>)}</>}
-                {requests.filter(r=>r.status!=="pending").length>0&&<><div style={{fontSize:13,fontWeight:700,margin:"28px 0 16px",color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.5px"}}>📋 Historique</div>{requests.filter(r=>r.status!=="pending").map(req=><RequestCard key={req.id} req={req} isManager/>)}</>}
-              </>
-            ):(
-              <>
-                <div style={{background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:12,padding:16,marginBottom:24,fontSize:13,color:"#4338ca"}}>💡 Sélectionnez des dates dans le planning pour envoyer une demande de congé.</div>
-                {myRequests.length===0&&<div style={{background:"#fff",borderRadius:16,border:"1px solid #f1f5f9",padding:60,textAlign:"center",boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}}><div style={{fontSize:"3rem",marginBottom:12}}>📝</div><div style={{fontSize:16,fontWeight:600,color:"#94a3b8"}}>Aucune demande</div></div>}
-                {myRequests.map(req=><RequestCard key={req.id} req={req}/>)}
-              </>
-            )}
-          </div>
+          <ValidationsView
+            isManager={isManager}
+            requests={requests}
+            pendingRequests={pendingRequests}
+            myRequests={myRequests}
+            onApprove={approveRequest}
+            onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
+          />
         )}
 
         {view==="stats"&&(
@@ -1045,37 +1038,146 @@ function PlanningApp({currentUser,onLogout}){
   );
 }
 
-function RequestCard({req,isManager,onApprove,onReject}){
-  const s={
-    pending:{label:"En attente",bg:"#fffbeb",color:"#d97706",border:"#fde68a",icon:"🕐"},
-    approved:{label:"Approuvée",bg:"#f0fdf4",color:"#16a34a",border:"#bbf7d0",icon:"✅"},
-    rejected:{label:"Refusée",bg:"#fef2f2",color:"#dc2626",border:"#fecaca",icon:"❌"}
-  }[req.status]||{label:req.status,bg:"#f8fafc",color:"#64748b",border:"#e2e8f0",icon:"•"};
+// ─── VALIDATIONS ────────────────────────────────────────────────────────────
+
+const STATUS_META = {
+  pending:  {label:"En attente", dot:"#f59e0b", text:"#92400e", bg:"#fffbeb"},
+  approved: {label:"Approuvée",  dot:"#10b981", text:"#065f46", bg:"#f0fdf4"},
+  rejected: {label:"Refusée",    dot:"#ef4444", text:"#991b1b", bg:"#fef2f2"},
+};
+
+function RequestRow({req, isManager, onApprove, onReject}){
+  const meta = STATUS_META[req.status] || {label:req.status, dot:"#94a3b8", text:"#64748b", bg:"#f8fafc"};
+  const period = req.start===req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
   return(
-    <div className="card" style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",padding:20,marginBottom:12,boxShadow:"0 2px 10px rgba(0,0,0,0.05)"}}>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-        <div style={{width:42,height:42,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},55%,55%),hsl(${agentHue(req.agentId)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:14,fontWeight:700}}>{req.agentAvatar}</div>
-        <div style={{flex:1}}><div style={{fontWeight:700,fontSize:14,color:"#1e293b"}}>{req.agentName}</div><div style={{fontSize:12,color:"#94a3b8"}}>{req.agentTeam}</div></div>
-        <div style={{background:s.bg,color:s.color,padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:600,border:`1px solid ${s.border}`}}>{s.icon} {s.label}</div>
-      </div>
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:req.reason?10:0}}>
-        <div style={{background:"#f8fafc",border:"1px solid #f1f5f9",borderRadius:8,padding:"8px 14px"}}>
-          <div style={{fontSize:10,color:"#94a3b8",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Période</div>
-          <div style={{fontSize:13,fontWeight:600,color:"#475569"}}>{req.start===req.end?formatDate(req.start):`${formatDate(req.start)} → ${formatDate(req.end)}`}</div>
+    <div style={{display:"grid",gridTemplateColumns:"36px 1fr auto",alignItems:"center",gap:14,padding:"12px 16px",borderBottom:"1px solid #f8fafc",transition:"background 0.1s"}}
+      onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+
+      {/* Avatar */}
+      <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{req.agentAvatar}</div>
+
+      {/* Infos */}
+      <div style={{minWidth:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{req.agentName}</span>
+          <span style={{fontSize:11,color:"#94a3b8"}}>{req.agentTeam}</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,background:meta.bg,color:meta.text,borderRadius:4,padding:"1px 8px",fontSize:11,fontWeight:600}}>
+            <span style={{width:6,height:6,borderRadius:"50%",background:meta.dot,display:"inline-block"}}/>
+            {meta.label}
+          </span>
         </div>
-        <div style={{background:hexToLight(req.leaveType?.color||"#6366f1"),border:`1px solid ${req.leaveType?.color||"#6366f1"}30`,borderRadius:8,padding:"8px 14px"}}>
-          <div style={{fontSize:10,color:"#94a3b8",marginBottom:2,textTransform:"uppercase",letterSpacing:"0.3px"}}>Type</div>
-          <div style={{fontSize:13,fontWeight:600,color:req.leaveType?.color}}>{req.leaveType?.label}</div>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginTop:3,flexWrap:"wrap"}}>
+          <span style={{fontSize:12,color:"#475569",fontWeight:500}}>{period}</span>
+          <span style={{width:3,height:3,borderRadius:"50%",background:"#cbd5e1",display:"inline-block"}}/>
+          <span style={{fontSize:12,color:req.leaveType?.color||"#6366f1",fontWeight:600}}>{req.leaveType?.label}</span>
+          {req.reason&&<><span style={{width:3,height:3,borderRadius:"50%",background:"#cbd5e1",display:"inline-block"}}/><span style={{fontSize:11,color:"#94a3b8",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:200}}>{req.reason}</span></>}
+          {req.comment&&<span style={{fontSize:11,color:"#ef4444",fontStyle:"italic"}}>↳ {req.comment}</span>}
         </div>
       </div>
-      {req.reason&&<div style={{fontSize:12,color:"#64748b",background:"#f8fafc",border:"1px solid #f1f5f9",padding:"8px 12px",borderRadius:8,marginBottom:10}}>💬 {req.reason}</div>}
-      {req.comment&&<div style={{fontSize:12,color:"#dc2626",background:"#fef2f2",border:"1px solid #fecaca",padding:"8px 12px",borderRadius:8,marginBottom:10}}>❌ {req.comment}</div>}
-      {isManager&&req.status==="pending"&&<div style={{display:"flex",gap:8,marginTop:14}}>
-        <button onClick={onApprove} className="btn-primary" style={{flex:1,padding:"9px 0",borderRadius:8,border:"none",background:"linear-gradient(135deg,#10b981,#059669)",color:"#fff",cursor:"pointer",fontSize:13,fontWeight:600}}>✅ Approuver</button>
-        <button onClick={onReject} style={{flex:1,padding:"9px 0",borderRadius:8,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:13,fontWeight:600}}>❌ Refuser</button>
-      </div>}
+
+      {/* Actions */}
+      {isManager&&req.status==="pending"?(
+        <div style={{display:"flex",gap:6,flexShrink:0}}>
+          <button onClick={onApprove} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#10b981",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"opacity 0.15s"}}
+            onMouseEnter={e=>e.target.style.opacity="0.85"} onMouseLeave={e=>e.target.style.opacity="1"}>Approuver</button>
+          <button onClick={onReject} style={{padding:"5px 12px",borderRadius:6,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontSize:12,fontWeight:600,transition:"opacity 0.15s"}}
+            onMouseEnter={e=>e.target.style.opacity="0.7"} onMouseLeave={e=>e.target.style.opacity="1"}>Refuser</button>
+        </div>
+      ):<div/>}
     </div>
   );
+}
+
+function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject}){
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showHistory, setShowHistory] = useState(true);
+
+  const sourceList = isManager ? requests : myRequests;
+  const pending  = sourceList.filter(r=>r.status==="pending");
+  const history  = sourceList.filter(r=>r.status!=="pending");
+
+  const filtered = statusFilter==="all" ? sourceList
+    : statusFilter==="pending"  ? pending
+    : history.filter(r=>r.status===statusFilter);
+
+  const counts = {
+    all:      sourceList.length,
+    pending:  pending.length,
+    approved: history.filter(r=>r.status==="approved").length,
+    rejected: history.filter(r=>r.status==="rejected").length,
+  };
+
+  return(
+    <div style={{padding:24,maxWidth:820,animation:"fadeIn 0.3s ease"}}>
+
+      {/* Barre de contrôles */}
+      <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+        {/* Filtres statut */}
+        <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+          {[
+            {id:"all",     label:"Toutes"},
+            {id:"pending", label:"En attente"},
+            {id:"approved",label:"Approuvées"},
+            {id:"rejected",label:"Refusées"},
+          ].map(f=>(
+            <button key={f.id} onClick={()=>setStatusFilter(f.id)} style={{padding:"4px 11px",borderRadius:5,border:"none",background:statusFilter===f.id?"#fff":"transparent",color:statusFilter===f.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:statusFilter===f.id?600:400,boxShadow:statusFilter===f.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
+              {f.label}{counts[f.id]>0&&<span style={{marginLeft:5,background:statusFilter===f.id?"#e0e7ff":"#e2e8f0",color:statusFilter===f.id?"#4338ca":"#64748b",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{counts[f.id]}</span>}
+            </button>
+          ))}
+        </div>
+        {/* Toggle historique */}
+        <button onClick={()=>setShowHistory(h=>!h)} style={{marginLeft:"auto",padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
+          {showHistory?"Masquer":"Afficher"} l'historique
+          <span style={{fontSize:10,color:"#94a3b8",transform:showHistory?"rotate(180deg)":"none",transition:"transform 0.2s",display:"inline-block"}}>▾</span>
+        </button>
+      </div>
+
+      {!isManager&&(
+        <div style={{fontSize:12,color:"#6366f1",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,padding:"8px 14px",marginBottom:14}}>
+          Sélectionnez des dates dans le planning pour déposer une demande de congé.
+        </div>
+      )}
+
+      {/* Liste */}
+      {filtered.length===0?(
+        <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"48px 0",textAlign:"center",color:"#94a3b8",fontSize:13}}>Aucune demande</div>
+      ):(
+        <>
+          {/* En attente */}
+          {(statusFilter==="all"||statusFilter==="pending")&&pending.length>0&&(
+            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+              <div style={{padding:"10px 16px",background:"#fffbeb",borderBottom:"1px solid #fde68a",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{width:7,height:7,borderRadius:"50%",background:"#f59e0b",display:"inline-block"}}/>
+                <span style={{fontSize:12,fontWeight:700,color:"#92400e"}}>En attente</span>
+                <span style={{fontSize:11,color:"#b45309",marginLeft:2}}>{pending.length} demande{pending.length>1?"s":""}</span>
+              </div>
+              {pending.map(req=>(
+                <RequestRow key={req.id} req={req} isManager={isManager} onApprove={()=>onApprove(req.id)} onReject={()=>onReject(req.id)}/>
+              ))}
+            </div>
+          )}
+
+          {/* Historique */}
+          {showHistory&&(statusFilter==="all"||statusFilter==="approved"||statusFilter==="rejected")&&history.filter(r=>statusFilter==="all"||r.status===statusFilter).length>0&&(
+            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+              <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:12,fontWeight:700,color:"#64748b"}}>Historique</span>
+                <span style={{fontSize:11,color:"#94a3b8"}}>{history.filter(r=>statusFilter==="all"||r.status===statusFilter).length} demande{history.length>1?"s":""}</span>
+              </div>
+              {history.filter(r=>statusFilter==="all"||r.status===statusFilter).map(req=>(
+                <RequestRow key={req.id} req={req} isManager={isManager}/>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function RequestCard({req,isManager,onApprove,onReject}){
+  return <RequestRow req={req} isManager={isManager} onApprove={onApprove} onReject={onReject}/>;
 }
 
 export default function App(){
