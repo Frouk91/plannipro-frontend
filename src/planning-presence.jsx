@@ -1123,21 +1123,20 @@ function PlanningApp({currentUser,onLogout}){
             onApprove={approveRequest}
             onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
             onClearHistory={async()=>{
-              // ✅ CORRECTION : Supprimer UNIQUEMENT les demandes rejetées (pas les approuvées)
               const toDelete=requests.filter(r=>r.status==="rejected");
-              // Supprimer localement d'abord (UX immédiate)
               setRequests(prev=>prev.filter(r=>r.status!=="rejected"));
-              // Puis supprimer du serveur en arrière-plan
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
+              // ✅ Recharger depuis le serveur pour synchroniser
+              await loadRequests(token);
               showNotif("Historique des validations effacé ✅");
             }}
             onClearPlanningData={async()=>{
               const allLeaves=requests;
-              // Supprimer localement d'abord
               setRequests([]);
               setLeaves({});
-              // Puis supprimer du serveur en arrière-plan
               await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
+              // ✅ Recharger depuis le serveur pour synchroniser
+              await loadRequests(token);
               showNotif("Données du planning supprimées ✅");
             }}
           />
