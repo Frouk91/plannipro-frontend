@@ -223,6 +223,47 @@ function ContextMenu({x,y,leave,onDeleteDay,onDeleteAll,onClose}){
 }
 
 // ─── ADMIN ───
+function ColorPicker({selected, onChange}){
+  return(
+    <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+      {COLORS.map(c=>(
+        <button key={c} type="button" onClick={()=>onChange(c)} style={{
+          width:18,height:18,borderRadius:"50%",background:c,cursor:"pointer",
+          border:selected===c?"3px solid #1e293b":"2px solid transparent",
+          boxShadow:selected===c?"0 0 0 2px #fff inset":"none",
+          flexShrink:0,transition:"transform 0.1s"
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+function LeaveTypeEditRow({lt, onSave, onCancel}){
+  const [label,setLabel]=useState(lt.label);
+  const [color,setColor]=useState(lt.color);
+  return(
+    <div style={{padding:"12px 16px",background:"#f8fafc"}}>
+      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+        <div style={{width:10,height:10,borderRadius:"50%",background:color,flexShrink:0}}/>
+        <input
+          value={label}
+          onChange={e=>setLabel(e.target.value)}
+          style={{flex:1,padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}
+          autoFocus
+        />
+      </div>
+      <div style={{marginBottom:10}}>
+        <ColorPicker selected={color} onChange={setColor}/>
+      </div>
+      <div style={{display:"flex",gap:6}}>
+        <button type="button" onClick={()=>onSave(label,color)} style={{flex:1,padding:"5px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>Enregistrer</button>
+        <button type="button" onClick={onCancel} style={{flex:1,padding:"5px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Annuler</button>
+      </div>
+    </div>
+  );
+}
+
+
 function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,onAgentDeleted,onTeamAdded,onTeamDeleted,onLeaveTypeAdded,onLeaveTypeUpdated,onLeaveTypeDeleted,showNotif}){
   const [tab,setTab]=useState("agents");
   const [addModal,setAddModal]=useState(false);const [editModal,setEditModal]=useState(null);const [deleteModal,setDeleteModal]=useState(null);const [editLT,setEditLT]=useState(null);
@@ -342,7 +383,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
               <button onClick={handleAddLT} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
             </div>
             <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-              {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:20,height:20,borderRadius:"50%",background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s",boxShadow:newLT.color===c?"0 0 0 2px #fff inset":"none"}}/>)}
+              <ColorPicker selected={newLT.color} onChange={c=>setNewLT(p=>({...p,color:c}))}/>
             </div>
           </div>
           {/* Liste types */}
@@ -350,29 +391,21 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
             {sortLeaveTypes(leaveTypes).map((lt,i)=>(
               <div key={lt.id} style={{borderBottom:i<leaveTypes.length-1?"1px solid #f8fafc":"none"}}>
                 {editLT===lt.id?(
-                  <div style={{padding:"12px 16px",background:"#f8fafc"}}>
-                    <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
-                      <div style={{width:10,height:10,borderRadius:"50%",background:editLTColor||lt.color,flexShrink:0}}/>
-                      <input value={editLTLabel} onChange={e=>setEditLTLabel(e.target.value)} style={{flex:1,padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
-                    </div>
-                    <div style={{display:"flex",gap:3,flexWrap:"wrap",marginBottom:10}}>
-                      {COLORS.map(c=><button key={c} onClick={()=>setEditLTColor(c)} style={{width:18,height:18,borderRadius:"50%",background:c,border:(editLTColor||lt.color)===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s",boxShadow:(editLTColor||lt.color)===c?"0 0 0 2px #fff inset":"none"}}/>)}
-                    </div>
-                    <div style={{display:"flex",gap:6}}>
-                      <button onClick={()=>{handleUpdateLT(lt,editLTLabel,editLTColor||lt.color);setEditLTColor(null);setEditLTLabel("");}} style={{flex:1,padding:"5px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>Enregistrer</button>
-                      <button onClick={()=>{setEditLT(null);setEditLTColor(null);setEditLTLabel("");}} style={{flex:1,padding:"5px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Annuler</button>
-                    </div>
-                  </div>
+                  <LeaveTypeEditRow
+                    lt={lt}
+                    onSave={(label,color)=>{handleUpdateLT(lt,label,color);setEditLT(null);}}
+                    onCancel={()=>setEditLT(null)}
+                  />
                 ):(
-                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px",transition:"background 0.1s"}}
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px"}}
                     onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{width:12,height:12,borderRadius:"50%",background:lt.color,flexShrink:0}}/>
                     <span style={{flex:1,fontWeight:600,fontSize:13,color:"#1e293b"}}>{lt.label}</span>
                     <div style={{fontSize:10,color:"#94a3b8",background:hexToLight(lt.color),padding:"2px 8px",borderRadius:4,fontWeight:700}}>{leaveAbbr(lt.label)}</div>
                     <div style={{display:"flex",gap:4}}>
-                      <button onClick={()=>{setEditLT(lt.id);setEditLTColor(lt.color);setEditLTLabel(lt.label);}} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
-                      <button onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>
+                      <button type="button" onClick={()=>setEditLT(lt.id)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
+                      <button type="button" onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>
                     </div>
                   </div>
                 )}
