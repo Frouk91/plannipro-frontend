@@ -342,7 +342,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
               <button onClick={handleAddLT} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
             </div>
             <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-              {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:22,height:22,borderRadius:5,background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s"}}/>)}
+              {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:20,height:20,borderRadius:"50%",background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s",boxShadow:newLT.color===c?"0 0 0 2px #fff inset":"none"}}/>)}
             </div>
           </div>
           {/* Liste types */}
@@ -353,14 +353,14 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                   <div style={{padding:"12px 16px",background:"#f8fafc"}}>
                     <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
                       <div style={{width:10,height:10,borderRadius:"50%",background:editLTColor||lt.color,flexShrink:0}}/>
-                      <input defaultValue={lt.label} id={`elt-${lt.id}`} style={{flex:1,padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
+                      <input value={editLTLabel} onChange={e=>setEditLTLabel(e.target.value)} style={{flex:1,padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
                     </div>
                     <div style={{display:"flex",gap:3,flexWrap:"wrap",marginBottom:10}}>
-                      {COLORS.map(c=><button key={c} onClick={()=>setEditLTColor(c)} style={{width:20,height:20,borderRadius:4,background:c,border:(editLTColor||lt.color)===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s"}}/>)}
+                      {COLORS.map(c=><button key={c} onClick={()=>setEditLTColor(c)} style={{width:18,height:18,borderRadius:"50%",background:c,border:(editLTColor||lt.color)===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s",boxShadow:(editLTColor||lt.color)===c?"0 0 0 2px #fff inset":"none"}}/>)}
                     </div>
                     <div style={{display:"flex",gap:6}}>
-                      <button onClick={()=>{handleUpdateLT(lt,document.getElementById(`elt-${lt.id}`).value,editLTColor||lt.color);setEditLTColor(null);}} style={{flex:1,padding:"5px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>Enregistrer</button>
-                      <button onClick={()=>{setEditLT(null);setEditLTColor(null);}} style={{flex:1,padding:"5px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Annuler</button>
+                      <button onClick={()=>{handleUpdateLT(lt,editLTLabel,editLTColor||lt.color);setEditLTColor(null);setEditLTLabel("");}} style={{flex:1,padding:"5px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>Enregistrer</button>
+                      <button onClick={()=>{setEditLT(null);setEditLTColor(null);setEditLTLabel("");}} style={{flex:1,padding:"5px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Annuler</button>
                     </div>
                   </div>
                 ):(
@@ -371,7 +371,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                     <span style={{flex:1,fontWeight:600,fontSize:13,color:"#1e293b"}}>{lt.label}</span>
                     <div style={{fontSize:10,color:"#94a3b8",background:hexToLight(lt.color),padding:"2px 8px",borderRadius:4,fontWeight:700}}>{leaveAbbr(lt.label)}</div>
                     <div style={{display:"flex",gap:4}}>
-                      <button onClick={()=>{setEditLT(lt.id);setEditLTColor(lt.color);}} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
+                      <button onClick={()=>{setEditLT(lt.id);setEditLTColor(lt.color);setEditLTLabel(lt.label);}} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
                       <button onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>
                     </div>
                   </div>
@@ -898,7 +898,7 @@ function PlanningApp({currentUser,onLogout}){
                 ):(
                   sortLeaveTypes(leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t)))).map(t=>{
                     const sel=selectedLTId===t.id;
-                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
+                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{leaveAbbr(t.label)}</button>;
                   })
                 )}
                 {/* Filtre statut — poussé à droite */}
@@ -1089,7 +1089,12 @@ function PlanningApp({currentUser,onLogout}){
             myRequests={myRequests}
             onApprove={approveRequest}
             onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
-            onClearHistory={()=>setRequests(prev=>prev.filter(r=>r.status==="pending"))}
+            onClearHistory={async()=>{
+              const toDelete=requests.filter(r=>r.status!=="pending");
+              await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
+              setRequests(prev=>prev.filter(r=>r.status==="pending"));
+              showNotif("Historique effacé ✅");
+            }}
           />
         )}
 
