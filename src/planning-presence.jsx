@@ -121,7 +121,7 @@ function LoginPage({onLogin}){
       <div style={{width:"100%",maxWidth:440,padding:"0 24px",animation:"fadeIn 0.5s ease"}}>
         <div style={{textAlign:"center",marginBottom:32}}>
           <div style={{width:64,height:64,borderRadius:20,background:"rgba(255,255,255,0.2)",backdropFilter:"blur(10px)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16,border:"1px solid rgba(255,255,255,0.3)"}}>📅</div>
-          <h1 style={{color:"#fff",fontSize:28,fontWeight:800,margin:0,letterSpacing:"-0.5px"}}>PlanniPro</h1>
+          <h1 style={{color:"#fff",fontSize:28,fontWeight:800,margin:0,letterSpacing:"-0.5px"}}>Planning</h1>
           <p style={{color:"rgba(255,255,255,0.7)",fontSize:14,margin:"6px 0 0"}}>Gestion des présences et congés</p>
         </div>
         <div style={{background:"#fff",borderRadius:24,padding:36,boxShadow:"0 25px 50px rgba(0,0,0,0.15)"}}>
@@ -241,7 +241,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
               </tr></thead>
               <tbody>{agents.map(a=>(
                 <tr key={a.id} style={{borderBottom:"1px solid #f8fafc"}}>
-                  <td style={{padding:"12px 16px"}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:34,height:34,borderRadius:10,background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div><span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span></div></td>
+                  <td style={{padding:"12px 16px"}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div><span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span></div></td>
                   <td style={{padding:"12px 16px",fontSize:12,color:"#94a3b8"}}>{a.email}</td>
                   <td style={{padding:"12px 16px",fontSize:12,color:"#64748b"}}>{a.team||"—"}</td>
                   <td style={{padding:"12px 16px"}}><span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#dcfce7",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#166534",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}}>{a.role==="admin"?"👑 Admin":a.role==="manager"?"👑 Manager":"Agent"}</span></td>
@@ -268,7 +268,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
             {teams.map(team=>(
               <div key={team.id||team.name} className="card" style={{background:"#fff",borderRadius:12,border:"1px solid #f1f5f9",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🏢</div><div><div style={{fontWeight:600,color:"#1e293b",fontSize:14}}>{team.name}</div><div style={{fontSize:11,color:"#94a3b8"}}>{agents.filter(a=>a.team===team.name).length} agents</div></div></div>
+                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🏢</div><div><div style={{fontWeight:600,color:"#1e293b",fontSize:14}}>{team.name}</div><div style={{fontSize:11,color:"#94a3b8"}}>{agents.filter(a=>a.team===team.name).length} agents</div></div></div>
                 {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#ef4444",fontWeight:600}}>🗑</button>}
               </div>
             ))}
@@ -391,6 +391,7 @@ function PlanningApp({currentUser,onLogout}){
   const [rejectComment,setRejectComment]=useState("");
   const [notification,setNotification]=useState(null);
   const [dataLoaded,setDataLoaded]=useState(false);
+  const [showMonthPicker,setShowMonthPicker]=useState(false);
   const [contextMenu,setContextMenu]=useState(null);
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
@@ -655,7 +656,7 @@ function PlanningApp({currentUser,onLogout}){
 
   return(
     <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
-      onClick={()=>{if(contextMenu)setContextMenu(null);}}>
+      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);}}>
       <style>{GLOBAL_STYLE}</style>
 
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
@@ -665,14 +666,14 @@ function PlanningApp({currentUser,onLogout}){
       <aside style={{width:230,background:"linear-gradient(180deg,#1e1b4b 0%,#312e81 100%)",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0,boxShadow:"4px 0 20px rgba(0,0,0,0.1)"}}>
         <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:38,height:38,borderRadius:12,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 4px 12px rgba(102,126,234,0.4)"}}>📅</div>
-            <div><div style={{fontSize:16,fontWeight:800,color:"#fff",letterSpacing:"-0.3px"}}>PlanniPro</div><div style={{fontSize:10,color:"rgba(255,255,255,0.4)"}}>Gestion des présences</div></div>
+            <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 4px 12px rgba(102,126,234,0.4)"}}>📅</div>
+            <div><div style={{fontSize:15,fontWeight:800,color:"#fff",letterSpacing:"-0.3px"}}>Planning {new Date().getFullYear()}</div></div>
           </div>
         </div>
         <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{position:"relative"}}>
-              <div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id)+40},65%,60%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>
+              <div style={{width:38,height:38,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id)+40},65%,60%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>
                 {currentUser.avatar_initials||getInitials(`${currentUser.first_name||""} ${currentUser.last_name||""}`)}
               </div>
               <div style={{position:"absolute",bottom:0,right:0,width:10,height:10,borderRadius:"50%",background:"#34d399",border:"2px solid #1e1b4b"}}/>
@@ -756,10 +757,43 @@ function PlanningApp({currentUser,onLogout}){
                 </div>
 
                 {/* Navigation date */}
-                <div style={{display:"flex",alignItems:"center",gap:2}}>
+                <div style={{display:"flex",alignItems:"center",gap:2,position:"relative"}}>
                   <button onClick={()=>{if(planView==="month"){if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()-7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>‹</button>
-                  <span style={{fontSize:13,fontWeight:700,color:"#1e293b",minWidth:planView==="month"?130:180,textAlign:"center"}}>{planView==="month"?`${MONTHS_FR[month]} ${year}`:weekLabel()}</span>
+                  <button onClick={()=>setShowMonthPicker(p=>!p)} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:13,fontWeight:700,color:"#1e293b",minWidth:planView==="month"?130:180,textAlign:"center",borderRadius:6,transition:"background 0.15s"}}
+                    onMouseEnter={e=>e.target.style.background="#f1f5f9"} onMouseLeave={e=>e.target.style.background="none"}>
+                    {planView==="month"?`${MONTHS_FR[month]} ${year}`:weekLabel()} <span style={{fontSize:9,color:"#94a3b8"}}>▾</span>
+                  </button>
                   <button onClick={()=>{if(planView==="month"){if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()+7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>›</button>
+                  {showMonthPicker&&(
+                    <div style={{position:"absolute",top:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:9999,padding:12,width:240,animation:"slideIn 0.15s ease"}}>
+                      {/* Sélecteur année */}
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,paddingBottom:8,borderBottom:"1px solid #f1f5f9"}}>
+                        <button onClick={()=>setYear(y=>y-1)} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#94a3b8",padding:"0 6px"}}>‹</button>
+                        <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{year}</span>
+                        <button onClick={()=>setYear(y=>y+1)} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#94a3b8",padding:"0 6px"}}>›</button>
+                      </div>
+                      {/* Grille des 12 mois */}
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
+                        {MONTHS_FR.map((m_label,m_idx)=>{
+                          const isCurrent=m_idx===month&&year===now.getFullYear()||(m_idx===month);
+                          const isNow=m_idx===now.getMonth()&&year===now.getFullYear();
+                          return(
+                            <button key={m_idx} onClick={()=>{setMonth(m_idx);setShowMonthPicker(false);}} style={{
+                              padding:"5px 4px",borderRadius:6,border:"none",
+                              background:isCurrent?"#1e293b":isNow?"#eef2ff":"transparent",
+                              color:isCurrent?"#fff":isNow?"#4338ca":"#475569",
+                              cursor:"pointer",fontSize:11,fontWeight:isCurrent||isNow?700:400,
+                              transition:"background 0.1s"
+                            }}
+                            onMouseEnter={e=>{if(!isCurrent)e.target.style.background="#f1f5f9";}}
+                            onMouseLeave={e=>{if(!isCurrent)e.target.style.background=isNow?"#eef2ff":"transparent";}}>
+                              {m_label.slice(0,3)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
@@ -827,18 +861,13 @@ function PlanningApp({currentUser,onLogout}){
                   </thead>
                   <tbody>
                     {filteredAgents.map(agent=>{
-                      const weekPresence=getWeekPresenceCount(agent.id,weekDays);
                       return(
                       <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}>
                         <td style={{padding:"8px 12px",display:"flex",alignItems:"center",gap:8,background:"#fff"}}>
-                          <div style={{width:30,height:30,borderRadius:9,background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                          <div style={{width:30,height:30,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
                           <div>
                             <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                            {filterMode==="presence"?(
-                              <div style={{fontSize:9,fontWeight:700,color:weekPresence>=PRESENCE_MAX_PER_WEEK?"#0d9488":"#94a3b8",background:weekPresence>=PRESENCE_MAX_PER_WEEK?"#ccfbf1":"#f8fafc",borderRadius:4,padding:"1px 5px",display:"inline-block"}}>🏢 {weekPresence}/{PRESENCE_MAX_PER_WEEK}</div>
-                            ):(
-                              <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
-                            )}
+                            <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
                           </div>
                         </td>
                         {Array.from({length:daysInMonth},(_,i)=>{
@@ -915,18 +944,13 @@ function PlanningApp({currentUser,onLogout}){
                   </thead>
                   <tbody>
                     {filteredAgents.map(agent=>{
-                      const weekPresence=getWeekPresenceCount(agent.id,weekDays);
                       return(
                       <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}>
                         <td style={{padding:"10px 12px",display:"flex",alignItems:"center",gap:8,background:"#fff"}}>
-                          <div style={{width:32,height:32,borderRadius:9,background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                          <div style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
                           <div>
                             <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                            {filterMode==="presence"?(
-                              <div style={{fontSize:9,fontWeight:700,color:weekPresence>=PRESENCE_MAX_PER_WEEK?"#0d9488":"#94a3b8",background:weekPresence>=PRESENCE_MAX_PER_WEEK?"#ccfbf1":"#f8fafc",borderRadius:4,padding:"1px 5px",display:"inline-block"}}>🏢 {weekPresence}/{PRESENCE_MAX_PER_WEEK}{weekPresence>=PRESENCE_MAX_PER_WEEK?" ✓":""}</div>
-                            ):(
-                              <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
-                            )}
+                            <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
                           </div>
                         </td>
                         {weekDays.map((d,i)=>{
@@ -993,6 +1017,7 @@ function PlanningApp({currentUser,onLogout}){
             myRequests={myRequests}
             onApprove={approveRequest}
             onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
+            onClearHistory={()=>setRequests(prev=>prev.filter(r=>r.status==="pending"))}
           />
         )}
 
@@ -1055,7 +1080,7 @@ function RequestRow({req, isManager, onApprove, onReject}){
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
 
       {/* Avatar */}
-      <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{req.agentAvatar}</div>
+      <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{req.agentAvatar}</div>
 
       {/* Infos */}
       <div style={{minWidth:0}}>
@@ -1089,7 +1114,7 @@ function RequestRow({req, isManager, onApprove, onReject}){
   );
 }
 
-function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject}){
+function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory}){
   const [statusFilter, setStatusFilter] = useState("all");
   const [showHistory, setShowHistory] = useState(true);
 
@@ -1127,10 +1152,17 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
           ))}
         </div>
         {/* Toggle historique */}
-        <button onClick={()=>setShowHistory(h=>!h)} style={{marginLeft:"auto",padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
-          {showHistory?"Masquer":"Afficher"} l'historique
-          <span style={{fontSize:10,color:"#94a3b8",transform:showHistory?"rotate(180deg)":"none",transition:"transform 0.2s",display:"inline-block"}}>▾</span>
-        </button>
+        <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
+          {history.length>0&&isManager&&(
+            <button onClick={()=>{if(window.confirm("Effacer tout l\'historique des demandes traitées ?"))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
+              Effacer l'historique
+            </button>
+          )}
+          <button onClick={()=>setShowHistory(h=>!h)} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
+            {showHistory?"Masquer":"Afficher"} l'historique
+            <span style={{fontSize:10,color:"#94a3b8",transform:showHistory?"rotate(180deg)":"none",transition:"transform 0.2s",display:"inline-block"}}>▾</span>
+          </button>
+        </div>
       </div>
 
       {!isManager&&(
