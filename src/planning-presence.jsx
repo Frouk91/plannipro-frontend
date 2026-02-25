@@ -497,7 +497,35 @@ function PlanningApp({currentUser,onLogout}){
   const [notification,setNotification]=useState(null);
   const [dataLoaded,setDataLoaded]=useState(false);
   const [showMonthPicker,setShowMonthPicker]=useState(false);
-  const [contextMenu,setContextMenu]=useState(null);
+  const [statsFilter,setStatsFilter]=useState("month");
+
+  function getDaysForLeaveType(leave){
+    const label=(leave.label||"").toLowerCase();
+    if(label.includes("1/2")||label.includes("½"))return 0.5;
+    return 1;
+  }
+
+  function getStatsCounts(filterType){
+    const stats={cp:0,rtt:0,pont:0,absence:0};
+    agents.forEach(a=>{
+      Object.entries(leaves[a.id]||{}).forEach(([dateKey,leave])=>{
+        if(!leave)return;
+        const[y,m,d]=dateKey.split("-");
+        const leaveYear=parseInt(y);
+        const leaveMonth=parseInt(m)-1;
+        if(filterType==="month"){if(leaveYear!==year||leaveMonth!==month)return;}
+        else if(filterType==="year"){if(leaveYear!==year)return;}
+        const days=getDaysForLeaveType(leave);
+        const code=(leave.code||"").toLowerCase();
+        const lbl=(leave.label||"").toLowerCase();
+        if(code.includes("cp")||lbl.includes("congé payé")||lbl.includes("cp")){stats.cp+=days;}
+        else if(code.includes("rtt")||lbl.includes("rtt")){stats.rtt+=days;}
+        else if(code.includes("pont")||lbl.includes("pont")){stats.pont+=days;}
+        else if(code.includes("absence")||lbl.includes("absence")){stats.absence+=days;}
+      });
+    });
+    return stats;
+  }
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -1144,16 +1172,42 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="stats"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
-              {leaveTypes.map(t=>{
-                let count=0;agents.forEach(a=>{Object.values(leaves[a.id]||{}).forEach(l=>{if(l.code===t.code||l.id===t.id)count++;});});
-                return<div key={t.id} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${t.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
-                  <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${t.color}15`}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}><div style={{width:12,height:12,borderRadius:4,background:t.color}}/><span style={{fontSize:12,color:"#64748b",fontWeight:500}}>{t.label}</span></div>
-                  <div style={{fontSize:40,fontWeight:800,color:t.color,letterSpacing:"-1px"}}>{count}</div>
-                  <div style={{fontSize:11,color:"#94a3b8",marginTop:4,fontWeight:500}}>jours ce mois</div>
-                </div>;
-              })}
+            {/* Filtre Mois/Année */}
+            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+              <span style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Afficher :</span>
+              <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+                {[{id:"month",label:`Mois de ${MONTHS_FR[month]} ${year}`},{id:"year",label:`Année ${year}`}].map(f=>(
+                  <button key={f.id} onClick={()=>setStatsFilter(f.id)} style={{padding:"6px 14px",borderRadius:5,border:"none",background:statsFilter===f.id?"#fff":"transparent",color:statsFilter===f.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:statsFilter===f.id?600:400,boxShadow:statsFilter===f.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{f.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Cartes Statistiques */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>
+              {(() => {
+                const counts = getStatsCounts(statsFilter);
+                const stats = [
+                  { key: "cp", label: "Congés Payés", color: "#6366f1", icon: "✏️", days: counts.cp },
+                  { key: "rtt", label: "RTT", color: "#10b981", icon: "⏱️", days: counts.rtt },
+                  { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
+                  { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
+                ];
+                return stats.map(s => (
+                  <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${s.color}15`}}/>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                      <span style={{fontSize:24}}>{s.icon}</span>
+                      <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>{s.label}</span>
+                    </div>
+                    <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:4}}>
+                      {s.days.toLocaleString('fr-FR', {minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1})}
+                    </div>
+                    <div style={{fontSize:12,color:"#94a3b8",fontWeight:500}}>
+                      {statsFilter==="month"?`${MONTHS_FR[month]} ${year}`:`Année ${year}`}
+                    </div>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         )}
