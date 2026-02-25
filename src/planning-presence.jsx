@@ -1126,7 +1126,14 @@ function PlanningApp({currentUser,onLogout}){
               const toDelete=requests.filter(r=>r.status!=="pending");
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
               setRequests(prev=>prev.filter(r=>r.status==="pending"));
-              showNotif("Historique effacé ✅");
+              showNotif("Historique des validations effacé ✅");
+            }}
+            onClearPlanningData={async()=>{
+              const allLeaves=requests;
+              await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
+              setRequests([]);
+              setLeaves({});
+              showNotif("Données du planning supprimées ✅");
             }}
           />
         )}
@@ -1224,7 +1231,7 @@ function RequestRow({req, isManager, onApprove, onReject}){
   );
 }
 
-function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory}){
+function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData}){
   const [statusFilter, setStatusFilter] = useState("all");
   const [showHistory, setShowHistory] = useState(true);
 
@@ -1264,9 +1271,14 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
         {/* Toggle historique */}
         <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
           {history.length>0&&isManager&&(
-            <button onClick={()=>{if(window.confirm("Effacer tout l\'historique des demandes traitées ?"))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
-              Effacer l'historique
-            </button>
+            <>
+              <button onClick={()=>{if(window.confirm("Effacer tout l\'historique des demandes traitées ?\nLes demandes approuvées/refusées seront supprimées."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
+                Effacer l'historique
+              </button>
+              <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning :\n- Tous les congés\n- Toutes les demandes en attente\n- Tout l\'historique des validations\n\nCette action est irréversible.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500}}>
+                🗑 Vider le planning
+              </button>
+            </>
           )}
           <button onClick={()=>setShowHistory(h=>!h)} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
             {showHistory?"Masquer":"Afficher"} l'historique
