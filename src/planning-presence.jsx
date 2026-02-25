@@ -724,13 +724,9 @@ function PlanningApp({currentUser,onLogout}){
 
       {/* MAIN */}
       <main style={{flex:1,overflow:"auto"}}>
-        <div style={{background:"#fff",borderBottom:"1px solid #f1f5f9",padding:"18px 28px",boxShadow:"0 1px 8px rgba(0,0,0,0.04)"}}>
-          <h1 style={{margin:0,fontSize:20,fontWeight:800,color:"#1e293b",letterSpacing:"-0.3px"}}>
-            {view==="planning"?"📅 Planning":view==="validations"?"✅ Demandes de congés":view==="stats"?"📊 Statistiques":"⚙️ Administration"}
-          </h1>
-          <p style={{margin:"2px 0 0",fontSize:13,color:"#94a3b8"}}>
-            {view==="planning"?(planView==="month"?`${MONTHS_FR[month]} ${year}`:weekLabel()):view==="validations"?(isManager?`${pendingRequests.length} demande(s) en attente`:`${myRequests.length} demande(s) au total`):""}
-          </p>
+        <div style={{background:"#fff",borderBottom:"1px solid #f1f5f9",padding:"11px 24px",display:"flex",alignItems:"center",gap:10}}>
+          <h1 style={{margin:0,fontSize:15,fontWeight:700,color:"#1e293b"}}>{view==="planning"?"Planning":view==="validations"?"Demandes de congés":view==="stats"?"Statistiques":"Administration"}</h1>
+          {view==="validations"&&<span style={{fontSize:12,color:"#94a3b8"}}>{isManager?`${pendingRequests.length} en attente`:`${myRequests.length} demande(s)`}</span>}
         </div>
 
         {view==="admin"&&isAdmin&&<AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
@@ -746,104 +742,66 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="planning"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
+            {/* ═══ BARRE DE CONTRÔLES ═══ */}
+            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
 
-            {/* Bandeau Présences site actif */}
-            {filterMode==="presence"&&(
-              <div style={{background:"linear-gradient(135deg,#0d9488,#7c3aed)",borderRadius:12,padding:"12px 18px",marginBottom:14,display:"flex",alignItems:"center",gap:12,boxShadow:"0 4px 16px rgba(13,148,136,0.25)"}}>
-                <span style={{fontSize:20}}>🏢</span>
-                <div style={{flex:1}}>
-                  <div style={{color:"#fff",fontWeight:700,fontSize:14}}>Mode Présences Sur Site</div>
-                  <div style={{color:"rgba(255,255,255,0.7)",fontSize:12}}>Affichage uniquement des jours Rueil & Paris — limite 2 jours/semaine par agent</div>
+              {/* Ligne 1 : navigation + vue + équipe */}
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+
+                {/* Toggle Mois/Semaine */}
+                <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+                  {[{v:"month",l:"Mois"},{v:"week",l:"Semaine"}].map(({v,l})=>(
+                    <button key={v} onClick={()=>setPlanView(v)} style={{padding:"4px 12px",borderRadius:5,border:"none",background:planView===v?"#fff":"transparent",color:planView===v?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:planView===v?600:400,boxShadow:planView===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{l}</button>
+                  ))}
                 </div>
-                <button onClick={()=>setFilterMode("all")} style={{background:"rgba(255,255,255,0.2)",border:"1px solid rgba(255,255,255,0.3)",borderRadius:8,padding:"6px 14px",cursor:"pointer",color:"#fff",fontSize:12,fontWeight:600}}>✕ Quitter</button>
-              </div>
-            )}
 
-            {/* Barre controls */}
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,flexWrap:"wrap"}}>
-              {/* Mois/Semaine */}
-              <div style={{display:"flex",background:"#f1f5f9",borderRadius:10,padding:3}}>
-                <button onClick={()=>setPlanView("month")} style={{padding:"6px 14px",borderRadius:8,border:"none",background:planView==="month"?"#fff":"transparent",color:planView==="month"?"#1e293b":"#64748b",cursor:"pointer",fontSize:12,fontWeight:600,boxShadow:planView==="month"?"0 1px 4px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>Mois</button>
-                <button onClick={()=>setPlanView("week")} style={{padding:"6px 14px",borderRadius:8,border:"none",background:planView==="week"?"#fff":"transparent",color:planView==="week"?"#1e293b":"#64748b",cursor:"pointer",fontSize:12,fontWeight:600,boxShadow:planView==="week"?"0 1px 4px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>Semaine</button>
+                {/* Navigation date */}
+                <div style={{display:"flex",alignItems:"center",gap:2}}>
+                  <button onClick={()=>{if(planView==="month"){if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()-7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>‹</button>
+                  <span style={{fontSize:13,fontWeight:700,color:"#1e293b",minWidth:planView==="month"?130:180,textAlign:"center"}}>{planView==="month"?`${MONTHS_FR[month]} ${year}`:weekLabel()}</span>
+                  <button onClick={()=>{if(planView==="month"){if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()+7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>›</button>
+                </div>
+
+                <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
+
+                {/* Séparateur */}
+                <div style={{width:1,height:18,background:"#e2e8f0",margin:"0 2px"}}/>
+
+                {/* Présences site */}
+                <button onClick={()=>{const newMode=filterMode==="presence"?"all":"presence";setFilterMode(newMode);if(newMode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}}} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"#0d9488":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🏢 Présences site</button>
+
+                {/* Filtres équipe — poussés à droite */}
+                <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
+                  {allTeams.map(t=>(
+                    <button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterTeam===t?700:400,background:filterTeam===t?"#1e293b":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{t}</button>
+                  ))}
+                </div>
               </div>
 
-              {/* Bouton Présences Site */}
-              <button onClick={()=>{
-                const newMode=filterMode==="presence"?"all":"presence";
-                setFilterMode(newMode);
-                if(newMode==="presence"){
-                  const pt=leaveTypes.find(t=>isPresenceType(t));
-                  if(pt)setSelectedLTId(pt.id);
-                }
-              }} style={{padding:"7px 16px",borderRadius:10,border:`2px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"linear-gradient(135deg,#0d9488,#7c3aed)":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:6,transition:"all 0.2s",boxShadow:filterMode==="presence"?"0 4px 14px rgba(13,148,136,0.3)":"0 1px 4px rgba(0,0,0,0.05)"}}>
-                🏢 Présences site
-              </button>
-
-              {/* Navigation */}
-              <div style={{display:"flex",alignItems:"center",gap:4,background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,padding:"6px 10px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-                <button onClick={()=>{
-                  if(planView==="month"){if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}
-                  else{const d=new Date(weekAnchor);d.setDate(d.getDate()-7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}
-                }} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#94a3b8",lineHeight:1,padding:"0 4px"}}>‹</button>
-                <span style={{fontWeight:700,fontSize:14,color:"#1e293b",minWidth:planView==="month"?160:220,textAlign:"center"}}>
-                  {planView==="month"?`${MONTHS_FR[month]} ${year}`:weekLabel()}
-                </span>
-                <button onClick={()=>{
-                  if(planView==="month"){if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}
-                  else{const d=new Date(weekAnchor);d.setDate(d.getDate()+7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}
-                }} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#94a3b8",lineHeight:1,padding:"0 4px"}}>›</button>
-              </div>
-              <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{background:"#fff",border:"1px solid #e2e8f0",borderRadius:8,padding:"7px 14px",cursor:"pointer",fontSize:12,fontWeight:600,color:"#64748b",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>Aujourd'hui</button>
-              {/* Filtres équipe */}
-              <div style={{marginLeft:"auto",display:"flex",gap:6,flexWrap:"wrap"}}>
-                {allTeams.map(t=><button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"6px 12px",borderRadius:20,border:"1.5px solid",fontSize:12,cursor:"pointer",fontWeight:500,background:filterTeam===t?"linear-gradient(135deg,#667eea,#764ba2)":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#667eea":"#e2e8f0",transition:"all 0.2s"}}>{t}</button>)}
-              </div>
-            </div>
-
-            {/* Types congés + filtre statut */}
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-              {filterMode==="presence"?(
-                // En mode présence: boutons Rueil / Paris, réservés manager/admin
-                <>
-                  {isManager?(
+              {/* Ligne 2 : types de congés + filtre statut */}
+              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
+                {filterMode==="presence"?(
+                  isManager?(
                     leaveTypes.filter(t=>isPresenceType(t)).map(t=>{
-                      const isSelected=selectedLTId===t.id;
-                      return(
-                        <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{
-                          padding:"8px 20px",borderRadius:10,border:`2px solid ${t.color}`,
-                          fontSize:13,cursor:"pointer",fontWeight:700,
-                          background:isSelected?t.color:"#fff",
-                          color:isSelected?"#fff":t.color,
-                          transition:"all 0.15s",
-                          boxShadow:isSelected?`0 4px 14px ${t.color}50`:"0 1px 4px rgba(0,0,0,0.06)",
-                          transform:isSelected?"translateY(-1px)":"none"
-                        }}>
-                          {t.label}
-                        </button>
-                      );
+                      const sel=selectedLTId===t.id;
+                      return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:700,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
                     })
                   ):(
-                    // Agents : message bloqué
-                    <div style={{display:"flex",alignItems:"center",gap:8,background:"#fef9ec",border:"1.5px solid #fde68a",borderRadius:10,padding:"8px 16px",fontSize:12,color:"#92400e"}}>
-                      🔒 La saisie des présences sur site est réservée aux managers et administrateurs.
-                    </div>
-                  )}
-                </>
-              ):(
-                leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>(
-                  <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"5px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s",boxShadow:selectedLTId===t.id?`0 4px 12px ${t.color}50`:"none"}}>{t.label}</button>
-                ))
-              )}
-              <div style={{marginLeft:"auto",display:"flex",gap:6}}>
-                {[{id:"all",label:"Tous"},{id:"approved",label:"✅ Approuvés"},{id:"pending",label:"🕐 En attente"}].map(f=>(
-                  <button key={f.id} onClick={()=>setFilterStatus(f.id)} style={{padding:"5px 12px",borderRadius:20,border:"1.5px solid",fontSize:11,cursor:"pointer",fontWeight:600,background:filterStatus===f.id?"#1e293b":"#fff",color:filterStatus===f.id?"#fff":"#64748b",borderColor:filterStatus===f.id?"#1e293b":"#e2e8f0",transition:"all 0.2s"}}>{f.label}</button>
-                ))}
+                    <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
+                  )
+                ):(
+                  leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>{
+                    const sel=selectedLTId===t.id;
+                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
+                  })
+                )}
+                {/* Filtre statut — poussé à droite */}
+                <div style={{marginLeft:"auto",display:"flex",gap:4}}>
+                  {[{id:"all",label:"Tous"},{id:"approved",label:"Approuvés"},{id:"pending",label:"En attente"}].map(f=>(
+                    <button key={f.id} onClick={()=>setFilterStatus(f.id)} style={{padding:"3px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterStatus===f.id?600:400,background:filterStatus===f.id?"#1e293b":"#fff",color:filterStatus===f.id?"#fff":"#64748b",borderColor:filterStatus===f.id?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{f.label}</button>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* Hint */}
-            <div style={{fontSize:12,color:filterMode==="presence"?"#065f46":"#78350f",marginBottom:12,background:filterMode==="presence"?"#d1fae5":"#fffbeb",border:`1px solid ${filterMode==="presence"?"#6ee7b7":"#fde68a"}`,borderRadius:8,padding:"8px 14px"}}>
-              {filterMode==="presence"?(isManager?"🏢 Sélectionnez Rueil ou Paris puis cliquez sur les jours — limite 2 jours/semaine par agent":"🔒 Consultation uniquement — la saisie des présences est réservée aux managers"):isManager?"👑 Clic gauche : ajouter — Clic droit : supprimer — 🗓 Jours fériés modifiables par manager":"👤 Sélectionnez des dates pour demander un congé — 🗓 Jours fériés bloqués"}
             </div>
 
             {/* ─── VUE MOIS ─── */}
