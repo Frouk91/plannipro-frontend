@@ -1123,9 +1123,10 @@ function PlanningApp({currentUser,onLogout}){
             onApprove={approveRequest}
             onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
             onClearHistory={async()=>{
-              const toDelete=requests.filter(r=>r.status!=="pending");
+              // ✅ CORRECTION : Supprimer UNIQUEMENT les demandes rejetées (pas les approuvées)
+              const toDelete=requests.filter(r=>r.status==="rejected");
               // Supprimer localement d'abord (UX immédiate)
-              setRequests(prev=>prev.filter(r=>r.status==="pending"));
+              setRequests(prev=>prev.filter(r=>r.status!=="rejected"));
               // Puis supprimer du serveur en arrière-plan
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
               showNotif("Historique des validations effacé ✅");
@@ -1276,7 +1277,7 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
         <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
           {history.length>0&&isManager&&(
             <>
-              <button onClick={()=>{if(window.confirm("Effacer tout l\'historique des demandes traitées ?\nLes demandes approuvées/refusées seront supprimées."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
+              <button onClick={()=>{if(window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
                 Effacer l'historique
               </button>
               <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning :\n- Tous les congés\n- Toutes les demandes en attente\n- Tout l\'historique des validations\n\nCette action est irréversible.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500}}>
