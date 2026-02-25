@@ -1125,14 +1125,17 @@ function PlanningApp({currentUser,onLogout}){
             onClearHistory={async()=>{
               const toDelete=requests.filter(r=>r.status!=="pending");
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              setRequests(prev=>prev.filter(r=>r.status==="pending"));
+              // Recharger depuis le backend pour persister
+              await loadRequests(token);
+              await loadLeaves(leaveTypes, token, year, month);
               showNotif("Historique des validations effacé ✅");
             }}
             onClearPlanningData={async()=>{
               const allLeaves=requests;
               await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              setRequests([]);
-              setLeaves({});
+              // Recharger depuis le backend pour persister
+              await loadRequests(token);
+              await loadLeaves(leaveTypes, token, year, month);
               showNotif("Données du planning supprimées ✅");
             }}
           />
