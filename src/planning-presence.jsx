@@ -1124,18 +1124,19 @@ function PlanningApp({currentUser,onLogout}){
             onReject={(id)=>{setRejectModal(id);setRejectComment("");}}
             onClearHistory={async()=>{
               const toDelete=requests.filter(r=>r.status!=="pending");
+              // Supprimer localement d'abord (UX immédiate)
+              setRequests(prev=>prev.filter(r=>r.status==="pending"));
+              // Puis supprimer du serveur en arrière-plan
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              // Recharger depuis le backend pour persister
-              await loadRequests(token);
-              await loadLeaves(leaveTypes, token, year, month);
               showNotif("Historique des validations effacé ✅");
             }}
             onClearPlanningData={async()=>{
               const allLeaves=requests;
+              // Supprimer localement d'abord
+              setRequests([]);
+              setLeaves({});
+              // Puis supprimer du serveur en arrière-plan
               await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              // Recharger depuis le backend pour persister
-              await loadRequests(token);
-              await loadLeaves(leaveTypes, token, year, month);
               showNotif("Données du planning supprimées ✅");
             }}
           />
