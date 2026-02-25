@@ -3,7 +3,18 @@ import { useState, useEffect } from "react";
 const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-const COLORS = ["#6366f1","#0ea5e9","#f59e0b","#10b981","#8b5cf6","#ef4444","#ec4899","#14b8a6","#f97316","#84cc16"];
+const COLORS = [
+  // Bleus & violets
+  "#6366f1","#818cf8","#3b82f6","#0ea5e9","#06b6d4","#8b5cf6","#a855f7","#d946ef",
+  // Verts
+  "#10b981","#14b8a6","#22c55e","#84cc16","#65a30d",
+  // Jaunes & oranges
+  "#f59e0b","#eab308","#f97316","#fb923c",
+  // Rouges & roses
+  "#ef4444","#dc2626","#ec4899","#f43f5e",
+  // Neutres
+  "#64748b","#475569","#1e293b","#78716c","#92400e",
+];
 const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail"];
 const PRESENCE_CODES = ["rueil","paris"];
 function isPresenceType(t){ return PRESENCE_CODES.includes((t.code||"").toLowerCase()) || ["rueil","paris"].includes((t.label||"").toLowerCase()); }
@@ -62,6 +73,16 @@ function getFeries(year){
   };
 }
 
+const LEAVE_ORDER = ["cp","congé payé","rtt","½ cp","½cp","1/2 cp","½ rtt","½rtt","1/2 rtt","absence","pont","formation","rueil","paris"];
+function sortLeaveTypes(lts){
+  return [...lts].sort((a,b)=>{
+    const ai=LEAVE_ORDER.indexOf((a.label||"").toLowerCase().trim());
+    const bi=LEAVE_ORDER.indexOf((b.label||"").toLowerCase().trim());
+    if(ai===-1&&bi===-1)return(a.label||"").localeCompare(b.label||"");
+    if(ai===-1)return 1;if(bi===-1)return -1;return ai-bi;
+  });
+}
+
 function hexToLight(hex){
   try{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},0.1)`;}
   catch{return "#f3f4f6";}
@@ -77,7 +98,7 @@ function addDays(dateStr,n){const d=new Date(dateStr);d.setDate(d.getDate()+n);r
 function compareDates(a,b){return a<b?-1:a>b?1:0;}
 function leaveAbbr(label){
   if(!label)return"???";
-  const map={"½ CP":"½CP","½ RTT":"½RTT","Congé payé":"CP","RTT":"RTT","Pont":"PON","Formation":"FOR","Absence":"ABS","Rueil":"RUE","Paris":"PAR"};
+  const map={"½ CP":"½CP","½ RTT":"½RTT","Congé payé":"CP","CP":"CP","RTT":"RTT","Pont":"Pt","Formation":"FOR","Absence":"ABS","Rueil":"R","Paris":"P"};
   if(map[label])return map[label];
   return label.replace(/[^a-zA-Z0-9½]/g,"").slice(0,4).toUpperCase()||label.slice(0,3).toUpperCase();
 }
@@ -218,89 +239,140 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
   async function handleAddTeam(){if(!newTeam.trim())return;try{const data=await apiFetch("/teams",token,{method:"POST",body:JSON.stringify({name:newTeam.trim()})});if(data.id){onTeamAdded(data);setNewTeam("");showNotif("Équipe ajoutée ✅");}}catch{showNotif("Erreur","error");}}
   async function handleDeleteTeam(team){try{await apiFetch(`/teams/${team.id}`,token,{method:"DELETE"});onTeamDeleted(team.id);showNotif("Équipe supprimée","error");}catch{showNotif("Erreur","error");}}
   async function handleAddLT(){if(!newLT.label.trim())return;try{const data=await apiFetch("/leave-types",token,{method:"POST",body:JSON.stringify({label:newLT.label.trim(),color:newLT.color})});if(data.id){onLeaveTypeAdded({...data,bg:hexToLight(data.color)});setNewLT({label:"",color:COLORS[0]});showNotif("Type ajouté ✅");}}catch{showNotif("Erreur","error");}}
-  async function handleUpdateLT(lt,newLabel){try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"PATCH",body:JSON.stringify({label:newLabel})});onLeaveTypeUpdated(lt.id,{label:newLabel});setEditLT(null);showNotif("Modifié ✅");}catch{showNotif("Erreur","error");}}
+  async function handleUpdateLT(lt,newLabel,newColor){try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"PATCH",body:JSON.stringify({label:newLabel,color:newColor})});onLeaveTypeUpdated(lt.id,{label:newLabel,color:newColor,bg:hexToLight(newColor)});setEditLT(null);showNotif("Modifié ✅");}catch{showNotif("Erreur","error");}}
+  async function handleAssignAgentTeam(agentId,teamName){
+    try{
+      await apiFetch(`/agents/${agentId}`,token,{method:"PATCH",body:JSON.stringify({team:teamName})});
+      onAgentUpdated(agentId,{team:teamName});
+      showNotif("Équipe mise à jour ✅");
+    }catch{showNotif("Erreur","error");}
+  }
   async function handleDeleteLT(lt){try{await apiFetch(`/leave-types/${lt.id}`,token,{method:"DELETE"});onLeaveTypeDeleted(lt.id);showNotif("Type supprimé","error");}catch{showNotif("Erreur","error");}}
 
   return(
-    <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
-      <div style={{display:"flex",gap:8,marginBottom:24}}>
-        {[{id:"agents",icon:"👥",label:"Agents"},{id:"teams",icon:"🏢",label:"Équipes"},{id:"leavetypes",icon:"🏷",label:"Types de congés"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"8px 18px",borderRadius:10,border:"none",background:tab===t.id?"linear-gradient(135deg,#667eea,#764ba2)":"#fff",color:tab===t.id?"#fff":"#6b7280",cursor:"pointer",fontSize:13,fontWeight:600,boxShadow:tab===t.id?"0 4px 14px rgba(102,126,234,0.3)":"0 1px 4px rgba(0,0,0,0.06)"}}>{t.icon} {t.label}</button>
-        ))}
+    <div style={{padding:24,animation:"fadeIn 0.3s ease",maxWidth:900}}>
+      {/* Onglets */}
+      <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:4,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+        <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+          {[{id:"agents",label:"Agents"},{id:"teams",label:"Équipes"},{id:"leavetypes",label:"Types de congés"}].map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"5px 16px",borderRadius:5,border:"none",background:tab===t.id?"#fff":"transparent",color:tab===t.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:tab===t.id?700:400,boxShadow:tab===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{t.label}</button>
+          ))}
+        </div>
       </div>
       {tab==="agents"&&(
         <div>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <span style={{fontSize:14,color:"#6b7280"}}>{agents.length} agents</span>
-            <button onClick={()=>setAddModal(true)} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"8px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
-          </div>
-          <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr style={{background:"#f8fafc",borderBottom:"1px solid #f1f5f9"}}>
-                {["Agent","Email","Équipe","Rôle","Actions"].map(h=><th key={h} style={{padding:"12px 16px",textAlign:"left",fontSize:11,color:"#94a3b8",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.5px"}}>{h}</th>)}
-              </tr></thead>
-              <tbody>{agents.map(a=>(
-                <tr key={a.id} style={{borderBottom:"1px solid #f8fafc"}}>
-                  <td style={{padding:"12px 16px"}}><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div><span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span></div></td>
-                  <td style={{padding:"12px 16px",fontSize:12,color:"#94a3b8"}}>{a.email}</td>
-                  <td style={{padding:"12px 16px",fontSize:12,color:"#64748b"}}>{a.team||"—"}</td>
-                  <td style={{padding:"12px 16px"}}><span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#dcfce7",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#166534",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}}>{a.role==="admin"?"👑 Admin":a.role==="manager"?"👑 Manager":"Agent"}</span></td>
-                  <td style={{padding:"12px 16px"}}><div style={{display:"flex",gap:6}}>
-                    <button onClick={()=>{
-                      const parts=a.name.split(" ");
-                      setEditModal(a);
-                      setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:""});
-                    }} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#64748b"}}>✏️ Modifier</button>
-                    {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"5px 10px",cursor:"pointer",fontSize:11,fontWeight:600,color:"#ef4444"}}>🗑</button>}
-                  </div></td>
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      {tab==="teams"&&(
-        <div>
-          <div style={{display:"flex",gap:10,marginBottom:20}}>
-            <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()} style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
-            <button onClick={handleAddTeam} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>+ Ajouter</button>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
-            {teams.map(team=>(
-              <div key={team.id||team.name} className="card" style={{background:"#fff",borderRadius:12,border:"1px solid #f1f5f9",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>🏢</div><div><div style={{fontWeight:600,color:"#1e293b",fontSize:14}}>{team.name}</div><div style={{fontSize:11,color:"#94a3b8"}}>{agents.filter(a=>a.team===team.name).length} agents</div></div></div>
-                {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#ef4444",fontWeight:600}}>🗑</button>}
+          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:12,fontWeight:700,color:"#64748b"}}>{agents.length} agent{agents.length>1?"s":""}</span>
+              <button onClick={()=>setAddModal(true)} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>+ Ajouter</button>
+            </div>
+            {agents.map((a,i)=>(
+              <div key={a.id} style={{display:"grid",gridTemplateColumns:"40px 1fr auto",alignItems:"center",gap:14,padding:"11px 16px",borderBottom:i<agents.length-1?"1px solid #f8fafc":"none",transition:"background 0.1s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span>
+                    <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#f1f5f9",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#64748b",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":"Agent"}</span>
+                  </div>
+                  <div style={{fontSize:11,color:"#94a3b8",marginTop:1}}>{a.email}{a.team&&<span style={{marginLeft:8,color:"#64748b"}}>· {a.team}</span>}</div>
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <button onClick={()=>{const parts=a.name.split(" ");setEditModal(a);setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:""});}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b",fontWeight:500}}>Modifier</button>
+                  {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{padding:"4px 8px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>}
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+      {tab==="teams"&&(
+        <div>
+          {/* Ajouter équipe */}
+          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()} style={{flex:1,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
+            <button onClick={handleAddTeam} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
+          </div>
+          {/* Liste équipes */}
+          {teams.map(team=>{
+            const teamAgents=agents.filter(a=>a.team===team.name);
+            const unassigned=agents.filter(a=>!a.team||a.team!==team.name);
+            return(
+              <div key={team.id||team.name} style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+                {/* Header équipe */}
+                <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{team.name}</span>
+                    <span style={{fontSize:11,color:"#94a3b8"}}>{teamAgents.length} agent{teamAgents.length>1?"s":""}</span>
+                  </div>
+                  {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>Supprimer</button>}
+                </div>
+                {/* Agents de l'équipe */}
+                {teamAgents.map((a,i)=>(
+                  <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 16px",borderBottom:i<teamAgents.length-1?"1px solid #f8fafc":"none"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
+                    <span style={{fontSize:12,fontWeight:500,color:"#1e293b",flex:1}}>{a.name}</span>
+                    <button onClick={()=>handleAssignAgentTeam(a.id,"")} style={{padding:"2px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontSize:10,color:"#94a3b8"}}>Retirer</button>
+                  </div>
+                ))}
+                {/* Ajouter agent à l'équipe */}
+                {unassigned.filter(a=>a.role!=="admin").length>0&&(
+                  <div style={{padding:"8px 16px",borderTop:teamAgents.length>0?"1px solid #f8fafc":"none",background:"#fafafa"}}>
+                    <select onChange={e=>{if(e.target.value)handleAssignAgentTeam(e.target.value,team.name);e.target.value="";}}
+                      style={{width:"100%",padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",fontSize:11,color:"#64748b",cursor:"pointer"}}>
+                      <option value="">+ Ajouter un agent à cette équipe...</option>
+                      {unassigned.filter(a=>a.role!=="admin").map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
       {tab==="leavetypes"&&(
         <div>
-          <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",padding:20,marginBottom:16,boxShadow:"0 2px 8px rgba(0,0,0,0.05)"}}>
-            <h3 style={{margin:"0 0 14px",fontSize:14,fontWeight:700,color:"#1e293b"}}>➕ Nouveau type de congé</h3>
-            <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-              <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Ex: Congé sans solde" style={{flex:1,minWidth:160,padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:26,height:26,borderRadius:8,background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.15s"}}/>)}</div>
-              <button onClick={handleAddLT} className="btn-primary" style={{background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",border:"none",borderRadius:10,padding:"10px 18px",cursor:"pointer",fontSize:13,fontWeight:600}}>Ajouter</button>
+          {/* Ajouter un type */}
+          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 14px",marginBottom:14,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:10}}>
+              <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Nom du type de congé..." onKeyDown={e=>e.key==="Enter"&&handleAddLT()} style={{flex:1,minWidth:160,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
+              <button onClick={handleAddLT} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+              {COLORS.map(c=><button key={c} onClick={()=>setNewLT(p=>({...p,color:c}))} style={{width:22,height:22,borderRadius:5,background:c,border:newLT.color===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s"}}/>)}
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:12}}>
-            {leaveTypes.map(lt=>(
-              <div key={lt.id} className="card" style={{background:"#fff",borderRadius:12,border:`1.5px solid ${lt.color}30`,padding:16,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>
+          {/* Liste types */}
+          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            {sortLeaveTypes(leaveTypes).map((lt,i)=>(
+              <div key={lt.id} style={{borderBottom:i<leaveTypes.length-1?"1px solid #f8fafc":"none"}}>
                 {editLT===lt.id?(
-                  <div><input defaultValue={lt.label} id={`elt-${lt.id}`} style={{width:"100%",padding:"8px",borderRadius:6,border:"1.5px solid #e5e7eb",fontSize:13,boxSizing:"border-box",marginBottom:8,transition:"all 0.2s"}}/>
+                  <div style={{padding:"12px 16px",background:"#f8fafc"}}>
+                    <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
+                      <div style={{width:10,height:10,borderRadius:"50%",background:editLTColor||lt.color,flexShrink:0}}/>
+                      <input defaultValue={lt.label} id={`elt-${lt.id}`} style={{flex:1,padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
+                    </div>
+                    <div style={{display:"flex",gap:3,flexWrap:"wrap",marginBottom:10}}>
+                      {COLORS.map(c=><button key={c} onClick={()=>setEditLTColor(c)} style={{width:20,height:20,borderRadius:4,background:c,border:(editLTColor||lt.color)===c?"3px solid #1e293b":"2px solid transparent",cursor:"pointer",transition:"all 0.1s"}}/>)}
+                    </div>
                     <div style={{display:"flex",gap:6}}>
-                      <button onClick={()=>handleUpdateLT(lt,document.getElementById(`elt-${lt.id}`).value)} style={{flex:1,padding:"6px",borderRadius:6,border:"none",background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>Enregistrer</button>
-                      <button onClick={()=>setEditLT(null)} style={{flex:1,padding:"6px",borderRadius:6,border:"1px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:12,color:"#6b7280"}}>Annuler</button>
+                      <button onClick={()=>{handleUpdateLT(lt,document.getElementById(`elt-${lt.id}`).value,editLTColor||lt.color);setEditLTColor(null);}} style={{flex:1,padding:"5px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>Enregistrer</button>
+                      <button onClick={()=>{setEditLT(null);setEditLTColor(null);}} style={{flex:1,padding:"5px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Annuler</button>
                     </div>
                   </div>
                 ):(
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:14,height:14,borderRadius:4,background:lt.color}}/><span style={{fontWeight:600,fontSize:14,color:"#1e293b"}}>{lt.label}</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px",transition:"background 0.1s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <div style={{width:12,height:12,borderRadius:"50%",background:lt.color,flexShrink:0}}/>
+                    <span style={{flex:1,fontWeight:600,fontSize:13,color:"#1e293b"}}>{lt.label}</span>
+                    <div style={{fontSize:10,color:"#94a3b8",background:hexToLight(lt.color),padding:"2px 8px",borderRadius:4,fontWeight:700}}>{leaveAbbr(lt.label)}</div>
                     <div style={{display:"flex",gap:4}}>
-                      <button onClick={()=>setEditLT(lt.id)} style={{background:"#f8fafc",border:"1px solid #e2e8f0",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#64748b"}}>✏️</button>
-                      <button onClick={()=>handleDeleteLT(lt)} style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:5,padding:"4px 8px",cursor:"pointer",fontSize:11,color:"#ef4444"}}>🗑</button>
+                      <button onClick={()=>{setEditLT(lt.id);setEditLTColor(lt.color);}} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
+                      <button onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>
                     </div>
                   </div>
                 )}
@@ -710,7 +782,7 @@ function PlanningApp({currentUser,onLogout}){
           {leaveTypes.filter(t=>isPresenceType(t)).length>0&&(
             <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
               <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🏢 Présences site</div>
-              {leaveTypes.filter(t=>isPresenceType(t)).map(t=>(
+              {sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>(
                 <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                   <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
                 </div>
@@ -816,7 +888,7 @@ function PlanningApp({currentUser,onLogout}){
               <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
                 {filterMode==="presence"?(
                   isManager?(
-                    leaveTypes.filter(t=>isPresenceType(t)).map(t=>{
+                    sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>{
                       const sel=selectedLTId===t.id;
                       return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:700,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
                     })
@@ -824,7 +896,7 @@ function PlanningApp({currentUser,onLogout}){
                     <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
                   )
                 ):(
-                  leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>{
+                  sortLeaveTypes(leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t)))).map(t=>{
                     const sel=selectedLTId===t.id;
                     return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
                   })
@@ -1043,7 +1115,7 @@ function PlanningApp({currentUser,onLogout}){
         <div style={{marginBottom:16}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t))).map(t=>(
+            {sortLeaveTypes(leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t)))).map(t=>(
               <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>{t.label}</button>
             ))}
           </div>
