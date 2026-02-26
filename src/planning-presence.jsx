@@ -760,12 +760,7 @@ function PlanningApp({currentUser,onLogout}){
           if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
           await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
         }catch{showNotif("Erreur sauvegarde","error");}
-      }else if(isManager){
-        try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
-        catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
-        if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end),x:null,y:null});setRequestReason("");
       }
     }
@@ -796,12 +791,7 @@ function PlanningApp({currentUser,onLogout}){
           if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
           await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
         }catch{showNotif("Erreur sauvegarde","error");}
-      }else if(isManager){
-        try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
-        catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
-        if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start,end,x:null,y:null});setRequestReason("");
       }
     }
@@ -852,11 +842,18 @@ function PlanningApp({currentUser,onLogout}){
     try{
       const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:leaveType.code,start_date:start,end_date:end,reason:reason||null,agent_id:agentId})});
       if(data.leave){
-        setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType,start,end,reason:reason||null,status:"pending",createdAt:new Date().toISOString()}]);
+        // Manager/admin : approuver directement
+        if(isManager){
+          await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});
+          showNotif("Congé sauvegardé ✅");
+        }else{
+          setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType,start,end,reason:reason||null,status:"pending",createdAt:new Date().toISOString()}]);
+          showNotif("Demande envoyée au manager !");
+        }
         await loadLeaves(leaveTypes,token,year,month);
       }
-    }catch{}
-    setRequestModal(null);showNotif("Demande envoyée au manager !");
+    }catch{showNotif("Erreur sauvegarde","error");}
+    setRequestModal(null);
   }
 
   async function approveRequest(reqId){
@@ -1612,7 +1609,7 @@ function PlanningApp({currentUser,onLogout}){
             background:"#fff",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.18)",
             zIndex:99999,width:300,overflow:"hidden",animation:"slideIn 0.2s ease"}}>
             <div style={{padding:"14px 16px 10px",borderBottom:"1px solid #f1f5f9"}}>
-              <div style={{fontSize:11,color:"#94a3b8",fontWeight:500,marginBottom:2}}>Nouvelle demande</div>
+              <div style={{fontSize:11,color:"#94a3b8",fontWeight:500,marginBottom:2}}>{isManager?"Poser un congé":"Nouvelle demande"}</div>
               <div style={{fontSize:14,fontWeight:700,color:"#1e293b"}}>
                 {requestModal.start===requestModal.end
                   ? formatDate(requestModal.start)
