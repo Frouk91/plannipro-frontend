@@ -1455,9 +1455,11 @@ function PlanningApp({currentUser,onLogout}){
               const allLeaves=requests;
               setRequests([]);
               setLeaves({});
+              setAstreintes({});
+              localStorage.removeItem("astreintes");
               await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
               await loadRequests(token);
-              showNotif("Données du planning supprimées ✅");
+              showNotif("Données du planning et astreintes supprimées ✅");
             }}
           />
         )}
