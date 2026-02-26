@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
@@ -516,6 +516,18 @@ function PlanningApp({currentUser,onLogout}){
     return 1;
   }
 
+  function getAgentsByTeam(){
+    // Grouper les agents par équipe
+    const grouped={};
+    filteredAgents.forEach(agent=>{
+      const team=agent.team||"Sans équipe";
+      if(!grouped[team])grouped[team]=[];
+      grouped[team].push(agent);
+    });
+    // Retourner les équipes triées avec leurs agents
+    return Object.entries(grouped).sort(([a],[b])=>a.localeCompare(b));
+  }
+
   function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
     const agent=agents.find(a=>a.id===agentId);
@@ -996,61 +1008,68 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredAgents.map(agent=>{
-                      return(
-                      <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}>
-                        <td style={{padding:"8px 12px",display:"flex",alignItems:"center",gap:8,background:"#fff"}}>
-                          <div style={{width:30,height:30,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                            <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
-                          </div>
-                        </td>
-                        {Array.from({length:daysInMonth},(_,i)=>{
-                          const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
-                          const leave=getLeaveForDay(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day;
-                          const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
-                          return<td key={i}
-                            onClick={()=>canInteract&&handleCellClick(agent.id,day)}
-                            onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
-                            onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}}
-                            onMouseLeave={()=>setHoveredDay(null)}
-                            className={canInteract?"cell-hover":""}
-                            title={isFer?`🗓 ${feries[k]}`:""}
-                            style={{padding:"3px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc"}}>
-                            {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
-                            {leave&&!wk&&!isFer&&(
-                              filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
-                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,overflow:"hidden",position:"relative",
-                                  background:leave.status==="pending"?"#fff":leave.color,
-                                  border:`2px solid ${leave.color}`,
-                                  boxShadow:leave.status==="pending"?"none":`0 1px 4px ${leave.color}60`}}>
-                                  {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.15)"}}/>}
-                                  <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                    <span style={{fontSize:9,fontWeight:800,letterSpacing:"0.5px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
-                                      {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
-                                    </span>
-                                  </div>
-                                </div>
-                              ):(
-                                <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",
-                                  background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
-                                  borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",
-                                  border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
-                                  opacity:filterMode==="presence"?0.75:1,
-                                  boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 2px 6px ${leave.color}50`:"none"}}>
-                                  <span style={{fontSize:8,fontWeight:700,letterSpacing:"0.3px",
-                                    color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
-                                    {leave.status==="pending"?"?":leaveAbbr(leave.label)}
-                                  </span>
-                                </div>
-                              )
-                            )}
-                            {inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:5,background:"#c7d2fe",border:"1.5px solid #818cf8"}}/>}
-                          </td>;
-                        })}
-                      </tr>
-                    );})}
+                    {getAgentsByTeam().map(([teamName,teamAgents])=>(
+                      <React.Fragment key={teamName}>
+                        {/* En-tête équipe */}
+                        <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
+                          <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
+                        </tr>
+                        {/* Agents de l'équipe */}
+                        {teamAgents.map(agent=>(
+                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36}}>
+                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:"#fff",fontSize:12}}>
+                              <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                              <div style={{minWidth:0}}>
+                                <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
+                              </div>
+                            </td>
+                            {Array.from({length:daysInMonth},(_,i)=>{
+                              const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
+                              const leave=getLeaveForDay(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day;
+                              const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
+                              return<td key={i}
+                                onClick={()=>canInteract&&handleCellClick(agent.id,day)}
+                                onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
+                                onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}}
+                                onMouseLeave={()=>setHoveredDay(null)}
+                                className={canInteract?"cell-hover":""}
+                                title={isFer?`🗓 ${feries[k]}`:""}
+                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:36}}>
+                                {isFer&&!wk&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:8,color:"#d97706",fontWeight:700}}>🗓</span></div>}
+                                {leave&&!wk&&!isFer&&(
+                                  filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
+                                    <div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,overflow:"hidden",position:"relative",
+                                      background:leave.status==="pending"?"#fff":leave.color,
+                                      border:`1.5px solid ${leave.color}`,
+                                      boxShadow:leave.status==="pending"?"none":`0 1px 3px ${leave.color}50`}}>
+                                      {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.15)"}}/>}
+                                      <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                        <span style={{fontSize:8,fontWeight:700,letterSpacing:"0.3px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
+                                          {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ):(
+                                    <div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",
+                                      background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
+                                      borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center",
+                                      border:filterMode==="presence"?`1px dashed ${leave.color}`:(leave.status==="pending"?`1px dashed ${leave.color}`:"none"),
+                                      opacity:filterMode==="presence"?0.75:1,
+                                      boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 1px 4px ${leave.color}40`:"none"}}>
+                                      <span style={{fontSize:7,fontWeight:700,
+                                        color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
+                                        {leave.status==="pending"?"?":leaveAbbr(leave.label)}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                                {inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,background:"#c7d2fe",border:"1px solid #818cf8"}}/>}
+                              </td>;
+                            })}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -1079,65 +1098,72 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredAgents.map(agent=>{
-                      return(
-                      <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}>
-                        <td style={{padding:"10px 12px",display:"flex",alignItems:"center",gap:8,background:"#fff"}}>
-                          <div style={{width:32,height:32,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
-                          <div>
-                            <div style={{fontSize:12,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:100}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
-                            <div style={{fontSize:10,color:"#94a3b8"}}>{agent.team}</div>
-                          </div>
-                        </td>
-                        {weekDays.map((d,i)=>{
-                          const k=dKey(d),wk=d.getDay()===0||d.getDay()===6;
-                          const feriesDay=getFeries(d.getFullYear());
-                          const isFer=!!feriesDay[k];
-                          const leave=getLeaveForKey(agent.id,k);
-                          const inSel=isWeekInSel(agent.id,k);
-                          const isToday=k===dKey(now);
-                          const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
-                          return<td key={i}
-                            onClick={()=>canInteract&&handleWeekCellClick(agent.id,d)}
-                            onContextMenu={e=>!wk&&handleWeekCellRightClick(e,agent.id,d)}
-                            onMouseEnter={()=>{if(weekSelAgent===agent.id)setWeekHovered(k);}}
-                            onMouseLeave={()=>setWeekHovered(null)}
-                            className={canInteract?"cell-hover":""}
-                            title={isFer?`🗓 ${feriesDay[k]}`:""}
-                            style={{padding:"4px 3px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:50,verticalAlign:"middle"}}>
-                            {isFer&&!wk&&<div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",background:"rgba(251,191,36,0.15)",border:"1.5px dashed #fbbf24",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:10,color:"#d97706",fontWeight:700}}>🗓</span></div>}
-                            {leave&&!wk&&!isFer&&(
-                              filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
-                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",borderRadius:6,overflow:"hidden",position:"relative",
-                                  background:leave.status==="pending"?"#fff":leave.color,
-                                  border:`2px solid ${leave.color}`,
-                                  boxShadow:leave.status==="pending"?"none":`0 2px 8px ${leave.color}50`}}>
-                                  {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.12)"}}/>}
-                                  <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                    <span style={{fontSize:11,fontWeight:800,letterSpacing:"0.3px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
-                                      {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
-                                    </span>
-                                  </div>
-                                </div>
-                              ):(
-                                <div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",
-                                  background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
-                                  borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
-                                  border:filterMode==="presence"?`1.5px dashed ${leave.color}`:(leave.status==="pending"?`1.5px dashed ${leave.color}`:"none"),
-                                  opacity:filterMode==="presence"?0.75:1,
-                                  boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 2px 8px ${leave.color}50`:"none"}}>
-                                  <span style={{fontSize:10,fontWeight:700,
-                                    color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
-                                    {leave.status==="pending"?"?":leaveAbbr(leave.label)}
-                                  </span>
-                                </div>
-                              )
-                            )}
-                            {inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 6px)",height:30,margin:"0 3px",borderRadius:6,background:"#c7d2fe",border:"1.5px solid #818cf8"}}/>}
-                          </td>;
-                        })}
-                      </tr>
-                    );})}
+                    {getAgentsByTeam().map(([teamName,teamAgents])=>(
+                      <React.Fragment key={teamName}>
+                        {/* En-tête équipe */}
+                        <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
+                          <td colSpan={8} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
+                        </tr>
+                        {/* Agents de l'équipe */}
+                        {teamAgents.map(agent=>(
+                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38}}>
+                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:"#fff",fontSize:11}}>
+                              <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                              <div style={{minWidth:0}}>
+                                <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
+                              </div>
+                            </td>
+                            {weekDays.map((d,i)=>{
+                              const k=dKey(d),wk=d.getDay()===0||d.getDay()===6;
+                              const feriesDay=getFeries(d.getFullYear());
+                              const isFer=!!feriesDay[k];
+                              const leave=getLeaveForKey(agent.id,k);
+                              const inSel=isWeekInSel(agent.id,k);
+                              const isToday=k===dKey(now);
+                              const canInteract=(filterMode==="presence"?isManager:(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
+                              return<td key={i}
+                                onClick={()=>canInteract&&handleWeekCellClick(agent.id,d)}
+                                onContextMenu={e=>!wk&&handleWeekCellRightClick(e,agent.id,d)}
+                                onMouseEnter={()=>{if(weekSelAgent===agent.id)setWeekHovered(k);}}
+                                onMouseLeave={()=>setWeekHovered(null)}
+                                className={canInteract?"cell-hover":""}
+                                title={isFer?`🗓 ${feriesDay[k]}`:""}
+                                style={{padding:"2px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:38,verticalAlign:"middle"}}>
+                                {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
+                                {leave&&!wk&&!isFer&&(
+                                  filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
+                                    <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:4,overflow:"hidden",position:"relative",
+                                      background:leave.status==="pending"?"#fff":leave.color,
+                                      border:`1.5px solid ${leave.color}`,
+                                      boxShadow:leave.status==="pending"?"none":`0 1px 3px ${leave.color}40`}}>
+                                      {leave.status!=="pending"&&<div style={{position:"absolute",inset:0,background:"rgba(255,255,255,0.12)"}}/>}
+                                      <div style={{position:"relative",height:"100%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                        <span style={{fontSize:8,fontWeight:700,letterSpacing:"0.2px",color:leave.status==="pending"?leave.color:"#fff",textTransform:"uppercase"}}>
+                                          {leave.status==="pending"?"…":leave.label.slice(0,1).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ):(
+                                    <div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",
+                                      background:filterMode==="presence"?hexToLight(leave.color):(leave.status==="pending"?hexToLight(leave.color):leave.color),
+                                      borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",
+                                      border:filterMode==="presence"?`1px dashed ${leave.color}`:(leave.status==="pending"?`1px dashed ${leave.color}`:"none"),
+                                      opacity:filterMode==="presence"?0.75:1,
+                                      boxShadow:filterMode!=="presence"&&leave.status!=="pending"?`0 1px 3px ${leave.color}30`:"none"}}>
+                                      <span style={{fontSize:7,fontWeight:700,
+                                        color:filterMode==="presence"||leave.status==="pending"?leave.color:"#fff"}}>
+                                        {leave.status==="pending"?"?":leaveAbbr(leave.label)}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                                {inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",borderRadius:4,background:"#c7d2fe",border:"1px solid #818cf8"}}/>}
+                              </td>;
+                            })}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
                   </tbody>
                 </table>
               </div>
