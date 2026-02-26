@@ -457,7 +457,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
             <label htmlFor="presence_sites" style={{fontSize:12,fontWeight:500,color:"#4338ca",cursor:"pointer",flex:1,margin:0}}>🏢 Autoriser cet agent à gérer ses présences site (Rueil/Paris)</label>
           </div>
         )}
-        <div style={{marginBottom:20}}/>
         <ModalButtons onCancel={()=>setEditModal(null)} onConfirm={async()=>{
           try{
             await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({first_name:editData.first_name,last_name:editData.last_name,team:editData.team,role:editData.role,email:editData.email,can_book_presence_sites:editData.can_book_presence_sites,...(editData.password?{password:editData.password}:{})})});
