@@ -1595,7 +1595,6 @@ function PlanningApp({currentUser,onLogout}){
         );
       })()}
       {requestModal&&<div onClick={()=>setRequestModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.2)",zIndex:99998}}/>}
-      </Modal>}
 
       {rejectModal&&<Modal title="❌ Refuser la demande">
         <textarea value={rejectComment} onChange={e=>setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3} style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,boxSizing:"border-box",resize:"none",marginBottom:20,transition:"all 0.2s"}}/>
