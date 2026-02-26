@@ -796,7 +796,10 @@ function PlanningApp({currentUser,onLogout}){
     const{agentId,start,end}=requestModal;const agent=agents.find(a=>a.id===agentId);
     try{
       const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,reason:requestReason,agent_id:agentId})});
-      if(data.leave)setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType:currentLT,start,end,reason:requestReason,status:"pending",createdAt:new Date().toISOString()}]);
+      if(data.leave){
+        setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType:currentLT,start,end,reason:requestReason,status:"pending",createdAt:new Date().toISOString()}]);
+        await loadLeaves(leaveTypes,token,year,month); // ✅ recharger pour afficher le "?"
+      }
     }catch{}
     setRequestModal(null);showNotif("Demande envoyée au manager !");
   }
