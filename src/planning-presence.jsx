@@ -527,15 +527,17 @@ function PlanningApp({currentUser,onLogout}){
   }
 
   function getAvailableLeaveTypesForAgent(agentId){
-    if(isManager)return leaveTypes;
+    if(isManager){
+      // Manager : Rueil/Paris seulement en mode présence, types normaux seulement en mode planning
+      if(filterMode==="presence")return leaveTypes.filter(t=>isPresenceType(t));
+      return leaveTypes.filter(t=>!isPresenceType(t));
+    }
     const agent=agents.find(a=>a.id===agentId);
     if(!agent)return leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code)&&!isPresenceType(t));
     return leaveTypes.filter(t=>{
       const isAllowed=AGENT_ALLOWED_CODES.includes(t.code);
       const isPresence=isPresenceType(t);
-      // Présences : disponibles UNIQUEMENT en mode présence si autorisé
       if(isPresence)return filterMode==="presence"&&agent.can_book_presence_sites;
-      // Types normaux : disponibles UNIQUEMENT en mode normal
       return isAllowed&&filterMode!=="presence";
     });
   }
@@ -1084,10 +1086,7 @@ function PlanningApp({currentUser,onLogout}){
                   <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
                 )}
                 {filterMode==="presence"&&(isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)&&(
-                  sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>{
-                    const sel=selectedLTId===t.id;
-                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:700,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
-                  })
+                  <span style={{fontSize:11,color:"#0d9488",fontStyle:"italic"}}>Cliquez sur une date pour poser une présence</span>
                 )}
                 {filterMode==="all"&&<span style={{fontSize:11,color:"#94a3b8",fontStyle:"italic"}}>Cliquez sur une date pour poser un congé</span>}
                 <div style={{marginLeft:"auto",display:"flex",gap:4}}>
