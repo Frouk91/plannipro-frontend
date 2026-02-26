@@ -498,6 +498,7 @@ function PlanningApp({currentUser,onLogout}){
   const [dataLoaded,setDataLoaded]=useState(false);
   const [showMonthPicker,setShowMonthPicker]=useState(false);
   const [statsFilter,setStatsFilter]=useState("month");
+  const [selectedAgentForStats,setSelectedAgentForStats]=useState(null);
   const [contextMenu,setContextMenu]=useState(null);
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
@@ -515,24 +516,25 @@ function PlanningApp({currentUser,onLogout}){
     return 1;
   }
 
-  function getStatsCounts(filterType){
+  function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
-    agents.forEach(a=>{
-      Object.entries(leaves[a.id]||{}).forEach(([dateKey,leave])=>{
-        if(!leave)return;
-        const[y,m,d]=dateKey.split("-");
-        const leaveYear=parseInt(y);
-        const leaveMonth=parseInt(m)-1;
-        if(filterType==="month"){if(leaveYear!==year||leaveMonth!==month)return;}
-        else if(filterType==="year"){if(leaveYear!==year)return;}
-        const days=getDaysForLeaveType(leave);
-        const code=(leave.code||"").toLowerCase();
-        const lbl=(leave.label||"").toLowerCase();
-        if(code.includes("cp")||lbl.includes("congé payé")||lbl.includes("cp")){stats.cp+=days;}
-        else if(code.includes("rtt")||lbl.includes("rtt")){stats.rtt+=days;}
-        else if(code.includes("pont")||lbl.includes("pont")){stats.pont+=days;}
-        else if(code.includes("absence")||lbl.includes("absence")){stats.absence+=days;}
-      });
+    const agent=agents.find(a=>a.id===agentId);
+    if(!agent)return stats;
+    
+    Object.entries(leaves[agentId]||{}).forEach(([dateKey,leave])=>{
+      if(!leave)return;
+      const[y,m,d]=dateKey.split("-");
+      const leaveYear=parseInt(y);
+      const leaveMonth=parseInt(m)-1;
+      if(filterType==="month"){if(leaveYear!==year||leaveMonth!==month)return;}
+      else if(filterType==="year"){if(leaveYear!==year)return;}
+      const days=getDaysForLeaveType(leave);
+      const code=(leave.code||"").toLowerCase();
+      const lbl=(leave.label||"").toLowerCase();
+      if(code.includes("cp")||lbl.includes("congé payé")||lbl.includes("cp")){stats.cp+=days;}
+      else if(code.includes("rtt")||lbl.includes("rtt")){stats.rtt+=days;}
+      else if(code.includes("pont")||lbl.includes("pont")){stats.pont+=days;}
+      else if(code.includes("absence")||lbl.includes("absence")){stats.absence+=days;}
     });
     return stats;
   }
@@ -1173,11 +1175,24 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="stats"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
+            {/* Filtre Agent (pour managers/admins) */}
+            {isManager&&(
+              <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+                <label style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Agent :</label>
+                <select value={selectedAgentForStats||""} onChange={e=>setSelectedAgentForStats(e.target.value||null)} style={{flex:1,maxWidth:300,padding:"8px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,color:"#1e293b",cursor:"pointer",background:"#fff"}}>
+                  <option value="">Mon profil</option>
+                  {agents.filter(a=>a.role!=="admin").map(a=>(
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Filtre Mois/Année */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
-              <span style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Afficher :</span>
+              <span style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Période :</span>
               <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
-                {[{id:"month",label:`Mois de ${MONTHS_FR[month]} ${year}`},{id:"year",label:`Année ${year}`}].map(f=>(
+                {[{id:"month",label:`${MONTHS_FR[month]} ${year}`},{id:"year",label:`Année ${year}`}].map(f=>(
                   <button key={f.id} onClick={()=>setStatsFilter(f.id)} style={{padding:"6px 14px",borderRadius:5,border:"none",background:statsFilter===f.id?"#fff":"transparent",color:statsFilter===f.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:statsFilter===f.id?600:400,boxShadow:statsFilter===f.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{f.label}</button>
                 ))}
               </div>
@@ -1186,28 +1201,47 @@ function PlanningApp({currentUser,onLogout}){
             {/* Cartes Statistiques */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>
               {(() => {
-                const counts = getStatsCounts(statsFilter);
+                // Déterminer quel agent afficher
+                const displayAgentId = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
+                const displayAgent = agents.find(a=>a.id===displayAgentId);
+                
+                if(!displayAgent)return <div style={{color:"#94a3b8",fontSize:12}}>Agent non trouvé</div>;
+                
+                const counts = getStatsCounts(statsFilter, displayAgentId);
                 const stats = [
                   { key: "cp", label: "Congés Payés", color: "#6366f1", icon: "✏️", days: counts.cp },
                   { key: "rtt", label: "RTT", color: "#10b981", icon: "⏱️", days: counts.rtt },
                   { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
                   { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
                 ];
-                return stats.map(s => (
-                  <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
-                    <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${s.color}15`}}/>
-                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-                      <span style={{fontSize:24}}>{s.icon}</span>
-                      <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>{s.label}</span>
-                    </div>
-                    <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:4}}>
-                      {s.days.toLocaleString('fr-FR', {minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1})}
-                    </div>
-                    <div style={{fontSize:12,color:"#94a3b8",fontWeight:500}}>
-                      {statsFilter==="month"?`${MONTHS_FR[month]} ${year}`:`Année ${year}`}
-                    </div>
-                  </div>
-                ));
+                
+                return (
+                  <>
+                    {/* Nom de l'agent */}
+                    {isManager&&selectedAgentForStats&&(
+                      <div style={{gridColumn:"1 / -1",padding:"12px 16px",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,marginBottom:8}}>
+                        <span style={{fontSize:12,fontWeight:600,color:"#4338ca"}}>📊 Statistiques de {displayAgent.name}</span>
+                      </div>
+                    )}
+                    
+                    {/* Cartes */}
+                    {stats.map(s => (
+                      <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
+                        <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${s.color}15`}}/>
+                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                          <span style={{fontSize:24}}>{s.icon}</span>
+                          <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>{s.label}</span>
+                        </div>
+                        <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:4}}>
+                          {s.days.toLocaleString('fr-FR', {minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1})}
+                        </div>
+                        <div style={{fontSize:12,color:"#94a3b8",fontWeight:500}}>
+                          {statsFilter==="month"?`${MONTHS_FR[month]} ${year}`:`Année ${year}`}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                );
               })()}
             </div>
           </div>
