@@ -498,6 +498,16 @@ function PlanningApp({currentUser,onLogout}){
   const [dataLoaded,setDataLoaded]=useState(false);
   const [showMonthPicker,setShowMonthPicker]=useState(false);
   const [statsFilter,setStatsFilter]=useState("month");
+  const [contextMenu,setContextMenu]=useState(null);
+  const [seenRejected,setSeenRejected]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
+    catch{return [];}
+  });
+
+  const token=currentUser.token;
+  const isManager=currentUser.role==="manager"||currentUser.role==="admin";
+  const isAdmin=currentUser.role==="admin";
+  const feries=getFeries(year);
 
   function getDaysForLeaveType(leave){
     const label=(leave.label||"").toLowerCase();
@@ -526,15 +536,6 @@ function PlanningApp({currentUser,onLogout}){
     });
     return stats;
   }
-  const [seenRejected,setSeenRejected]=useState(()=>{
-    try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
-    catch{return [];}
-  });
-
-  const token=currentUser.token;
-  const isManager=currentUser.role==="manager"||currentUser.role==="admin";
-  const isAdmin=currentUser.role==="admin";
-  const feries=getFeries(year);
 
   useEffect(()=>{
     async function loadAll(){
