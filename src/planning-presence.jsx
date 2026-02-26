@@ -612,9 +612,17 @@ function PlanningApp({currentUser,onLogout}){
         if(!leavesMap[l.agent_id])leavesMap[l.agent_id]={};
         const lt=leaveFromBackend(l);
         const leaveStart=l.start_date.split("T")[0],leaveEnd=l.end_date.split("T")[0];
+        const isPresence=PRESENCE_CODES.includes((l.leave_type_code||"").toLowerCase());
         for(let d=new Date(l.start_date);d<=new Date(l.end_date);d.setDate(d.getDate()+1)){
-          const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-          leavesMap[l.agent_id][k]={...lt,status:l.status,leaveId:l.id,leaveStart,leaveEnd,leaveCode:l.leave_type_code,agentId:l.agent_id};
+          const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"00")}-${String(d.getDate()).padStart(2,"0")}`;
+          const entry={...lt,status:l.status,leaveId:l.id,leaveStart,leaveEnd,leaveCode:l.leave_type_code,agentId:l.agent_id};
+          if(isPresence){
+            // Stocker les présences avec clé dédiée __presence pour ne pas écraser CP/RTT
+            leavesMap[l.agent_id][k+"__presence"]=entry;
+          }else{
+            // Stocker le congé normal (CP/RTT etc)
+            leavesMap[l.agent_id][k]=entry;
+          }
         }
       });
       setLeaves(leavesMap);
@@ -648,25 +656,71 @@ function PlanningApp({currentUser,onLogout}){
 
   const weekDays=getWeekDays(weekAnchor.getFullYear(),weekAnchor.getMonth(),weekAnchor.getDate());
 
+  function getAllLeavesForKey(agentId,k){
+    // Retourne toutes les entrées pour un agent+jour (peut y avoir présence + CP/RTT)
+    const agentLeaves=leaves[agentId]||{};
+    // On stocke par leaveId pour éviter les doublons de plage
+    const seen={};
+    const result=[];
+    // L'entrée principale
+    const main=agentLeaves[k];
+    if(main){seen[main.leaveId]=true;result.push(main);}
+    // Chercher d'autres entrées avec un leaveId différent sur la même clé
+    // (stockées avec suffix si overlap - non implémenté, donc on cherche dans leaves brut)
+    return result;
+  }
+
   function getLeaveForDay(agentId,day){
     const k=dateKey(year,month,day);
-    const leave=leaves[agentId]?.[k];
-    if(!leave)return null;
-    if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
-    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
-    if(filterStatus==="approved"&&leave.status!=="approved")return null;
-    if(filterStatus==="pending"&&leave.status!=="pending")return null;
-    return leave;
+    if(filterMode==="presence"){
+      // Mode présence : chercher dans __presence d'abord, puis k normal si présence
+      const pLeave=leaves[agentId]?.[k+"__presence"];
+      const nLeave=leaves[agentId]?.[k];
+      const leave=pLeave||(nLeave&&isPresenceCode(nLeave.code,nLeave.label)?nLeave:null);
+      if(!leave)return null;
+      if(!isManager&&!isPresenceCode(leave.code,leave.label))return null;
+      if(filterStatus==="approved"&&leave.status!=="approved")return null;
+      if(filterStatus==="pending"&&leave.status!=="pending")return null;
+      return leave;
+    }else{
+      // Mode normal : chercher le congé non-présence (k), ignorer __presence
+      const leave=leaves[agentId]?.[k];
+      if(!leave)return null;
+      if(isPresenceCode(leave.code,leave.label))return null;
+      if(filterStatus==="approved"&&leave.status!=="approved")return null;
+      if(filterStatus==="pending"&&leave.status!=="pending")return null;
+      return leave;
+    }
+  }
+
+  function getPresenceLeaveForDay(agentId,day){
+    // Retourne la présence (Rueil/Paris) si elle existe ce jour, indépendamment du filterMode
+    const k=dateKey(year,month,day);
+    const allForAgent=leaves[agentId]||{};
+    // Chercher dans presenceLeaves (stocké séparément)
+    const pKey=k+"__presence";
+    if(allForAgent[pKey])return allForAgent[pKey];
+    return null;
   }
 
   function getLeaveForKey(agentId,k){
-    const leave=leaves[agentId]?.[k];
-    if(!leave)return null;
-    if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
-    if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
-    if(filterStatus==="approved"&&leave.status!=="approved")return null;
-    if(filterStatus==="pending"&&leave.status!=="pending")return null;
-    return leave;
+    if(filterMode==="presence"){
+      const pLeave=leaves[agentId]?.[k+"__presence"];
+      const nLeave=leaves[agentId]?.[k];
+      const leave=pLeave||(nLeave&&isPresenceCode(nLeave.code,nLeave.label)?nLeave:null);
+      if(!leave)return null;
+      if(!isManager&&!isPresenceCode(leave.code,leave.label))return null;
+      if(filterStatus==="approved"&&leave.status!=="approved")return null;
+      if(filterStatus==="pending"&&leave.status!=="pending")return null;
+      return leave;
+    }else{
+      const leave=leaves[agentId]?.[k];
+      if(!leave)return null;
+      if(isPresenceCode(leave.code,leave.label))return null;
+      if(filterStatus==="approved"&&leave.status!=="approved")return null;
+      if(filterStatus==="pending"&&leave.status!=="pending")return null;
+      return leave;
+    }
   }
 
   function getWeekPresenceCount(agentId,days){
