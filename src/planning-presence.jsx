@@ -316,11 +316,12 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span>
                     <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#f1f5f9",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#64748b",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":"Agent"}</span>
+                    {a.role==="agent"&&a.can_book_presence_sites&&<span style={{background:"#dbeafe",color:"#0369a1",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>🏢 Présences</span>}
                   </div>
                   <div style={{fontSize:11,color:"#94a3b8",marginTop:1}}>{a.email}{a.team&&<span style={{marginLeft:8,color:"#64748b"}}>· {a.team}</span>}</div>
                 </div>
                 <div style={{display:"flex",gap:6}}>
-                  <button onClick={()=>{const parts=a.name.split(" ");setEditModal(a);setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:""});}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b",fontWeight:500}}>Modifier</button>
+                  <button onClick={()=>{const parts=a.name.split(" ");setEditModal(a);setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:"",can_book_presence_sites:a.can_book_presence_sites||false});}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b",fontWeight:500}}>Modifier</button>
                   {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{padding:"4px 8px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>}
                 </div>
               </div>
@@ -449,10 +450,17 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
               <option value="agent">Agent</option><option value="manager">Manager 👑</option>
             </select></div>
         </div>
-        <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:20}}/>
+        <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:12}}/>
+        {editData.role==="agent"&&(
+          <div style={{background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,padding:"12px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
+            <input type="checkbox" id="presence_sites" checked={editData.can_book_presence_sites||false} onChange={e=>setEditData(p=>({...p,can_book_presence_sites:e.target.checked}))} style={{width:18,height:18,cursor:"pointer",accentColor:"#6366f1"}}/>
+            <label htmlFor="presence_sites" style={{fontSize:12,fontWeight:500,color:"#4338ca",cursor:"pointer",flex:1,margin:0}}>🏢 Autoriser cet agent à gérer ses présences site (Rueil/Paris)</label>
+          </div>
+        )}
+        <div style={{marginBottom:20}}/>
         <ModalButtons onCancel={()=>setEditModal(null)} onConfirm={async()=>{
           try{
-            await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({first_name:editData.first_name,last_name:editData.last_name,team:editData.team,role:editData.role,email:editData.email,...(editData.password?{password:editData.password}:{})})});
+            await apiFetch(`/agents/${editModal.id}`,token,{method:"PATCH",body:JSON.stringify({first_name:editData.first_name,last_name:editData.last_name,team:editData.team,role:editData.role,email:editData.email,can_book_presence_sites:editData.can_book_presence_sites,...(editData.password?{password:editData.password}:{})})});
           }catch(e){console.error(e);}
           const newName=`${editData.first_name} ${editData.last_name}`.trim();
           onAgentUpdated(editModal.id,{...editData,name:newName,avatar:getInitials(newName)});
@@ -516,16 +524,22 @@ function PlanningApp({currentUser,onLogout}){
     return 1;
   }
 
-  function getAgentsByTeam(){
-    // Grouper les agents par équipe
-    const grouped={};
-    filteredAgents.forEach(agent=>{
-      const team=agent.team||"Sans équipe";
-      if(!grouped[team])grouped[team]=[];
-      grouped[team].push(agent);
+  function getAvailableLeaveTypesForAgent(agentId){
+    // Pour les managers : tous les types
+    if(isManager)return leaveTypes;
+    
+    // Pour les agents : CP, RTT, teletravail + présences site si autorisé
+    const agent=agents.find(a=>a.id===agentId);
+    if(!agent)return leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code)&&!isPresenceType(t));
+    
+    return leaveTypes.filter(t=>{
+      const isAllowed=AGENT_ALLOWED_CODES.includes(t.code);
+      const isPresence=isPresenceType(t);
+      // Si c'est une présence, vérifier la permission
+      if(isPresence)return agent.can_book_presence_sites;
+      // Sinon, c'est un type normal autorisé
+      return isAllowed;
     });
-    // Retourner les équipes triées avec leurs agents
-    return Object.entries(grouped).sort(([a],[b])=>a.localeCompare(b));
   }
 
   function getStatsCounts(filterType,agentId){
@@ -561,7 +575,7 @@ function PlanningApp({currentUser,onLogout}){
         const allowedFirst=ltFormatted.find(t=>AGENT_ALLOWED_CODES.includes(t.code));
         if(ltFormatted.length>0)setSelectedLTId((allowedFirst||ltFormatted[0]).id);
         const agentsRaw=agentsData.agents||(Array.isArray(agentsData)?agentsData:[]);
-        setAgents(agentsRaw.map(a=>({id:a.id,name:`${a.first_name||""} ${a.last_name||""}`.trim(),email:a.email,role:a.role||"agent",team:a.team_name||a.team||"",avatar:a.avatar_initials||getInitials(`${a.first_name||""} ${a.last_name||""}`)})));
+        setAgents(agentsRaw.map(a=>({id:a.id,name:`${a.first_name||""} ${a.last_name||""}`.trim(),email:a.email,role:a.role||"agent",team:a.team_name||a.team||"",avatar:a.avatar_initials||getInitials(`${a.first_name||""} ${a.last_name||""}`),can_book_presence_sites:a.can_book_presence_sites||false})));
         await loadLeaves(ltFormatted,token,now.getFullYear(),now.getMonth());
         await loadRequests(token);
       }catch(e){console.error("Erreur chargement:",e);}
@@ -674,8 +688,8 @@ function PlanningApp({currentUser,onLogout}){
         try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
         catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code));
-        if(!AGENT_ALLOWED_CODES.includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
+        const allowedTypes=getAvailableLeaveTypesForAgent(agentId);
+        if(!getAvailableLeaveTypesForAgent(agentId).map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end)});setRequestReason("");
       }
     }
@@ -702,8 +716,8 @@ function PlanningApp({currentUser,onLogout}){
         try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
         catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code));
-        if(!AGENT_ALLOWED_CODES.includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
+        const allowedTypes=getAvailableLeaveTypesForAgent(agentId);
+        if(!getAvailableLeaveTypesForAgent(agentId).map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start,end});setRequestReason("");
       }
     }
@@ -880,7 +894,7 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="admin"&&isAdmin&&<AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           onAgentAdded={a=>setAgents(prev=>[...prev,a])}
-          onAgentUpdated={(id,data)=>setAgents(prev=>prev.map(a=>a.id===id?{...a,...(data.name?{name:data.name,avatar:getInitials(data.name)}:{}),email:data.email||a.email,team:data.team!==undefined?data.team:a.team,role:data.role||a.role}:a))}
+          onAgentUpdated={(id,data)=>setAgents(prev=>prev.map(a=>a.id===id?{...a,...(data.name?{name:data.name,avatar:getInitials(data.name)}:{}),email:data.email||a.email,team:data.team!==undefined?data.team:a.team,role:data.role||a.role,can_book_presence_sites:data.can_book_presence_sites!==undefined?data.can_book_presence_sites:a.can_book_presence_sites}:a))}
           onAgentDeleted={id=>setAgents(prev=>prev.filter(a=>a.id!==id))}
           onTeamAdded={t=>setTeams(prev=>[...prev,t])}
           onTeamDeleted={id=>setTeams(prev=>prev.filter(t=>t.id!==id))}
@@ -972,7 +986,7 @@ function PlanningApp({currentUser,onLogout}){
                     <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
                   )
                 ):(
-                  sortLeaveTypes(leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t)))).map(t=>{
+                  sortLeaveTypes(getAvailableLeaveTypesForAgent(currentUser.id)).map(t=>{
                     const sel=selectedLTId===t.id;
                     return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{leaveAbbr(t.label)}</button>;
                   })
@@ -1279,7 +1293,7 @@ function PlanningApp({currentUser,onLogout}){
         <div style={{marginBottom:16}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {sortLeaveTypes(leaveTypes.filter(t=>(isManager||AGENT_ALLOWED_CODES.includes(t.code))&&(isManager||!isPresenceType(t)))).map(t=>(
+            {sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal?.agentId || currentUser.id)).map(t=>(
               <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>{t.label}</button>
             ))}
           </div>
