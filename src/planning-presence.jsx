@@ -506,6 +506,9 @@ function PlanningApp({currentUser,onLogout}){
     {id:"es",label:"ES"},
   ];
   const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, teamName, rowType, x, y }
+  const [astreinteFilter,setAstreinteFilter]=useState("all"); // "all"|"Css Digital"|"Mailing Solution"
+  const [astreinteSelStart,setAstreinteSelStart]=useState(null); // { aKey base, rowType, teamName }
+  const [astreinteHovered,setAstreinteHovered]=useState(null); // dateKey hovered
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -698,7 +701,7 @@ function PlanningApp({currentUser,onLogout}){
       // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
       if(filterMode==="presence"&&!isManager){
         try{
-          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});
+          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId,allow_presence_overlap:true})});
           if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
           await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
         }catch{showNotif("Erreur sauvegarde","error");}
@@ -734,7 +737,7 @@ function PlanningApp({currentUser,onLogout}){
       // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
       if(filterMode==="presence"&&!isManager){
         try{
-          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId})});
+          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId,allow_presence_overlap:true})});
           if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
           await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
         }catch{showNotif("Erreur sauvegarde","error");}
@@ -998,6 +1001,12 @@ function PlanningApp({currentUser,onLogout}){
                 </div>
               </div>
               {/* Ligne 2 */}
+              {filterMode==="astreinte"&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
+                <span style={{fontSize:11,fontWeight:600,color:"#64748b"}}>Filtrer :</span>
+                {["all","Css Digital","Mailing Solution"].map(f=>(
+                  <button key={f} onClick={()=>setAstreinteFilter(f)} style={{padding:"3px 12px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:astreinteFilter===f?700:400,background:astreinteFilter===f?"#f59e0b":"#fff",color:astreinteFilter===f?"#fff":"#64748b",borderColor:astreinteFilter===f?"#f59e0b":"#e2e8f0",transition:"all 0.15s"}}>{f==="all"?"Toutes les équipes":f}</button>
+                ))}
+              </div>}
               {filterMode!=="astreinte"&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
                 {filterMode==="presence"?(
                   (isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)?(
@@ -1045,52 +1054,85 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {/* ── CSS DIGITAL : astreinte vendredi uniquement ── */}
+                    {/* helper: render one astreinte row */}
                     {(()=>{
-                      const cssTeam=teams.find(t=>t.name==="Css Digital");
-                      if(!cssTeam)return null;
-                      const cssAgents=agents.filter(a=>a.team==="Css Digital"&&a.role!=="admin");
-                      return(
-                        <React.Fragment>
-                          <tr style={{background:"#f0f9ff",borderBottom:"2px solid #bae6fd"}}>
-                            <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#0369a1",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Css Digital — Astreinte vendredi</td>
-                          </tr>
-                          <tr style={{borderBottom:"2px solid #e2e8f0",height:48}}>
-                            <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:"#475569"}}>Agent d'astreinte</td>
+                      function AstreinteRow({teamName,rowId,rowLabel,fridayOnly,color,bg,border,textColor,teamAgentsList}){
+                        return(
+                          <tr style={{borderBottom:"1px solid #f1f5f9",height:48}}>
+                            <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:textColor,whiteSpace:"nowrap"}}>
+                              <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:color,marginRight:6}}/>
+                              {rowLabel}
+                            </td>
                             {Array.from({length:daysInMonth},(_,i)=>{
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
-                              const isFriday=new Date(year,month,day).getDay()===5;
-                              const canClick=isManager&&isFriday&&!wk;
-                              const aKey=`Css Digital|astreinte|${k}`;
+                              const dow=new Date(year,month,day).getDay();
+                              const isFriday=dow===5;
+                              const isWorkday=!wk;
+                              const eligible=isWorkday&&(fridayOnly?isFriday:true);
+                              const canClick=isManager&&eligible;
+                              const aKey=`${teamName}|${rowId}|${k}`;
                               const aAgentId=astreintes[aKey];
                               const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
+                              // drag selection highlight
+                              const inSel=astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId&&astreinteHovered&&eligible&&(()=>{
+                                const s=astreinteSelStart.key,e=astreinteHovered;
+                                return k>=Math.min(s,e)&&k<=Math.max(s,e);
+                              })();
                               return<td key={i}
-                                onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.aKey===aKey?null:{aKey,teamName:"Css Digital",rowType:"astreinte",key:k,x:e.clientX,y:e.clientY});}}}
+                                onMouseDown={e=>{if(!canClick)return;e.preventDefault();
+                                  if(astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId){
+                                    // second click: assign to all days in range
+                                    const s=astreinteSelStart.key,en=k;
+                                    const minK=s<en?s:en,maxK=s<en?en:s;
+                                    if(astreinteSelStart.agentId){
+                                      setAstreintes(prev=>{
+                                        const n={...prev};
+                                        for(let d=1;d<=daysInMonth;d++){
+                                          const dk=dateKey(year,month,d),dow2=new Date(year,month,d).getDay(),wk2=dow2===0||dow2===6;
+                                          const isFri2=dow2===5;
+                                          if(dk>=minK&&dk<=maxK&&!wk2&&(fridayOnly?isFri2:true)){
+                                            n[`${teamName}|${rowId}|${dk}`]=astreinteSelStart.agentId;
+                                          }
+                                        }
+                                        return n;
+                                      });
+                                    }
+                                    setAstreinteSelStart(null);setAstreinteHovered(null);
+                                  }else{
+                                    // first click: open dropdown to pick agent then start selection
+                                    setAstreinteDropdown({aKey,teamName,rowId,rowType:rowId,key:k,x:e.clientX,y:e.clientY,
+                                      onAgentPicked:(agentId)=>{
+                                        setAstreinteSelStart({teamName,rowId,key:k,agentId});
+                                        setAstreinteHovered(k);
+                                      }
+                                    });
+                                  }
+                                }}
+                                onMouseEnter={()=>{if(astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId&&eligible)setAstreinteHovered(k);}}
                                 className={canClick?"cell-hover":""}
                                 style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
-                                  background:wk?"#fafafa":isFriday?"#fffbeb":"#fff",
-                                  borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle"}}>
-                                {isFriday&&!wk&&(aAgent?(
+                                  background:inSel?"#fde68a":wk?"#fafafa":fridayOnly&&!isFriday?"#fff":eligible?"#fff":"#fff",
+                                  borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle",
+                                  outline:inSel?"2px solid #f59e0b":"none",outlineOffset:"-2px"}}>
+                                {eligible&&(aAgent?(
                                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
                                     <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
-                                    <span style={{fontSize:7,color:"#0369a1",fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
+                                    <span style={{fontSize:7,color:textColor,fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
                                   </div>
                                 ):(
-                                  isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:"1.5px dashed #7dd3fc",background:"#f0f9ff",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                    <span style={{fontSize:12,color:"#7dd3fc",fontWeight:700}}>+</span>
+                                  isManager&&!astreinteSelStart&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:`1.5px dashed ${border}`,background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                    <span style={{fontSize:12,color:border,fontWeight:700}}>+</span>
                                   </div>
                                 ))}
                               </td>;
                             })}
                           </tr>
-                        </React.Fragment>
-                      );
-                    })()}
+                        );
+                      }
 
-                    {/* ── MAILING SOLUTION : astreinte vendredi + 3 lignes lun-ven ── */}
-                    {(()=>{
-                      const mailTeam=teams.find(t=>t.name==="Mailing Solution");
-                      if(!mailTeam)return null;
+                      const showCss=astreinteFilter==="all"||astreinteFilter==="Css Digital";
+                      const showMail=astreinteFilter==="all"||astreinteFilter==="Mailing Solution";
+                      const cssAgents=agents.filter(a=>a.team==="Css Digital"&&a.role!=="admin");
                       const mailAgents=agents.filter(a=>a.team==="Mailing Solution"&&a.role!=="admin");
                       const mailingRows=[
                         {id:"astreinte",label:"Astreinte vendredi",fridayOnly:true,color:"#f59e0b",bg:"#fffbeb",border:"#fcd34d",textColor:"#92400e"},
@@ -1100,44 +1142,24 @@ function PlanningApp({currentUser,onLogout}){
                       ];
                       return(
                         <React.Fragment>
-                          <tr style={{background:"#fdf4ff",borderBottom:"2px solid #e9d5ff"}}>
-                            <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#7c3aed",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Mailing Solution</td>
-                          </tr>
-                          {mailingRows.map(row=>(
-                            <tr key={row.id} style={{borderBottom:"1px solid #f1f5f9",height:48}}>
-                              <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:row.textColor,whiteSpace:"nowrap"}}>
-                                <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:row.color,marginRight:6}}/>
-                                {row.label}
-                              </td>
-                              {Array.from({length:daysInMonth},(_,i)=>{
-                                const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
-                                const dow=new Date(year,month,day).getDay();
-                                const isFriday=dow===5;
-                                const isWorkday=!wk;
-                                const canClick=isManager&&isWorkday&&(row.fridayOnly?isFriday:true);
-                                const aKey=`Mailing Solution|${row.id}|${k}`;
-                                const aAgentId=astreintes[aKey];
-                                const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
-                                return<td key={i}
-                                  onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.aKey===aKey?null:{aKey,teamName:"Mailing Solution",rowType:row.id,key:k,x:e.clientX,y:e.clientY});}}}
-                                  className={canClick?"cell-hover":""}
-                                  style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
-                                    background:wk?"#fafafa":row.fridayOnly&&!isFriday?"#fff":(canClick||aAgent)?row.bg:"#fff",
-                                    borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle"}}>
-                                  {isWorkday&&(!row.fridayOnly||isFriday)&&(aAgent?(
-                                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
-                                      <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
-                                      <span style={{fontSize:7,color:row.textColor,fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
-                                    </div>
-                                  ):(
-                                    isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:`1.5px dashed ${row.border}`,background:row.bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                      <span style={{fontSize:12,color:row.border,fontWeight:700}}>+</span>
-                                    </div>
-                                  ))}
-                                </td>;
-                              })}
-                            </tr>
-                          ))}
+                          {showCss&&(
+                            <React.Fragment>
+                              <tr style={{background:"#f0f9ff",borderBottom:"2px solid #bae6fd"}}>
+                                <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#0369a1",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Css Digital — Astreinte vendredi</td>
+                              </tr>
+                              <AstreinteRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents}/>
+                            </React.Fragment>
+                          )}
+                          {showMail&&(
+                            <React.Fragment>
+                              <tr style={{background:"#fdf4ff",borderBottom:"2px solid #e9d5ff"}}>
+                                <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#7c3aed",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Mailing Solution</td>
+                              </tr>
+                              {mailingRows.map(row=>(
+                                <AstreinteRow key={row.id} teamName="Mailing Solution" rowId={row.id} rowLabel={row.label} fridayOnly={row.fridayOnly} color={row.color} bg={row.bg} border={row.border} textColor={row.textColor} teamAgentsList={mailAgents}/>
+                              ))}
+                            </React.Fragment>
+                          )}
                         </React.Fragment>
                       );
                     })()}
@@ -1434,30 +1456,41 @@ function PlanningApp({currentUser,onLogout}){
       </main>
 
       {/* DROPDOWN ASTREINTE */}
-      {astreinteDropdown&&isManager&&(()=>{
-        const {aKey,teamName:aTeamName,rowType,key:aDateKey}=astreinteDropdown;
+      {astreinteDropdown&&(()=>{
+        const {aKey,teamName:aTeamName,rowType,rowId,key:aDateKey,onAgentPicked}=astreinteDropdown;
         const aTeamAgents=agents.filter(a=>a.team===aTeamName&&a.role!=="admin");
         const rowLabels={astreinte:"Astreinte vendredi",action_serveur:"Action Serveur / Admin",mail:"Mail",es:"ES"};
         const [ay,am,ad]=(aDateKey||"").split("-");
         const dateLabel=`${ad}/${am}`;
         return(
           <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:Math.min(astreinteDropdown.y,window.innerHeight-320),left:Math.min(astreinteDropdown.x,window.innerWidth-240),background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:230,maxHeight:360,overflowY:"auto",animation:"slideIn 0.15s ease"}}>
-            <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#1e293b",fontWeight:700,background:"#f8fafc",position:"sticky",top:0}}>
-              🔔 {aTeamName} — {rowLabels[rowType]||rowType}<br/>
-              <span style={{fontSize:10,color:"#94a3b8",fontWeight:400}}>{dateLabel}</span>
+            <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#1e293b",fontWeight:700,background:"#fef3c7",position:"sticky",top:0}}>
+              🔔 {aTeamName} — {rowLabels[rowType||rowId]||rowType||rowId}<br/>
+              <span style={{fontSize:10,color:"#92400e",fontWeight:400}}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
             </div>
-            {astreintes[aKey]&&(
-              <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer</button>
+            {!onAgentPicked&&astreintes[aKey]&&(
+              <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer ce jour uniquement</button>
             )}
             {aTeamAgents.length===0&&<div style={{padding:"16px",fontSize:12,color:"#94a3b8",textAlign:"center"}}>Aucun agent dans cette équipe</div>}
             {aTeamAgents.map(a=>(
-              <button key={a.id} onClick={()=>{setAstreintes(prev=>({...prev,[aKey]:a.id}));setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[aKey]===a.id?700:400}}>
+              <button key={a.id} onClick={()=>{
+                if(onAgentPicked){
+                  // Mode sélection : choisir agent puis glisser
+                  onAgentPicked(a.id);
+                  setAstreinteDropdown(null);
+                }else{
+                  // Mode simple : assigner ce jour uniquement
+                  setAstreintes(prev=>({...prev,[aKey]:a.id}));
+                  setAstreinteDropdown(null);
+                }
+              }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:!onAgentPicked&&astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:!onAgentPicked&&astreintes[aKey]===a.id?700:400,transition:"background 0.1s"}}>
                 <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
                 <span style={{flex:1,textAlign:"left"}}>{a.name}</span>
-                {astreintes[aKey]===a.id&&<span style={{color:"#f59e0b"}}>✓</span>}
+                {!onAgentPicked&&astreintes[aKey]===a.id&&<span style={{color:"#f59e0b"}}>✓</span>}
+                {onAgentPicked&&<span style={{fontSize:10,color:"#94a3b8"}}>→ puis glisser</span>}
               </button>
             ))}
-            <button onClick={()=>setAstreinteDropdown(null)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Fermer</button>
+            <button onClick={()=>{setAstreinteDropdown(null);setAstreinteSelStart(null);setAstreinteHovered(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Annuler</button>
           </div>
         );
       })()}
