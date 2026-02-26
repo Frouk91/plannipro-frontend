@@ -905,9 +905,7 @@ function PlanningApp({currentUser,onLogout}){
 
   return(
     <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
-      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}>
-      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}
->
+      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}> 
 
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
       {contextMenu&&<ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={()=>setContextMenu(null)}/>}
