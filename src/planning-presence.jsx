@@ -494,6 +494,11 @@ function PlanningApp({currentUser,onLogout}){
   const [statsFilter,setStatsFilter]=useState("month");
   const [selectedAgentForStats,setSelectedAgentForStats]=useState(null);
   const [contextMenu,setContextMenu]=useState(null);
+  const [astreintes,setAstreintes]=useState(()=>{
+    try{return JSON.parse(localStorage.getItem("astreintes")||"{}");}
+    catch{return {};}
+  });
+  const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, x, y }
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -616,6 +621,10 @@ function PlanningApp({currentUser,onLogout}){
   }
 
   function showNotif(msg,type="success"){setNotification({msg,type});setTimeout(()=>setNotification(null),3500);}
+
+  useEffect(()=>{
+    try{localStorage.setItem("astreintes",JSON.stringify(astreintes));}catch{}
+  },[astreintes]);
 
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
@@ -828,7 +837,7 @@ function PlanningApp({currentUser,onLogout}){
 
   return(
     <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
-      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);}}>
+      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);}}>
       <style>{GLOBAL_STYLE}</style>
 
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
@@ -892,6 +901,12 @@ function PlanningApp({currentUser,onLogout}){
           <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
             <div style={{width:10,height:10,borderRadius:3,border:"1.5px dashed #fbbf24",background:"#fef9ec"}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Jour férié</span>
           </div>
+          {isManager&&(
+            <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+              <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🔔 Astreintes vendredi</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -966,6 +981,8 @@ function PlanningApp({currentUser,onLogout}){
                 <div style={{width:1,height:18,background:"#e2e8f0",margin:"0 2px"}}/>
                 {/* Présences site */}
                 <button onClick={()=>{const newMode=filterMode==="presence"?"all":"presence";setFilterMode(newMode);if(newMode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}}} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"#0d9488":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🏢 Présences site</button>
+                {/* Astreintes */}
+                {isManager&&<button onClick={()=>setFilterMode(m=>m==="astreinte"?"all":"astreinte")} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="astreinte"?"#f59e0b":"#e2e8f0"}`,background:filterMode==="astreinte"?"#f59e0b":"#fff",color:filterMode==="astreinte"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🔔 Astreintes</button>}
                 {/* Filtres équipe */}
                 <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
                   {allTeams.map(t=>(
@@ -974,7 +991,7 @@ function PlanningApp({currentUser,onLogout}){
                 </div>
               </div>
               {/* Ligne 2 */}
-              <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
+              {filterMode!=="astreinte"&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
                 {filterMode==="presence"?(
                   (isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)?(
                     sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>{
@@ -995,11 +1012,64 @@ function PlanningApp({currentUser,onLogout}){
                     <button key={f.id} onClick={()=>setFilterStatus(f.id)} style={{padding:"3px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterStatus===f.id?600:400,background:filterStatus===f.id?"#1e293b":"#fff",color:filterStatus===f.id?"#fff":"#64748b",borderColor:filterStatus===f.id?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{f.label}</button>
                   ))}
                 </div>
-              </div>
+              </div>}
             </div>
 
             {/* VUE MOIS */}
-            {planView==="month"&&(
+            {planView==="month"&&filterMode==="astreinte"&&(
+              <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
+                  <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
+                  <thead>
+                    <tr>
+                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#fef9ec",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 ASTREINTES</th>
+                      {Array.from({length:daysInMonth},(_,i)=>{
+                        const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day,isFer=!!feries[k];
+                        const isFriday=new Date(year,month,day).getDay()===5;
+                        return<th key={i} style={{padding:"4px 2px",textAlign:"center",fontSize:9,fontWeight:600,
+                          background:isFriday&&!wk?"#fef3c7":isToday?"#eef2ff":wk?"#fafafa":"#f8fafc",
+                          color:isFriday&&!wk?"#d97706":isToday?"#6366f1":wk?"#d1d5db":"#94a3b8",
+                          borderBottom:`2px solid ${isFriday&&!wk?"#f59e0b":isToday?"#6366f1":"#f1f5f9"}`,
+                          borderLeft:"1px solid #f8fafc",minWidth:26}}>
+                          <div style={{textTransform:"uppercase"}}>{DAYS_FR[(i+firstDay)%7].slice(0,1)}</div>
+                          <div style={{fontSize:11,fontWeight:700,color:isFriday&&!wk?"#d97706":isToday?"#6366f1":wk?"#e2e8f0":"#475569",marginTop:1}}>{day}</div>
+                        </th>;
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{borderBottom:"1px solid #f1f5f9",height:44}}>
+                      <td style={{padding:"4px 10px",background:"#fff",fontSize:12,fontWeight:600,color:"#92400e"}}>🔔 Agent d'astreinte</td>
+                      {Array.from({length:daysInMonth},(_,i)=>{
+                        const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
+                        const isFriday=new Date(year,month,day).getDay()===5;
+                        const canClick=isManager&&isFriday&&!wk;
+                        const aAgentId=astreintes[k];
+                        const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
+                        return<td key={i}
+                          onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===k?null:{key:k,x:e.clientX,y:e.clientY});}}}
+                          className={canClick?"cell-hover":""}
+                          style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
+                            background:wk?"#fafafa":isFriday?"#fffbeb":"#fff",
+                            borderLeft:"1px solid #f8fafc",height:44,verticalAlign:"middle"}}>
+                          {isFriday&&!wk&&(aAgent?(
+                            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                              <div style={{width:22,height:22,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:8,fontWeight:700}}>{aAgent.avatar}</div>
+                              <span style={{fontSize:7,color:"#92400e",fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
+                            </div>
+                          ):(
+                            isManager&&<div style={{width:"calc(100% - 4px)",height:28,margin:"0 2px",borderRadius:3,border:"1.5px dashed #fcd34d",background:"#fffbeb",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{fontSize:10,color:"#fcd34d",fontWeight:700}}>+</span>
+                            </div>
+                          ))}
+                        </td>;
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {planView==="month"&&filterMode!=="astreinte"&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
@@ -1009,7 +1079,9 @@ function PlanningApp({currentUser,onLogout}){
                       {Array.from({length:daysInMonth},(_,i)=>{
                         const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day,isFer=!!feries[k];
                         const absent=countAbsents(k);
-                        return<th key={i} style={{padding:"4px 2px",textAlign:"center",fontSize:9,fontWeight:600,background:isToday?"#eef2ff":isFer?"#fef9ec":wk?"#fafafa":"#f8fafc",color:isToday?"#6366f1":isFer?"#d97706":wk?"#d1d5db":"#94a3b8",borderBottom:`2px solid ${isToday?"#6366f1":isFer?"#fde68a":"#f1f5f9"}`,borderLeft:"1px solid #f8fafc",minWidth:26}}>
+                        const isFriday=new Date(year,month,day).getDay()===5;
+                        const isAstrDay=filterMode==="astreinte"&&isFriday&&!wk;
+                        return<th key={i} style={{padding:"4px 2px",textAlign:"center",fontSize:9,fontWeight:600,background:isAstrDay?"#fef3c7":isToday?"#eef2ff":isFer?"#fef9ec":wk?"#fafafa":"#f8fafc",color:isAstrDay?"#d97706":isToday?"#6366f1":isFer?"#d97706":wk?"#d1d5db":"#94a3b8",borderBottom:`2px solid ${isAstrDay?"#f59e0b":isToday?"#6366f1":isFer?"#fde68a":"#f1f5f9"}`,borderLeft:"1px solid #f8fafc",minWidth:26}}>
                           <div style={{textTransform:"uppercase"}}>{DAYS_FR[(i+firstDay)%7].slice(0,1)}</div>
                           <div style={{fontSize:11,fontWeight:700,color:isToday?"#6366f1":isFer?"#d97706":wk?"#e2e8f0":"#475569",marginTop:1}}>{day}</div>
                           {isFer&&!wk&&<div title={feries[k]} style={{fontSize:8,color:"#f59e0b"}}>🗓</div>}
@@ -1037,17 +1109,32 @@ function PlanningApp({currentUser,onLogout}){
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
                               const leave=getLeaveForDay(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day;
                               const agentCanPresence=!!agents.find(a=>a.id===agent.id)?.can_book_presence_sites;
-                              const canInteract=(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
+                              const isFridayCell=new Date(year,month,day).getDay()===5;
+                              const canInteract=filterMode==="astreinte"?(isManager&&isFridayCell&&!wk):(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                               return<td key={i}
-                                onClick={()=>canInteract&&handleCellClick(agent.id,day)}
+                                onClick={e=>{if(filterMode==="astreinte"&&canInteract){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===dateKey(year,month,day)?null:{key:dateKey(year,month,day),x:e.clientX,y:e.clientY});}else canInteract&&handleCellClick(agent.id,day);}}
                                 onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
                                 onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}}
                                 onMouseLeave={()=>setHoveredDay(null)}
                                 className={canInteract?"cell-hover":""}
                                 title={isFer?`🗓 ${feries[k]}`:""}
-                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:36}}>
-                                {isFer&&!wk&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:8,color:"#d97706",fontWeight:700}}>🗓</span></div>}
-                                {leave&&!wk&&!isFer&&(
+                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:36,position:"relative"}}>
+                                {filterMode==="astreinte"&&isFridayCell&&!wk&&(()=>{
+                                  const aKey=dateKey(year,month,day);
+                                  const aAgentId=astreintes[aKey];
+                                  const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
+                                  return aAgent?(
+                                    <div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,background:"#fef3c7",border:"1.5px solid #f59e0b",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                      <span style={{fontSize:8,fontWeight:800,color:"#92400e"}}>{aAgent.avatar}</span>
+                                    </div>
+                                  ):(
+                                    <div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,border:"1px dashed #fcd34d",background:"#fffbeb",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                      <span style={{fontSize:9,color:"#fcd34d"}}>+</span>
+                                    </div>
+                                  );
+                                })()}
+                                {filterMode!=="astreinte"&&isFer&&!wk&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:8,color:"#d97706",fontWeight:700}}>🗓</span></div>}
+                                {filterMode!=="astreinte"&&leave&&!wk&&!isFer&&(
                                   filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
                                     <div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,overflow:"hidden",position:"relative",
                                       background:leave.status==="pending"?"#fff":leave.color,
@@ -1074,7 +1161,7 @@ function PlanningApp({currentUser,onLogout}){
                                     </div>
                                   )
                                 )}
-                                {inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,background:"#c7d2fe",border:"1px solid #818cf8"}}/>}
+                                {filterMode!=="astreinte"&&inSel&&!leave&&!isFer&&<div style={{width:"calc(100% - 2px)",height:20,margin:"0 1px",borderRadius:3,background:"#c7d2fe",border:"1px solid #818cf8"}}/>}
                               </td>;
                             })}
                           </tr>
@@ -1269,6 +1356,24 @@ function PlanningApp({currentUser,onLogout}){
           </div>
         )}
       </main>
+
+      {/* DROPDOWN ASTREINTE */}
+      {astreinteDropdown&&isManager&&(
+        <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:astreinteDropdown.y,left:astreinteDropdown.x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:200,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
+          <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#92400e",fontWeight:700,background:"#fef3c7"}}>🔔 Astreinte — {astreinteDropdown.key}</div>
+          {astreintes[astreinteDropdown.key]&&(
+            <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[astreinteDropdown.key];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer l'astreinte</button>
+          )}
+          {agents.filter(a=>a.role!=="admin").map(a=>(
+            <button key={a.id} onClick={()=>{setAstreintes(prev=>({...prev,[astreinteDropdown.key]:a.id}));setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[astreinteDropdown.key]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[astreinteDropdown.key]===a.id?700:400}}>
+              <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
+              <span>{a.name}</span>
+              {astreintes[astreinteDropdown.key]===a.id&&<span style={{marginLeft:"auto",color:"#f59e0b"}}>✓</span>}
+            </button>
+          ))}
+          <button onClick={()=>setAstreinteDropdown(null)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Fermer</button>
+        </div>
+      )}
 
       {requestModal&&currentLT&&<Modal title="📝 Nouvelle demande de congé">
         <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>Du <strong style={{color:"#1e293b"}}>{formatDate(requestModal.start)}</strong> au <strong style={{color:"#1e293b"}}>{formatDate(requestModal.end)}</strong></p>
