@@ -1000,17 +1000,24 @@ function PlanningApp({currentUser,onLogout}){
             {/* BARRE DE CONTRÔLES */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
-              <div style={{display:"flex",gap:2,marginBottom:10,borderBottom:"2px solid #f1f5f9",paddingBottom:0}}>
+              <div style={{display:"flex",gap:4,marginBottom:12}}>
                 {[
-                  {mode:"all",label:"🗓 Planning",color:"#6366f1"},
-                  {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488"},
-                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b"},
+                  {mode:"all",label:"🗓 Planning",color:"#6366f1",bg:"#eef2ff"},
+                  {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488",bg:"#f0fdfa"},
+                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b",bg:"#fffbeb"},
                 ].map(tab=>(
                   <button key={tab.mode} onClick={()=>{
                     setFilterMode(tab.mode);
                     if(tab.mode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}
-                  }} style={{padding:"8px 18px",border:"none",borderBottom:`2px solid ${filterMode===tab.mode?tab.color:"transparent"}`,background:"none",cursor:"pointer",fontSize:13,fontWeight:filterMode===tab.mode?700:400,color:filterMode===tab.mode?tab.color:"#94a3b8",marginBottom:-2,transition:"all 0.15s"}}>
-                    {tab.label}{tab.mode==="astreinte"&&!isManager?" 👁":""}
+                  }} style={{
+                    padding:"8px 18px",border:`2px solid ${filterMode===tab.mode?tab.color:"#e2e8f0"}`,
+                    borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:filterMode===tab.mode?700:500,
+                    color:filterMode===tab.mode?tab.color:"#94a3b8",
+                    background:filterMode===tab.mode?tab.bg:"#fff",
+                    boxShadow:filterMode===tab.mode?`0 2px 8px ${tab.color}30`:"none",
+                    transition:"all 0.15s"
+                  }}>
+                    {tab.label}
                   </button>
                 ))}
               </div>
