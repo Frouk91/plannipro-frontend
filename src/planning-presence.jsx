@@ -765,7 +765,7 @@ function PlanningApp({currentUser,onLogout}){
       }else{
         const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
         if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
-        setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end)});setRequestReason("");
+        setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end),x:null,y:null});setRequestReason("");
       }
     }
   }
@@ -801,7 +801,7 @@ function PlanningApp({currentUser,onLogout}){
       }else{
         const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
         if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
-        setRequestModal({agentId,start,end});setRequestReason("");
+        setRequestModal({agentId,start,end,x:null,y:null});setRequestReason("");
       }
     }
   }
@@ -845,14 +845,14 @@ function PlanningApp({currentUser,onLogout}){
     }catch(e){console.error(e);showNotif("Erreur","error");}
   }
 
-  async function submitRequest(){
-    if(!requestModal||!currentLT)return;
+  async function submitRequest(leaveType,reason){
+    if(!requestModal||!leaveType)return;
     const{agentId,start,end}=requestModal;const agent=agents.find(a=>a.id===agentId);
     try{
-      const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,reason:requestReason,agent_id:agentId})});
+      const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:leaveType.code,start_date:start,end_date:end,reason:reason||null,agent_id:agentId})});
       if(data.leave){
-        setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType:currentLT,start,end,reason:requestReason,status:"pending",createdAt:new Date().toISOString()}]);
-        await loadLeaves(leaveTypes,token,year,month); // ✅ recharger pour afficher le "?"
+        setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType,start,end,reason:reason||null,status:"pending",createdAt:new Date().toISOString()}]);
+        await loadLeaves(leaveTypes,token,year,month);
       }
     }catch{}
     setRequestModal(null);showNotif("Demande envoyée au manager !");
@@ -1076,21 +1076,16 @@ function PlanningApp({currentUser,onLogout}){
                 ))}
               </div>}
               {filterMode!=="astreinte"&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
-                {filterMode==="presence"?(
-                  (isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)?(
-                    sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>{
-                      const sel=selectedLTId===t.id;
-                      return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:700,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
-                    })
-                  ):(
-                    <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
-                  )
-                ):(
-                  sortLeaveTypes(getAvailableLeaveTypesForAgent(currentUser.id)).map(t=>{
+                {filterMode==="presence"&&!(isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)&&(
+                  <span style={{fontSize:11,color:"#94a3b8"}}>🔒 Consultation uniquement</span>
+                )}
+                {filterMode==="presence"&&(isManager||agents.find(a=>a.id===currentUser.id)?.can_book_presence_sites)&&(
+                  sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>{
                     const sel=selectedLTId===t.id;
-                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{leaveAbbr(t.label)}</button>;
+                    return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:700,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{t.label}</button>;
                   })
                 )}
+                {filterMode==="all"&&<span style={{fontSize:11,color:"#94a3b8",fontStyle:"italic"}}>Cliquez sur une date pour poser un congé</span>}
                 <div style={{marginLeft:"auto",display:"flex",gap:4}}>
                   {[{id:"all",label:"Tous"},{id:"approved",label:"Approuvés"},{id:"pending",label:"En attente"}].map(f=>(
                     <button key={f.id} onClick={()=>setFilterStatus(f.id)} style={{padding:"3px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterStatus===f.id?600:400,background:filterStatus===f.id?"#1e293b":"#fff",color:filterStatus===f.id?"#fff":"#64748b",borderColor:filterStatus===f.id?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{f.label}</button>
@@ -1563,21 +1558,43 @@ function PlanningApp({currentUser,onLogout}){
         );
       })()}
 
-      {requestModal&&currentLT&&<Modal title="📝 Nouvelle demande de congé">
-        <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>Du <strong style={{color:"#1e293b"}}>{formatDate(requestModal.start)}</strong> au <strong style={{color:"#1e293b"}}>{formatDate(requestModal.end)}</strong></p>
-        <div style={{marginBottom:16}}>
-          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal?.agentId||currentUser.id)).map(t=>(
-              <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>{t.label}</button>
-            ))}
+      {requestModal&&(()=>{
+        const availTypes=sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId||currentUser.id));
+        return(
+          <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",
+            background:"#fff",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.18)",
+            zIndex:99999,width:300,overflow:"hidden",animation:"slideIn 0.2s ease"}}>
+            <div style={{padding:"14px 16px 10px",borderBottom:"1px solid #f1f5f9"}}>
+              <div style={{fontSize:11,color:"#94a3b8",fontWeight:500,marginBottom:2}}>Nouvelle demande</div>
+              <div style={{fontSize:14,fontWeight:700,color:"#1e293b"}}>
+                {requestModal.start===requestModal.end
+                  ? formatDate(requestModal.start)
+                  : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
+              </div>
+            </div>
+            <div style={{padding:"6px 0"}}>
+              {availTypes.map(t=>(
+                <button key={t.id} onClick={()=>{
+                  const reason=document.getElementById("leave-reason-input")?.value||"";
+                  submitRequest(t,reason);
+                }} style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"10px 16px",
+                  border:"none",background:"none",cursor:"pointer",textAlign:"left",transition:"background 0.1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
+                  onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                  <div style={{width:12,height:12,borderRadius:"50%",background:t.color,flexShrink:0,boxShadow:`0 0 0 3px ${t.color}25`}}/>
+                  <span style={{fontSize:13,fontWeight:600,color:"#1e293b",flex:1}}>{t.label}</span>
+                  <span style={{fontSize:10,color:"#94a3b8",background:"#f1f5f9",padding:"2px 7px",borderRadius:4,fontWeight:600}}>{leaveAbbr(t.label)}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{padding:"8px 16px 14px",borderTop:"1px solid #f8fafc"}}>
+              <input id="leave-reason-input" placeholder="Raison (optionnel)..." style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:12,color:"#374151",outline:"none",boxSizing:"border-box"}}/>
+            </div>
+            <button onClick={()=>setRequestModal(null)} style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid #f1f5f9",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8",fontWeight:500}}>✕ Annuler</button>
           </div>
-        </div>
-        <div style={{marginBottom:20}}>
-          <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Motif (optionnel)</label>
-          <textarea value={requestReason} onChange={e=>setRequestReason(e.target.value)} rows={3} placeholder="Précisez si nécessaire..." style={{width:"100%",padding:"10px 14px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,boxSizing:"border-box",resize:"none",transition:"all 0.2s"}}/>
-        </div>
-        <ModalButtons onCancel={()=>setRequestModal(null)} onConfirm={submitRequest} confirmLabel="Envoyer la demande"/>
+        );
+      })()}
+      {requestModal&&<div onClick={()=>setRequestModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.2)",zIndex:99998}}/>}
       </Modal>}
 
       {rejectModal&&<Modal title="❌ Refuser la demande">
