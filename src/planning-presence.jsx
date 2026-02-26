@@ -906,7 +906,8 @@ function PlanningApp({currentUser,onLogout}){
   return(
     <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
       onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}>
-      <style>{GLOBAL_STYLE}</style>
+      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}
+      onContextMenu={e=>{if(filterMode==="astreinte")e.preventDefault();}}>
 
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
       {contextMenu&&<ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={()=>setContextMenu(null)}/>}
@@ -1314,7 +1315,7 @@ function PlanningApp({currentUser,onLogout}){
                               const canInteract=filterMode==="astreinte"?(isManager&&isFridayCell&&!wk):(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                               return<td key={i}
                                 onClick={e=>{if(filterMode==="astreinte"&&canInteract){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===dateKey(year,month,day)?null:{key:dateKey(year,month,day),x:e.clientX,y:e.clientY});}else canInteract&&handleCellClick(agent.id,day);}}
-                                onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
+                                onContextMenu={e=>{e.preventDefault();!wk&&handleCellRightClick(e,agent.id,day);}}
                                 onMouseEnter={()=>{if(selectedAgent===agent.id)setHoveredDay(day);}}
                                 onMouseLeave={()=>setHoveredDay(null)}
                                 className={canInteract?"cell-hover":""}
@@ -1421,7 +1422,7 @@ function PlanningApp({currentUser,onLogout}){
                               const canInteract=(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                               return<td key={i}
                                 onClick={()=>canInteract&&handleWeekCellClick(agent.id,d)}
-                                onContextMenu={e=>!wk&&handleWeekCellRightClick(e,agent.id,d)}
+                                onContextMenu={e=>{e.preventDefault();!wk&&handleWeekCellRightClick(e,agent.id,d);}}
                                 onMouseEnter={()=>{if(weekSelAgent===agent.id)setWeekHovered(k);}}
                                 onMouseLeave={()=>setWeekHovered(null)}
                                 className={canInteract?"cell-hover":""}
