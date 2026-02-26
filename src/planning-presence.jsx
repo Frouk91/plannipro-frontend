@@ -4,15 +4,10 @@ const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const COLORS = [
-  // Bleus & violets
   "#6366f1","#818cf8","#3b82f6","#0ea5e9","#06b6d4","#8b5cf6","#a855f7","#d946ef",
-  // Verts
   "#10b981","#14b8a6","#22c55e","#84cc16","#65a30d",
-  // Jaunes & oranges
   "#f59e0b","#eab308","#f97316","#fb923c",
-  // Rouges & roses
   "#ef4444","#dc2626","#ec4899","#f43f5e",
-  // Neutres
   "#64748b","#475569","#1e293b","#78716c","#92400e",
 ];
 const AGENT_ALLOWED_CODES = ["cp","_cp","rtt","_rtt","teletravail"];
@@ -292,7 +287,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
 
   return(
     <div style={{padding:24,animation:"fadeIn 0.3s ease",maxWidth:900}}>
-      {/* Onglets */}
       <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:4,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
         <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
           {[{id:"agents",label:"Agents"},{id:"teams",label:"Équipes"},{id:"leavetypes",label:"Types de congés"}].map(t=>(
@@ -331,18 +325,15 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
       )}
       {tab==="teams"&&(
         <div>
-          {/* Ajouter équipe */}
           <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
             <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()} style={{flex:1,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
             <button onClick={handleAddTeam} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
           </div>
-          {/* Liste équipes */}
           {teams.map(team=>{
             const teamAgents=agents.filter(a=>a.team===team.name);
             const unassigned=agents.filter(a=>!a.team||a.team!==team.name);
             return(
               <div key={team.id||team.name} style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-                {/* Header équipe */}
                 <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{team.name}</span>
@@ -350,7 +341,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                   </div>
                   {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>Supprimer</button>}
                 </div>
-                {/* Agents de l'équipe */}
                 {teamAgents.map((a,i)=>(
                   <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 16px",borderBottom:i<teamAgents.length-1?"1px solid #f8fafc":"none"}}
                     onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
@@ -360,7 +350,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                     <button onClick={()=>handleAssignAgentTeam(a.id,"")} style={{padding:"2px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontSize:10,color:"#94a3b8"}}>Retirer</button>
                   </div>
                 ))}
-                {/* Ajouter agent à l'équipe */}
                 {unassigned.filter(a=>a.role!=="admin").length>0&&(
                   <div style={{padding:"8px 16px",borderTop:teamAgents.length>0?"1px solid #f8fafc":"none",background:"#fafafa"}}>
                     <select onChange={e=>{if(e.target.value)handleAssignAgentTeam(e.target.value,team.name);e.target.value="";}}
@@ -377,7 +366,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
       )}
       {tab==="leavetypes"&&(
         <div>
-          {/* Ajouter un type */}
           <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 14px",marginBottom:14,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:10}}>
               <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Nom du type de congé..." onKeyDown={e=>e.key==="Enter"&&handleAddLT()} style={{flex:1,minWidth:160,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
@@ -387,7 +375,6 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
               <ColorPicker selected={newLT.color} onChange={c=>setNewLT(p=>({...p,color:c}))}/>
             </div>
           </div>
-          {/* Liste types */}
           <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
             {sortLeaveTypes(leaveTypes).map((lt,i)=>(
               <div key={lt.id} style={{borderBottom:i<leaveTypes.length-1?"1px solid #f8fafc":"none"}}>
@@ -492,7 +479,7 @@ function PlanningApp({currentUser,onLogout}){
   const [weekAnchor,setWeekAnchor]=useState(new Date(now.getFullYear(),now.getMonth(),now.getDate()));
   const [filterTeam,setFilterTeam]=useState("Tous");
   const [filterStatus,setFilterStatus]=useState("all");
-  const [filterMode,setFilterMode]=useState("all"); // "all" | "presence"
+  const [filterMode,setFilterMode]=useState("all");
   const [selectedLTId,setSelectedLTId]=useState(null);
   const [selectionStart,setSelectionStart]=useState(null);
   const [hoveredDay,setHoveredDay]=useState(null);
@@ -524,19 +511,13 @@ function PlanningApp({currentUser,onLogout}){
   }
 
   function getAvailableLeaveTypesForAgent(agentId){
-    // Pour les managers : tous les types
     if(isManager)return leaveTypes;
-    
-    // Pour les agents : CP, RTT, teletravail + présences site si autorisé
     const agent=agents.find(a=>a.id===agentId);
     if(!agent)return leaveTypes.filter(t=>AGENT_ALLOWED_CODES.includes(t.code)&&!isPresenceType(t));
-    
     return leaveTypes.filter(t=>{
       const isAllowed=AGENT_ALLOWED_CODES.includes(t.code);
       const isPresence=isPresenceType(t);
-      // Si c'est une présence, vérifier la permission
       if(isPresence)return agent.can_book_presence_sites;
-      // Sinon, c'est un type normal autorisé
       return isAllowed;
     });
   }
@@ -545,7 +526,6 @@ function PlanningApp({currentUser,onLogout}){
     const stats={cp:0,rtt:0,pont:0,absence:0};
     const agent=agents.find(a=>a.id===agentId);
     if(!agent)return stats;
-    
     Object.entries(leaves[agentId]||{}).forEach(([dateKey,leave])=>{
       if(!leave)return;
       const[y,m,d]=dateKey.split("-");
@@ -562,6 +542,26 @@ function PlanningApp({currentUser,onLogout}){
       else if(code.includes("absence")||lbl.includes("absence")){stats.absence+=days;}
     });
     return stats;
+  }
+
+  // ─── FONCTION MANQUANTE : getAgentsByTeam ───
+  function getAgentsByTeam(){
+    const grouped=[];
+    const teamMap={};
+    filteredAgents.forEach(agent=>{
+      const teamName=agent.team||"Sans équipe";
+      if(!teamMap[teamName]){
+        teamMap[teamName]=[];
+        grouped.push([teamName,teamMap[teamName]]);
+      }
+      teamMap[teamName].push(agent);
+    });
+    grouped.sort(([a],[b])=>{
+      if(a==="Sans équipe")return 1;
+      if(b==="Sans équipe")return -1;
+      return a.localeCompare(b);
+    });
+    return grouped;
   }
 
   useEffect(()=>{
@@ -625,16 +625,13 @@ function PlanningApp({currentUser,onLogout}){
   const currentLT=leaveTypes.find(t=>t.id===selectedLTId)||leaveTypes[0];
   const validationBadge=isManager?pendingRequests.length:myRequests.filter(r=>r.status==="pending"||(r.status==="rejected"&&!seenRejected.includes(r.id))).length;
 
-  // Semaine
   const weekDays=getWeekDays(weekAnchor.getFullYear(),weekAnchor.getMonth(),weekAnchor.getDate());
 
   function getLeaveForDay(agentId,day){
     const k=dateKey(year,month,day);
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    // Hors mode présence : masquer Rueil/Paris
     if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
-    // En mode présence : masquer les autres congés pour les agents
     if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
@@ -644,16 +641,13 @@ function PlanningApp({currentUser,onLogout}){
   function getLeaveForKey(agentId,k){
     const leave=leaves[agentId]?.[k];
     if(!leave)return null;
-    // Hors mode présence : masquer Rueil/Paris
     if(filterMode!=="presence"&&isPresenceCode(leave.code,leave.label))return null;
-    // En mode présence : masquer les autres congés pour les agents
     if(filterMode==="presence"&&!isPresenceCode(leave.code,leave.label)&&!isManager)return null;
     if(filterStatus==="approved"&&leave.status!=="approved")return null;
     if(filterStatus==="pending"&&leave.status!=="pending")return null;
     return leave;
   }
 
-  // Compte les jours de présence site d'un agent sur une semaine donnée
   function getWeekPresenceCount(agentId,days){
     let count=0;
     days.forEach(d=>{
@@ -664,7 +658,6 @@ function PlanningApp({currentUser,onLogout}){
     return count;
   }
 
-  // Nombre d'absents par jour
   function countAbsents(k){
     return filteredAgents.filter(a=>{
       const l=leaves[a.id]?.[k];
@@ -672,7 +665,6 @@ function PlanningApp({currentUser,onLogout}){
     }).length;
   }
 
-  // Click cellule vue mois (inchangé)
   async function handleCellClick(agentId,day){
     if(contextMenu){setContextMenu(null);return;}
     if(isWeekend(year,month,day))return;
@@ -694,7 +686,6 @@ function PlanningApp({currentUser,onLogout}){
     }
   }
 
-  // Click cellule vue semaine (via clé string)
   const [weekSelStart,setWeekSelStart]=useState(null);
   const [weekSelAgent,setWeekSelAgent]=useState(null);
   const [weekHovered,setWeekHovered]=useState(null);
@@ -904,19 +895,16 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="planning"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
-            {/* ═══ BARRE DE CONTRÔLES ═══ */}
+            {/* BARRE DE CONTRÔLES */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
-
-              {/* Ligne 1 : navigation + vue + équipe */}
+              {/* Ligne 1 */}
               <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-
                 {/* Toggle Mois/Semaine */}
                 <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
                   {[{v:"month",l:"Mois"},{v:"week",l:"Semaine"}].map(({v,l})=>(
                     <button key={v} onClick={()=>setPlanView(v)} style={{padding:"4px 12px",borderRadius:5,border:"none",background:planView===v?"#fff":"transparent",color:planView===v?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:planView===v?600:400,boxShadow:planView===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{l}</button>
                   ))}
                 </div>
-
                 {/* Navigation date */}
                 <div style={{display:"flex",alignItems:"center",gap:2,position:"relative"}}>
                   <button onClick={()=>{if(planView==="month"){if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()-7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>‹</button>
@@ -927,16 +915,14 @@ function PlanningApp({currentUser,onLogout}){
                   <button onClick={()=>{if(planView==="month"){if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()+7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>›</button>
                   {showMonthPicker&&(
                     <div style={{position:"absolute",top:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:"#fff",border:"1px solid #e2e8f0",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,0.12)",zIndex:9999,padding:12,width:240,animation:"slideIn 0.15s ease"}}>
-                      {/* Sélecteur année */}
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,paddingBottom:8,borderBottom:"1px solid #f1f5f9"}}>
                         <button onClick={()=>setYear(y=>y-1)} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#94a3b8",padding:"0 6px"}}>‹</button>
                         <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{year}</span>
                         <button onClick={()=>setYear(y=>y+1)} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#94a3b8",padding:"0 6px"}}>›</button>
                       </div>
-                      {/* Grille des 12 mois */}
                       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:4}}>
                         {MONTHS_FR.map((m_label,m_idx)=>{
-                          const isCurrent=m_idx===month&&year===now.getFullYear()||(m_idx===month);
+                          const isCurrent=m_idx===month;
                           const isNow=m_idx===now.getMonth()&&year===now.getFullYear();
                           return(
                             <button key={m_idx} onClick={()=>{setMonth(m_idx);setShowMonthPicker(false);}} style={{
@@ -956,24 +942,18 @@ function PlanningApp({currentUser,onLogout}){
                     </div>
                   )}
                 </div>
-
                 <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
-
-                {/* Séparateur */}
                 <div style={{width:1,height:18,background:"#e2e8f0",margin:"0 2px"}}/>
-
                 {/* Présences site */}
                 <button onClick={()=>{const newMode=filterMode==="presence"?"all":"presence";setFilterMode(newMode);if(newMode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}}} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"#0d9488":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🏢 Présences site</button>
-
-                {/* Filtres équipe — poussés à droite */}
+                {/* Filtres équipe */}
                 <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
                   {allTeams.map(t=>(
                     <button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterTeam===t?700:400,background:filterTeam===t?"#1e293b":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{t}</button>
                   ))}
                 </div>
               </div>
-
-              {/* Ligne 2 : types de congés + filtre statut */}
+              {/* Ligne 2 */}
               <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
                 {filterMode==="presence"?(
                   isManager?(
@@ -990,7 +970,6 @@ function PlanningApp({currentUser,onLogout}){
                     return <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"3px 12px",borderRadius:6,border:`1.5px solid ${t.color}`,fontSize:11,cursor:"pointer",fontWeight:sel?700:500,background:sel?t.color:"#fff",color:sel?"#fff":t.color,transition:"all 0.15s",boxShadow:sel?`0 2px 8px ${t.color}40`:"none"}}>{leaveAbbr(t.label)}</button>;
                   })
                 )}
-                {/* Filtre statut — poussé à droite */}
                 <div style={{marginLeft:"auto",display:"flex",gap:4}}>
                   {[{id:"all",label:"Tous"},{id:"approved",label:"Approuvés"},{id:"pending",label:"En attente"}].map(f=>(
                     <button key={f.id} onClick={()=>setFilterStatus(f.id)} style={{padding:"3px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterStatus===f.id?600:400,background:filterStatus===f.id?"#1e293b":"#fff",color:filterStatus===f.id?"#fff":"#64748b",borderColor:filterStatus===f.id?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{f.label}</button>
@@ -999,7 +978,7 @@ function PlanningApp({currentUser,onLogout}){
               </div>
             </div>
 
-            {/* ─── VUE MOIS ─── */}
+            {/* VUE MOIS */}
             {planView==="month"&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
@@ -1023,11 +1002,9 @@ function PlanningApp({currentUser,onLogout}){
                   <tbody>
                     {getAgentsByTeam().map(([teamName,teamAgents])=>(
                       <React.Fragment key={teamName}>
-                        {/* En-tête équipe */}
                         <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
                           <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
-                        {/* Agents de l'équipe */}
                         {teamAgents.map(agent=>(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36}}>
                             <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:"#fff",fontSize:12}}>
@@ -1088,7 +1065,7 @@ function PlanningApp({currentUser,onLogout}){
               </div>
             )}
 
-            {/* ─── VUE SEMAINE ─── */}
+            {/* VUE SEMAINE */}
             {planView==="week"&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
@@ -1113,11 +1090,9 @@ function PlanningApp({currentUser,onLogout}){
                   <tbody>
                     {getAgentsByTeam().map(([teamName,teamAgents])=>(
                       <React.Fragment key={teamName}>
-                        {/* En-tête équipe */}
                         <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
                           <td colSpan={8} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
-                        {/* Agents de l'équipe */}
                         {teamAgents.map(agent=>(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38}}>
                             <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:"#fff",fontSize:11}}>
@@ -1196,7 +1171,6 @@ function PlanningApp({currentUser,onLogout}){
               const toDelete=requests.filter(r=>r.status==="rejected");
               setRequests(prev=>prev.filter(r=>r.status!=="rejected"));
               await Promise.all(toDelete.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              // ✅ Recharger depuis le serveur pour synchroniser
               await loadRequests(token);
               showNotif("Historique des validations effacé ✅");
             }}
@@ -1205,7 +1179,6 @@ function PlanningApp({currentUser,onLogout}){
               setRequests([]);
               setLeaves({});
               await Promise.all(allLeaves.map(r=>apiFetch(`/leaves/${r.id}`,token,{method:"DELETE"}).catch(()=>{})));
-              // ✅ Recharger depuis le serveur pour synchroniser
               await loadRequests(token);
               showNotif("Données du planning supprimées ✅");
             }}
@@ -1214,7 +1187,6 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="stats"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
-            {/* Filtre Agent (pour managers/admins) */}
             {isManager&&(
               <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
                 <label style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Agent :</label>
@@ -1226,8 +1198,6 @@ function PlanningApp({currentUser,onLogout}){
                 </select>
               </div>
             )}
-
-            {/* Filtre Mois/Année */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Période :</span>
               <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
@@ -1236,35 +1206,26 @@ function PlanningApp({currentUser,onLogout}){
                 ))}
               </div>
             </div>
-
-            {/* Cartes Statistiques */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>
-              {(() => {
-                // Déterminer quel agent afficher
-                const displayAgentId = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
-                const displayAgent = agents.find(a=>a.id===displayAgentId);
-                
+              {(()=>{
+                const displayAgentId=isManager?(selectedAgentForStats||currentUser.id):currentUser.id;
+                const displayAgent=agents.find(a=>a.id===displayAgentId);
                 if(!displayAgent)return <div style={{color:"#94a3b8",fontSize:12}}>Agent non trouvé</div>;
-                
-                const counts = getStatsCounts(statsFilter, displayAgentId);
-                const stats = [
-                  { key: "cp", label: "Congés Payés", color: "#6366f1", icon: "✏️", days: counts.cp },
-                  { key: "rtt", label: "RTT", color: "#10b981", icon: "⏱️", days: counts.rtt },
-                  { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
-                  { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
+                const counts=getStatsCounts(statsFilter,displayAgentId);
+                const stats=[
+                  {key:"cp",label:"Congés Payés",color:"#6366f1",icon:"✏️",days:counts.cp},
+                  {key:"rtt",label:"RTT",color:"#10b981",icon:"⏱️",days:counts.rtt},
+                  {key:"pont",label:"Ponts",color:"#f59e0b",icon:"🌉",days:counts.pont},
+                  {key:"absence",label:"Absences",color:"#ef4444",icon:"❌",days:counts.absence},
                 ];
-                
-                return (
+                return(
                   <>
-                    {/* Nom de l'agent */}
                     {isManager&&selectedAgentForStats&&(
                       <div style={{gridColumn:"1 / -1",padding:"12px 16px",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,marginBottom:8}}>
                         <span style={{fontSize:12,fontWeight:600,color:"#4338ca"}}>📊 Statistiques de {displayAgent.name}</span>
                       </div>
                     )}
-                    
-                    {/* Cartes */}
-                    {stats.map(s => (
+                    {stats.map(s=>(
                       <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
                         <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${s.color}15`}}/>
                         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
@@ -1272,7 +1233,7 @@ function PlanningApp({currentUser,onLogout}){
                           <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>{s.label}</span>
                         </div>
                         <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:4}}>
-                          {s.days.toLocaleString('fr-FR', {minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1})}
+                          {s.days.toLocaleString('fr-FR',{minimumFractionDigits:s.days%1===0?0:1,maximumFractionDigits:1})}
                         </div>
                         <div style={{fontSize:12,color:"#94a3b8",fontWeight:500}}>
                           {statsFilter==="month"?`${MONTHS_FR[month]} ${year}`:`Année ${year}`}
@@ -1292,7 +1253,7 @@ function PlanningApp({currentUser,onLogout}){
         <div style={{marginBottom:16}}>
           <label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Type de congé</label>
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-            {sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal?.agentId || currentUser.id)).map(t=>(
+            {sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal?.agentId||currentUser.id)).map(t=>(
               <button key={t.id} onClick={()=>setSelectedLTId(t.id)} style={{padding:"6px 14px",borderRadius:20,border:`2px solid ${t.color}`,fontSize:12,cursor:"pointer",fontWeight:600,background:selectedLTId===t.id?t.color:hexToLight(t.color),color:selectedLTId===t.id?"#fff":t.color,transition:"all 0.2s"}}>{t.label}</button>
             ))}
           </div>
@@ -1312,26 +1273,21 @@ function PlanningApp({currentUser,onLogout}){
   );
 }
 
-// ─── VALIDATIONS ────────────────────────────────────────────────────────────
-
-const STATUS_META = {
-  pending:  {label:"En attente", dot:"#f59e0b", text:"#92400e", bg:"#fffbeb"},
-  approved: {label:"Approuvée",  dot:"#10b981", text:"#065f46", bg:"#f0fdf4"},
-  rejected: {label:"Refusée",    dot:"#ef4444", text:"#991b1b", bg:"#fef2f2"},
+// ─── VALIDATIONS ───
+const STATUS_META={
+  pending:  {label:"En attente",dot:"#f59e0b",text:"#92400e",bg:"#fffbeb"},
+  approved: {label:"Approuvée", dot:"#10b981",text:"#065f46",bg:"#f0fdf4"},
+  rejected: {label:"Refusée",   dot:"#ef4444",text:"#991b1b",bg:"#fef2f2"},
 };
 
-function RequestRow({req, isManager, onApprove, onReject}){
-  const meta = STATUS_META[req.status] || {label:req.status, dot:"#94a3b8", text:"#64748b", bg:"#f8fafc"};
-  const period = req.start===req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
+function RequestRow({req,isManager,onApprove,onReject}){
+  const meta=STATUS_META[req.status]||{label:req.status,dot:"#94a3b8",text:"#64748b",bg:"#f8fafc"};
+  const period=req.start===req.end?formatDate(req.start):`${formatDate(req.start)} – ${formatDate(req.end)}`;
   return(
     <div style={{display:"grid",gridTemplateColumns:"36px 1fr auto",alignItems:"center",gap:14,padding:"12px 16px",borderBottom:"1px solid #f8fafc",transition:"background 0.1s"}}
       onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-
-      {/* Avatar */}
       <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{req.agentAvatar}</div>
-
-      {/* Infos */}
       <div style={{minWidth:0}}>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
           <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{req.agentName}</span>
@@ -1349,8 +1305,6 @@ function RequestRow({req, isManager, onApprove, onReject}){
           {req.comment&&<span style={{fontSize:11,color:"#ef4444",fontStyle:"italic"}}>↳ {req.comment}</span>}
         </div>
       </div>
-
-      {/* Actions */}
       {isManager&&req.status==="pending"?(
         <div style={{display:"flex",gap:6,flexShrink:0}}>
           <button onClick={onApprove} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#10b981",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"opacity 0.15s"}}
@@ -1363,53 +1317,29 @@ function RequestRow({req, isManager, onApprove, onReject}){
   );
 }
 
-function ValidationsView({isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData}){
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [showHistory, setShowHistory] = useState(true);
-
-  const sourceList = isManager ? requests : myRequests;
-  const pending  = sourceList.filter(r=>r.status==="pending");
-  const history  = sourceList.filter(r=>r.status!=="pending");
-
-  const filtered = statusFilter==="all" ? sourceList
-    : statusFilter==="pending"  ? pending
-    : history.filter(r=>r.status===statusFilter);
-
-  const counts = {
-    all:      sourceList.length,
-    pending:  pending.length,
-    approved: history.filter(r=>r.status==="approved").length,
-    rejected: history.filter(r=>r.status==="rejected").length,
-  };
-
+function ValidationsView({isManager,requests,pendingRequests,myRequests,onApprove,onReject,onClearHistory,onClearPlanningData}){
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [showHistory,setShowHistory]=useState(true);
+  const sourceList=isManager?requests:myRequests;
+  const pending=sourceList.filter(r=>r.status==="pending");
+  const history=sourceList.filter(r=>r.status!=="pending");
+  const filtered=statusFilter==="all"?sourceList:statusFilter==="pending"?pending:history.filter(r=>r.status===statusFilter);
+  const counts={all:sourceList.length,pending:pending.length,approved:history.filter(r=>r.status==="approved").length,rejected:history.filter(r=>r.status==="rejected").length};
   return(
     <div style={{padding:24,maxWidth:820,animation:"fadeIn 0.3s ease"}}>
-
-      {/* Barre de contrôles */}
       <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
-        {/* Filtres statut */}
         <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
-          {[
-            {id:"all",     label:"Toutes"},
-            {id:"pending", label:"En attente"},
-            {id:"approved",label:"Approuvées"},
-            {id:"rejected",label:"Refusées"},
-          ].map(f=>(
+          {[{id:"all",label:"Toutes"},{id:"pending",label:"En attente"},{id:"approved",label:"Approuvées"},{id:"rejected",label:"Refusées"}].map(f=>(
             <button key={f.id} onClick={()=>setStatusFilter(f.id)} style={{padding:"4px 11px",borderRadius:5,border:"none",background:statusFilter===f.id?"#fff":"transparent",color:statusFilter===f.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:statusFilter===f.id?600:400,boxShadow:statusFilter===f.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
               {f.label}{counts[f.id]>0&&<span style={{marginLeft:5,background:statusFilter===f.id?"#e0e7ff":"#e2e8f0",color:statusFilter===f.id?"#4338ca":"#64748b",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{counts[f.id]}</span>}
             </button>
           ))}
         </div>
-        {/* Toggle historique */}
         <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
           {history.length>0&&isManager&&(
             <>
-              <button onClick={()=>{if(window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>
-                Effacer l'historique
-              </button>
-              <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning :\n- Tous les congés\n- Toutes les demandes en attente\n- Tout l\'historique des validations\n\nCette action est irréversible.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500}}>
-                🗑 Vider le planning
-              </button>
+              <button onClick={()=>{if(window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>Effacer l'historique</button>
+              <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500}}>🗑 Vider le planning</button>
             </>
           )}
           <button onClick={()=>setShowHistory(h=>!h)} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
@@ -1418,19 +1348,15 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
           </button>
         </div>
       </div>
-
       {!isManager&&(
         <div style={{fontSize:12,color:"#6366f1",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,padding:"8px 14px",marginBottom:14}}>
           Sélectionnez des dates dans le planning pour déposer une demande de congé.
         </div>
       )}
-
-      {/* Liste */}
       {filtered.length===0?(
         <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"48px 0",textAlign:"center",color:"#94a3b8",fontSize:13}}>Aucune demande</div>
       ):(
         <>
-          {/* En attente */}
           {(statusFilter==="all"||statusFilter==="pending")&&pending.length>0&&(
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
               <div style={{padding:"10px 16px",background:"#fffbeb",borderBottom:"1px solid #fde68a",display:"flex",alignItems:"center",gap:8}}>
@@ -1443,8 +1369,6 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
               ))}
             </div>
           )}
-
-          {/* Historique */}
           {showHistory&&(statusFilter==="all"||statusFilter==="approved"||statusFilter==="rejected")&&history.filter(r=>statusFilter==="all"||r.status===statusFilter).length>0&&(
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
               <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:8}}>
@@ -1460,10 +1384,6 @@ function ValidationsView({isManager, requests, pendingRequests, myRequests, onAp
       )}
     </div>
   );
-}
-
-function RequestCard({req,isManager,onApprove,onReject}){
-  return <RequestRow req={req} isManager={isManager} onApprove={onApprove} onReject={onReject}/>;
 }
 
 export default function App(){
