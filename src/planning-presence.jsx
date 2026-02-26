@@ -999,14 +999,29 @@ function PlanningApp({currentUser,onLogout}){
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
             {/* BARRE DE CONTRÔLES */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+              {/* ONGLETS Planning / Présences sur site / Astreintes */}
+              <div style={{display:"flex",gap:2,marginBottom:10,borderBottom:"2px solid #f1f5f9",paddingBottom:0}}>
+                {[
+                  {mode:"all",label:"🗓 Planning",color:"#6366f1"},
+                  {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488"},
+                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b"},
+                ].map(tab=>(
+                  <button key={tab.mode} onClick={()=>{
+                    setFilterMode(tab.mode);
+                    if(tab.mode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}
+                  }} style={{padding:"8px 18px",border:"none",borderBottom:`2px solid ${filterMode===tab.mode?tab.color:"transparent"}`,background:"none",cursor:"pointer",fontSize:13,fontWeight:filterMode===tab.mode?700:400,color:filterMode===tab.mode?tab.color:"#94a3b8",marginBottom:-2,transition:"all 0.15s"}}>
+                    {tab.label}{tab.mode==="astreinte"&&!isManager?" 👁":""}
+                  </button>
+                ))}
+              </div>
               {/* Ligne 1 */}
               <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                {/* Toggle Mois/Semaine */}
-                <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+                {/* Toggle Mois/Semaine - masqué en mode astreinte */}
+                {filterMode!=="astreinte"&&<div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
                   {[{v:"month",l:"Mois"},{v:"week",l:"Semaine"}].map(({v,l})=>(
                     <button key={v} onClick={()=>setPlanView(v)} style={{padding:"4px 12px",borderRadius:5,border:"none",background:planView===v?"#fff":"transparent",color:planView===v?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:planView===v?600:400,boxShadow:planView===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{l}</button>
                   ))}
-                </div>
+                </div>}
                 {/* Navigation date */}
                 <div style={{display:"flex",alignItems:"center",gap:2,position:"relative"}}>
                   <button onClick={()=>{if(planView==="month"){if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1);}else{const d=new Date(weekAnchor);d.setDate(d.getDate()-7);setWeekAnchor(d);setYear(d.getFullYear());setMonth(d.getMonth());}}} style={{background:"none",border:"none",cursor:"pointer",padding:"2px 6px",fontSize:16,color:"#94a3b8",lineHeight:1}}>‹</button>
@@ -1045,11 +1060,7 @@ function PlanningApp({currentUser,onLogout}){
                   )}
                 </div>
                 <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
-                <div style={{width:1,height:18,background:"#e2e8f0",margin:"0 2px"}}/>
-                {/* Présences site */}
-                <button onClick={()=>{const newMode=filterMode==="presence"?"all":"presence";setFilterMode(newMode);if(newMode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}}} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"#0d9488":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🏢 Présences site</button>
-                {/* Astreintes */}
-                <button onClick={()=>setFilterMode(m=>m==="astreinte"?"all":"astreinte")} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="astreinte"?"#f59e0b":"#e2e8f0"}`,background:filterMode==="astreinte"?"#f59e0b":"#fff",color:filterMode==="astreinte"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🔔 Astreintes{!isManager&&" 👁"}</button>
+
                 {/* Filtres équipe */}
                 <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
                   {allTeams.map(t=>(
@@ -1241,7 +1252,7 @@ function PlanningApp({currentUser,onLogout}){
                           <div style={{fontSize:11,fontWeight:700,color:isToday?"#6366f1":isFer?"#d97706":wk?"#e2e8f0":"#475569",marginTop:1}}>{day}</div>
                           {isFer&&!wk&&<div title={feries[k]} style={{fontSize:8,color:"#f59e0b"}}>🗓</div>}
                           {isToday&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1",margin:"1px auto 0"}}/>}
-                          {!wk&&!isFer&&absent>0&&<div style={{fontSize:8,color:"#fff",background:"#94a3b8",borderRadius:4,padding:"0 3px",margin:"1px auto 0",display:"inline-block",fontWeight:700}}>{absent}</div>}
+                          {filterMode!=="presence"&&!wk&&!isFer&&absent>0&&<div style={{fontSize:8,color:"#fff",background:"#94a3b8",borderRadius:4,padding:"0 3px",margin:"1px auto 0",display:"inline-block",fontWeight:700}}>{absent}</div>}
                         </th>;
                       })}
                     </tr>
@@ -1345,7 +1356,7 @@ function PlanningApp({currentUser,onLogout}){
                           <div style={{fontSize:20,fontWeight:800,color:isToday?"#6366f1":isFer?"#d97706":wk?"#e2e8f0":"#1e293b",marginTop:2}}>{d.getDate()}</div>
                           <div style={{fontSize:10,color:"#94a3b8"}}>{MONTHS_FR[d.getMonth()].slice(0,3)}</div>
                           {isFer&&<div style={{fontSize:9,color:"#d97706",marginTop:2}} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
-                          {!wk&&!isFer&&absent>0&&<div style={{marginTop:4,fontSize:9,color:"#fff",background:"#94a3b8",borderRadius:6,padding:"1px 5px",display:"inline-block",fontWeight:700}}>{absent} absent{absent>1?"s":""}</div>}
+                          {filterMode!=="presence"&&!wk&&!isFer&&absent>0&&<div style={{marginTop:4,fontSize:9,color:"#fff",background:"#94a3b8",borderRadius:6,padding:"1px 5px",display:"inline-block",fontWeight:700}}>{absent} absent{absent>1?"s":""}</div>}
                         </th>;
                       })}
                     </tr>
