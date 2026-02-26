@@ -509,6 +509,7 @@ function PlanningApp({currentUser,onLogout}){
   const [astreinteFilter,setAstreinteFilter]=useState("all"); // "all"|"Css Digital"|"Mailing Solution"
   const [astreinteSelStart,setAstreinteSelStart]=useState(null); // { aKey base, rowType, teamName }
   const [astreinteHovered,setAstreinteHovered]=useState(null); // dateKey hovered
+  const [astreinteEraseStart,setAstreinteEraseStart]=useState(null); // { teamName, rowId, key } mode effacement plage
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -904,7 +905,7 @@ function PlanningApp({currentUser,onLogout}){
 
   return(
     <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
-      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);}}>
+      onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}>
       <style>{GLOBAL_STYLE}</style>
 
       {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
@@ -1148,10 +1149,30 @@ function PlanningApp({currentUser,onLogout}){
                                 const s=astreinteSelStart.key,e=astreinteHovered;
                                 return k>=Math.min(s,e)&&k<=Math.max(s,e);
                               })();
+                              const inErase=astreinteEraseStart&&astreinteEraseStart.teamName===teamName&&astreinteEraseStart.rowId===rowId&&astreinteHovered&&eligible&&(()=>{
+                                const s=astreinteEraseStart.key,e=astreinteHovered;
+                                return k>=Math.min(s,e)&&k<=Math.max(s,e);
+                              })();
                               return<td key={i}
                                 onMouseDown={e=>{if(!canClick)return;e.preventDefault();
-                                  if(astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId){
-                                    // second click: assign to all days in range
+                                  // Mode effacement plage : second clic = effacer la plage
+                                  if(astreinteEraseStart&&astreinteEraseStart.teamName===teamName&&astreinteEraseStart.rowId===rowId){
+                                    const s=astreinteEraseStart.key,en=k;
+                                    const minK=s<en?s:en,maxK=s<en?en:s;
+                                    setAstreintes(prev=>{
+                                      const n={...prev};
+                                      for(let d=1;d<=daysInMonth;d++){
+                                        const dk=dateKey(year,month,d),dow2=new Date(year,month,d).getDay(),wk2=dow2===0||dow2===6;
+                                        const isFri2=dow2===5;
+                                        if(dk>=minK&&dk<=maxK&&!wk2&&(fridayOnly?isFri2:true)){
+                                          delete n[`${teamName}|${rowId}|${dk}`];
+                                        }
+                                      }
+                                      return n;
+                                    });
+                                    setAstreinteEraseStart(null);setAstreinteHovered(null);
+                                  // Mode assignation : second clic = assigner la plage
+                                  }else if(astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId){
                                     const s=astreinteSelStart.key,en=k;
                                     const minK=s<en?s:en,maxK=s<en?en:s;
                                     if(astreinteSelStart.agentId){
@@ -1169,21 +1190,33 @@ function PlanningApp({currentUser,onLogout}){
                                     }
                                     setAstreinteSelStart(null);setAstreinteHovered(null);
                                   }else{
-                                    // first click: open dropdown to pick agent then start selection
+                                    // Premier clic : ouvrir dropdown
                                     setAstreinteDropdown({aKey,teamName,rowId,rowType:rowId,key:k,x:e.clientX,y:e.clientY,
                                       onAgentPicked:(agentId)=>{
                                         setAstreinteSelStart({teamName,rowId,key:k,agentId});
+                                        setAstreinteHovered(k);
+                                      },
+                                      onErasePicked:()=>{
+                                        setAstreinteEraseStart({teamName,rowId,key:k});
                                         setAstreinteHovered(k);
                                       }
                                     });
                                   }
                                 }}
-                                onMouseEnter={()=>{if(astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId&&eligible)setAstreinteHovered(k);}}
+                                onContextMenu={e=>{e.preventDefault();if(!canClick)return;
+                                  // Clic droit = supprimer ce jour uniquement
+                                  setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});
+                                }}
+                                onMouseEnter={()=>{
+                                  if((astreinteSelStart&&astreinteSelStart.teamName===teamName&&astreinteSelStart.rowId===rowId)||
+                                     (astreinteEraseStart&&astreinteEraseStart.teamName===teamName&&astreinteEraseStart.rowId===rowId))
+                                    {if(eligible)setAstreinteHovered(k);}
+                                }}
                                 className={canClick?"cell-hover":""}
                                 style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
-                                  background:inSel?"#fde68a":wk?"#fafafa":fridayOnly&&!isFriday?"#fff":eligible?"#fff":"#fff",
+                                  background:inErase?"#fee2e2":inSel?"#fde68a":wk?"#fafafa":fridayOnly&&!isFriday?"#fff":eligible?"#fff":"#fff",
                                   borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle",
-                                  outline:inSel?"2px solid #f59e0b":"none",outlineOffset:"-2px"}}>
+                                  outline:inErase?"2px solid #ef4444":inSel?"2px solid #f59e0b":"none",outlineOffset:"-2px"}}>
                                 {eligible&&(aAgent?(
                                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
                                     <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
@@ -1543,6 +1576,12 @@ function PlanningApp({currentUser,onLogout}){
             {!onAgentPicked&&astreintes[aKey]&&(
               <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer ce jour uniquement</button>
             )}
+            <button onClick={()=>{
+                const {teamName:tn,rowId:ri,key:k}=astreinteDropdown;
+                setAstreinteEraseStart({teamName:tn,rowId:ri,key:k});
+                setAstreinteHovered(k);
+                setAstreinteDropdown(null);
+              }} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"#fef2f2",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>🗑 Effacer une plage → cliquer la date de fin</button>
             {aTeamAgents.length===0&&<div style={{padding:"16px",fontSize:12,color:"#94a3b8",textAlign:"center"}}>Aucun agent dans cette équipe</div>}
             {aTeamAgents.map(a=>(
               <button key={a.id} onClick={()=>{
@@ -1562,7 +1601,7 @@ function PlanningApp({currentUser,onLogout}){
                 {onAgentPicked&&<span style={{fontSize:10,color:"#94a3b8"}}>→ puis glisser</span>}
               </button>
             ))}
-            <button onClick={()=>{setAstreinteDropdown(null);setAstreinteSelStart(null);setAstreinteHovered(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Annuler</button>
+            <button onClick={()=>{setAstreinteDropdown(null);setAstreinteSelStart(null);setAstreinteEraseStart(null);setAstreinteHovered(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Annuler</button>
           </div>
         );
       })()}
