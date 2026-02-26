@@ -1061,12 +1061,12 @@ function PlanningApp({currentUser,onLogout}){
                 </div>
                 <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
 
-                {/* Filtres équipe */}
-                <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
+                {/* Filtres équipe - masqués en mode astreinte */}
+                {filterMode!=="astreinte"&&<div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
                   {allTeams.map(t=>(
                     <button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterTeam===t?700:400,background:filterTeam===t?"#1e293b":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{t}</button>
                   ))}
-                </div>
+                </div>}
               </div>
               {/* Ligne 2 */}
               {filterMode==="astreinte"&&<div style={{display:"flex",alignItems:"center",gap:6,marginTop:8,paddingTop:8,borderTop:"1px solid #f1f5f9",flexWrap:"wrap"}}>
