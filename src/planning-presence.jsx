@@ -498,7 +498,7 @@ function PlanningApp({currentUser,onLogout}){
     try{return JSON.parse(localStorage.getItem("astreintes")||"{}");}
     catch{return {};}
   });
-  const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, x, y }
+  const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, teamName, x, y }
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -1019,12 +1019,12 @@ function PlanningApp({currentUser,onLogout}){
             {planView==="month"&&filterMode==="astreinte"&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
-                  <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
+                  <colgroup><col style={{width:180}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead>
                     <tr>
-                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#fef9ec",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 ASTREINTES</th>
+                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#fef9ec",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 ÉQUIPE</th>
                       {Array.from({length:daysInMonth},(_,i)=>{
-                        const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day,isFer=!!feries[k];
+                        const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day;
                         const isFriday=new Date(year,month,day).getDay()===5;
                         return<th key={i} style={{padding:"4px 2px",textAlign:"center",fontSize:9,fontWeight:600,
                           background:isFriday&&!wk?"#fef3c7":isToday?"#eef2ff":wk?"#fafafa":"#f8fafc",
@@ -1038,33 +1038,49 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    <tr style={{borderBottom:"1px solid #f1f5f9",height:44}}>
-                      <td style={{padding:"4px 10px",background:"#fff",fontSize:12,fontWeight:600,color:"#92400e"}}>🔔 Agent d'astreinte</td>
-                      {Array.from({length:daysInMonth},(_,i)=>{
-                        const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
-                        const isFriday=new Date(year,month,day).getDay()===5;
-                        const canClick=isManager&&isFriday&&!wk;
-                        const aAgentId=astreintes[k];
-                        const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
-                        return<td key={i}
-                          onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===k?null:{key:k,x:e.clientX,y:e.clientY});}}}
-                          className={canClick?"cell-hover":""}
-                          style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
-                            background:wk?"#fafafa":isFriday?"#fffbeb":"#fff",
-                            borderLeft:"1px solid #f8fafc",height:44,verticalAlign:"middle"}}>
-                          {isFriday&&!wk&&(aAgent?(
-                            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
-                              <div style={{width:22,height:22,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:8,fontWeight:700}}>{aAgent.avatar}</div>
-                              <span style={{fontSize:7,color:"#92400e",fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
-                            </div>
-                          ):(
-                            isManager&&<div style={{width:"calc(100% - 4px)",height:28,margin:"0 2px",borderRadius:3,border:"1.5px dashed #fcd34d",background:"#fffbeb",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                              <span style={{fontSize:10,color:"#fcd34d",fontWeight:700}}>+</span>
-                            </div>
-                          ))}
-                        </td>;
-                      })}
-                    </tr>
+                    {teams.filter(t=>t.name!=="Admin").map((team,ti)=>{
+                      const teamAgentsList=agents.filter(a=>a.team===team.name&&a.role!=="admin");
+                      if(teamAgentsList.length===0)return null;
+                      return(
+                        <React.Fragment key={team.id||team.name}>
+                          {/* En-tête équipe */}
+                          <tr style={{background:"#fef9ec",borderBottom:"2px solid #fde68a"}}>
+                            <td colSpan={daysInMonth+1} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#92400e",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 {team.name}</td>
+                          </tr>
+                          {/* Ligne astreinte de l'équipe */}
+                          <tr style={{borderBottom:"2px solid #f1f5f9",height:48}}>
+                            <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:"#475569",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:180}}>
+                              Agent d'astreinte
+                            </td>
+                            {Array.from({length:daysInMonth},(_,i)=>{
+                              const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
+                              const isFriday=new Date(year,month,day).getDay()===5;
+                              const canClick=isManager&&isFriday&&!wk;
+                              const aKey=`${team.name}|${k}`;
+                              const aAgentId=astreintes[aKey];
+                              const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
+                              return<td key={i}
+                                onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===k&&d.teamName===team.name?null:{key:k,teamName:team.name,x:e.clientX,y:e.clientY});}}}
+                                className={canClick?"cell-hover":""}
+                                style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
+                                  background:wk?"#fafafa":isFriday?"#fffbeb":"#fff",
+                                  borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle"}}>
+                                {isFriday&&!wk&&(aAgent?(
+                                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                                    <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
+                                    <span style={{fontSize:7,color:"#92400e",fontWeight:700,maxWidth:24,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{aAgent.name.split(" ")[0]}</span>
+                                  </div>
+                                ):(
+                                  isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:"1.5px dashed #fcd34d",background:"#fffbeb",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                    <span style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>+</span>
+                                  </div>
+                                ))}
+                              </td>;
+                            })}
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1358,22 +1374,30 @@ function PlanningApp({currentUser,onLogout}){
       </main>
 
       {/* DROPDOWN ASTREINTE */}
-      {astreinteDropdown&&isManager&&(
-        <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:astreinteDropdown.y,left:astreinteDropdown.x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:200,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
-          <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#92400e",fontWeight:700,background:"#fef3c7"}}>🔔 Astreinte — {astreinteDropdown.key}</div>
-          {astreintes[astreinteDropdown.key]&&(
-            <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[astreinteDropdown.key];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer l'astreinte</button>
-          )}
-          {agents.filter(a=>a.role!=="admin").map(a=>(
-            <button key={a.id} onClick={()=>{setAstreintes(prev=>({...prev,[astreinteDropdown.key]:a.id}));setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[astreinteDropdown.key]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[astreinteDropdown.key]===a.id?700:400}}>
-              <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
-              <span>{a.name}</span>
-              {astreintes[astreinteDropdown.key]===a.id&&<span style={{marginLeft:"auto",color:"#f59e0b"}}>✓</span>}
-            </button>
-          ))}
-          <button onClick={()=>setAstreinteDropdown(null)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Fermer</button>
-        </div>
-      )}
+      {astreinteDropdown&&isManager&&(()=>{
+        const aTeamName=astreinteDropdown.teamName;
+        const aKey=`${aTeamName}|${astreinteDropdown.key}`;
+        const aTeamAgents=agents.filter(a=>a.team===aTeamName&&a.role!=="admin");
+        return(
+          <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:astreinteDropdown.y,left:astreinteDropdown.x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:220,maxHeight:360,overflowY:"auto",animation:"slideIn 0.15s ease"}}>
+            <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#92400e",fontWeight:700,background:"#fef3c7",position:"sticky",top:0}}>
+              🔔 {aTeamName} — {astreinteDropdown.key.split("-").reverse().slice(0,2).join("/")}
+            </div>
+            {astreintes[aKey]&&(
+              <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer l'astreinte</button>
+            )}
+            {aTeamAgents.length===0&&<div style={{padding:"16px",fontSize:12,color:"#94a3b8",textAlign:"center"}}>Aucun agent dans cette équipe</div>}
+            {aTeamAgents.map(a=>(
+              <button key={a.id} onClick={()=>{setAstreintes(prev=>({...prev,[aKey]:a.id}));setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[aKey]===a.id?700:400}}>
+                <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
+                <span>{a.name}</span>
+                {astreintes[aKey]===a.id&&<span style={{marginLeft:"auto",color:"#f59e0b"}}>✓</span>}
+              </button>
+            ))}
+            <button onClick={()=>setAstreinteDropdown(null)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Fermer</button>
+          </div>
+        );
+      })()}
 
       {requestModal&&currentLT&&<Modal title="📝 Nouvelle demande de congé">
         <p style={{color:"#64748b",fontSize:13,margin:"0 0 20px"}}>Du <strong style={{color:"#1e293b"}}>{formatDate(requestModal.start)}</strong> au <strong style={{color:"#1e293b"}}>{formatDate(requestModal.end)}</strong></p>
