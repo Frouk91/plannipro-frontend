@@ -517,8 +517,10 @@ function PlanningApp({currentUser,onLogout}){
     return leaveTypes.filter(t=>{
       const isAllowed=AGENT_ALLOWED_CODES.includes(t.code);
       const isPresence=isPresenceType(t);
-      if(isPresence)return agent.can_book_presence_sites;
-      return isAllowed;
+      // Présences : disponibles UNIQUEMENT en mode présence si autorisé
+      if(isPresence)return filterMode==="presence"&&agent.can_book_presence_sites;
+      // Types normaux : disponibles UNIQUEMENT en mode normal
+      return isAllowed&&filterMode!=="presence";
     });
   }
 
@@ -671,16 +673,25 @@ function PlanningApp({currentUser,onLogout}){
     const k=dateKey(year,month,day);
     if(feries[k]&&!isManager)return;
     if(!isManager&&currentUser.id!==agentId)return;
+    // Mode normal : bloquer les types présence pour les agents
+    if(filterMode!=="presence"&&!isManager&&currentLT&&isPresenceType(currentLT))return;
     if(!selectedAgent||selectedAgent!==agentId){setSelectedAgent(agentId);setSelectionStart(day);}
     else{
       const start=Math.min(selectionStart,day),end=Math.max(selectionStart,day);
       setSelectionStart(null);setSelectedAgent(null);
-      if(isManager){
+      // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
+      if(filterMode==="presence"&&!isManager){
+        try{
+          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});
+          if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
+          await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
+        }catch{showNotif("Erreur sauvegarde","error");}
+      }else if(isManager){
         try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
         catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=getAvailableLeaveTypesForAgent(agentId);
-        if(!getAvailableLeaveTypesForAgent(agentId).map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
+        const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
+        if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end)});setRequestReason("");
       }
     }
@@ -697,17 +708,26 @@ function PlanningApp({currentUser,onLogout}){
     const feriesWeek=getFeries(dateObj.getFullYear());
     if(feriesWeek[k]&&!isManager)return;
     if(!isManager&&currentUser.id!==agentId)return;
+    // Mode normal : bloquer les types présence pour les agents
+    if(filterMode!=="presence"&&!isManager&&currentLT&&isPresenceType(currentLT))return;
     if(!weekSelAgent||weekSelAgent!==agentId){setWeekSelAgent(agentId);setWeekSelStart(k);}
     else{
       const start=weekSelStart<k?weekSelStart:k;
       const end=weekSelStart<k?k:weekSelStart;
       setWeekSelStart(null);setWeekSelAgent(null);
-      if(isManager){
+      // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
+      if(filterMode==="presence"&&!isManager){
+        try{
+          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId})});
+          if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
+          await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
+        }catch{showNotif("Erreur sauvegarde","error");}
+      }else if(isManager){
         try{await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId})});await loadLeaves(leaveTypes,token,year,month);showNotif("Congé sauvegardé ✅");}
         catch{showNotif("Erreur sauvegarde","error");}
       }else{
-        const allowedTypes=getAvailableLeaveTypesForAgent(agentId);
-        if(!getAvailableLeaveTypesForAgent(agentId).map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
+        const allowedTypes=getAvailableLeaveTypesForAgent(agentId).filter(t=>!isPresenceType(t));
+        if(!allowedTypes.map(t=>t.code).includes(currentLT?.code)&&allowedTypes.length>0)setSelectedLTId(allowedTypes[0].id);
         setRequestModal({agentId,start,end});setRequestReason("");
       }
     }
