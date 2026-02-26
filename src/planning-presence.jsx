@@ -498,7 +498,14 @@ function PlanningApp({currentUser,onLogout}){
     try{return JSON.parse(localStorage.getItem("astreintes")||"{}");}
     catch{return {};}
   });
-  const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, teamName, x, y }
+  // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
+  const ASTREINTE_TEAMS=["Css Digital","Mailing Solution"];
+  const MAILING_EXTRA_ROWS=[
+    {id:"action_serveur",label:"Action Serveur / Admin"},
+    {id:"mail",label:"Mail"},
+    {id:"es",label:"ES"},
+  ];
+  const [astreinteDropdown,setAstreinteDropdown]=useState(null); // { key, teamName, rowType, x, y }
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -982,7 +989,7 @@ function PlanningApp({currentUser,onLogout}){
                 {/* Présences site */}
                 <button onClick={()=>{const newMode=filterMode==="presence"?"all":"presence";setFilterMode(newMode);if(newMode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}}} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="presence"?"#0d9488":"#e2e8f0"}`,background:filterMode==="presence"?"#0d9488":"#fff",color:filterMode==="presence"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🏢 Présences site</button>
                 {/* Astreintes */}
-                {isManager&&<button onClick={()=>setFilterMode(m=>m==="astreinte"?"all":"astreinte")} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="astreinte"?"#f59e0b":"#e2e8f0"}`,background:filterMode==="astreinte"?"#f59e0b":"#fff",color:filterMode==="astreinte"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🔔 Astreintes</button>}
+                <button onClick={()=>setFilterMode(m=>m==="astreinte"?"all":"astreinte")} style={{padding:"4px 12px",borderRadius:6,border:`1.5px solid ${filterMode==="astreinte"?"#f59e0b":"#e2e8f0"}`,background:filterMode==="astreinte"?"#f59e0b":"#fff",color:filterMode==="astreinte"?"#fff":"#64748b",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.15s"}}>🔔 Astreintes{!isManager&&" 👁"}</button>
                 {/* Filtres équipe */}
                 <div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
                   {allTeams.map(t=>(
@@ -1019,10 +1026,10 @@ function PlanningApp({currentUser,onLogout}){
             {planView==="month"&&filterMode==="astreinte"&&(
               <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
-                  <colgroup><col style={{width:180}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
+                  <colgroup><col style={{width:200}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead>
                     <tr>
-                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#fef9ec",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 ÉQUIPE</th>
+                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#fef9ec",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 ÉQUIPE / RÔLE</th>
                       {Array.from({length:daysInMonth},(_,i)=>{
                         const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day;
                         const isFriday=new Date(year,month,day).getDay()===5;
@@ -1038,29 +1045,27 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {teams.filter(t=>t.name!=="Admin").map((team,ti)=>{
-                      const teamAgentsList=agents.filter(a=>a.team===team.name&&a.role!=="admin");
-                      if(teamAgentsList.length===0)return null;
+                    {/* ── CSS DIGITAL : astreinte vendredi uniquement ── */}
+                    {(()=>{
+                      const cssTeam=teams.find(t=>t.name==="Css Digital");
+                      if(!cssTeam)return null;
+                      const cssAgents=agents.filter(a=>a.team==="Css Digital"&&a.role!=="admin");
                       return(
-                        <React.Fragment key={team.id||team.name}>
-                          {/* En-tête équipe */}
-                          <tr style={{background:"#fef9ec",borderBottom:"2px solid #fde68a"}}>
-                            <td colSpan={daysInMonth+1} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#92400e",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 {team.name}</td>
+                        <React.Fragment>
+                          <tr style={{background:"#f0f9ff",borderBottom:"2px solid #bae6fd"}}>
+                            <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#0369a1",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Css Digital — Astreinte vendredi</td>
                           </tr>
-                          {/* Ligne astreinte de l'équipe */}
-                          <tr style={{borderBottom:"2px solid #f1f5f9",height:48}}>
-                            <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:"#475569",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:180}}>
-                              Agent d'astreinte
-                            </td>
+                          <tr style={{borderBottom:"2px solid #e2e8f0",height:48}}>
+                            <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:"#475569"}}>Agent d'astreinte</td>
                             {Array.from({length:daysInMonth},(_,i)=>{
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
                               const isFriday=new Date(year,month,day).getDay()===5;
                               const canClick=isManager&&isFriday&&!wk;
-                              const aKey=`${team.name}|${k}`;
+                              const aKey=`Css Digital|astreinte|${k}`;
                               const aAgentId=astreintes[aKey];
                               const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
                               return<td key={i}
-                                onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===k&&d.teamName===team.name?null:{key:k,teamName:team.name,x:e.clientX,y:e.clientY});}}}
+                                onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.aKey===aKey?null:{aKey,teamName:"Css Digital",rowType:"astreinte",key:k,x:e.clientX,y:e.clientY});}}}
                                 className={canClick?"cell-hover":""}
                                 style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
                                   background:wk?"#fafafa":isFriday?"#fffbeb":"#fff",
@@ -1068,11 +1073,11 @@ function PlanningApp({currentUser,onLogout}){
                                 {isFriday&&!wk&&(aAgent?(
                                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
                                     <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
-                                    <span style={{fontSize:7,color:"#92400e",fontWeight:700,maxWidth:24,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{aAgent.name.split(" ")[0]}</span>
+                                    <span style={{fontSize:7,color:"#0369a1",fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
                                   </div>
                                 ):(
-                                  isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:"1.5px dashed #fcd34d",background:"#fffbeb",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                                    <span style={{fontSize:12,color:"#fcd34d",fontWeight:700}}>+</span>
+                                  isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:"1.5px dashed #7dd3fc",background:"#f0f9ff",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                    <span style={{fontSize:12,color:"#7dd3fc",fontWeight:700}}>+</span>
                                   </div>
                                 ))}
                               </td>;
@@ -1080,7 +1085,62 @@ function PlanningApp({currentUser,onLogout}){
                           </tr>
                         </React.Fragment>
                       );
-                    })}
+                    })()}
+
+                    {/* ── MAILING SOLUTION : astreinte vendredi + 3 lignes lun-ven ── */}
+                    {(()=>{
+                      const mailTeam=teams.find(t=>t.name==="Mailing Solution");
+                      if(!mailTeam)return null;
+                      const mailAgents=agents.filter(a=>a.team==="Mailing Solution"&&a.role!=="admin");
+                      const mailingRows=[
+                        {id:"astreinte",label:"Astreinte vendredi",fridayOnly:true,color:"#f59e0b",bg:"#fffbeb",border:"#fcd34d",textColor:"#92400e"},
+                        {id:"action_serveur",label:"Action Serveur / Admin",fridayOnly:false,color:"#8b5cf6",bg:"#f5f3ff",border:"#c4b5fd",textColor:"#5b21b6"},
+                        {id:"mail",label:"Mail",fridayOnly:false,color:"#06b6d4",bg:"#ecfeff",border:"#67e8f9",textColor:"#0e7490"},
+                        {id:"es",label:"ES",fridayOnly:false,color:"#10b981",bg:"#ecfdf5",border:"#6ee7b7",textColor:"#065f46"},
+                      ];
+                      return(
+                        <React.Fragment>
+                          <tr style={{background:"#fdf4ff",borderBottom:"2px solid #e9d5ff"}}>
+                            <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#7c3aed",textTransform:"uppercase",letterSpacing:"0.5px"}}>🔔 Mailing Solution</td>
+                          </tr>
+                          {mailingRows.map(row=>(
+                            <tr key={row.id} style={{borderBottom:"1px solid #f1f5f9",height:48}}>
+                              <td style={{padding:"4px 10px",background:"#fff",fontSize:11,fontWeight:600,color:row.textColor,whiteSpace:"nowrap"}}>
+                                <span style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:row.color,marginRight:6}}/>
+                                {row.label}
+                              </td>
+                              {Array.from({length:daysInMonth},(_,i)=>{
+                                const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day);
+                                const dow=new Date(year,month,day).getDay();
+                                const isFriday=dow===5;
+                                const isWorkday=!wk;
+                                const canClick=isManager&&isWorkday&&(row.fridayOnly?isFriday:true);
+                                const aKey=`Mailing Solution|${row.id}|${k}`;
+                                const aAgentId=astreintes[aKey];
+                                const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
+                                return<td key={i}
+                                  onClick={e=>{if(canClick){e.stopPropagation();setAstreinteDropdown(d=>d&&d.aKey===aKey?null:{aKey,teamName:"Mailing Solution",rowType:row.id,key:k,x:e.clientX,y:e.clientY});}}}
+                                  className={canClick?"cell-hover":""}
+                                  style={{padding:"2px 1px",textAlign:"center",cursor:canClick?"pointer":"default",
+                                    background:wk?"#fafafa":row.fridayOnly&&!isFriday?"#fff":(canClick||aAgent)?row.bg:"#fff",
+                                    borderLeft:"1px solid #f8fafc",height:48,verticalAlign:"middle"}}>
+                                  {isWorkday&&(!row.fridayOnly||isFriday)&&(aAgent?(
+                                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                                      <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700}}>{aAgent.avatar}</div>
+                                      <span style={{fontSize:7,color:row.textColor,fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
+                                    </div>
+                                  ):(
+                                    isManager&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:`1.5px dashed ${row.border}`,background:row.bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                      <span style={{fontSize:12,color:row.border,fontWeight:700}}>+</span>
+                                    </div>
+                                  ))}
+                                </td>;
+                              })}
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -1375,23 +1435,26 @@ function PlanningApp({currentUser,onLogout}){
 
       {/* DROPDOWN ASTREINTE */}
       {astreinteDropdown&&isManager&&(()=>{
-        const aTeamName=astreinteDropdown.teamName;
-        const aKey=`${aTeamName}|${astreinteDropdown.key}`;
+        const {aKey,teamName:aTeamName,rowType,key:aDateKey}=astreinteDropdown;
         const aTeamAgents=agents.filter(a=>a.team===aTeamName&&a.role!=="admin");
+        const rowLabels={astreinte:"Astreinte vendredi",action_serveur:"Action Serveur / Admin",mail:"Mail",es:"ES"};
+        const [ay,am,ad]=(aDateKey||"").split("-");
+        const dateLabel=`${ad}/${am}`;
         return(
-          <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:astreinteDropdown.y,left:astreinteDropdown.x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:220,maxHeight:360,overflowY:"auto",animation:"slideIn 0.15s ease"}}>
-            <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#92400e",fontWeight:700,background:"#fef3c7",position:"sticky",top:0}}>
-              🔔 {aTeamName} — {astreinteDropdown.key.split("-").reverse().slice(0,2).join("/")}
+          <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:Math.min(astreinteDropdown.y,window.innerHeight-320),left:Math.min(astreinteDropdown.x,window.innerWidth-240),background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:230,maxHeight:360,overflowY:"auto",animation:"slideIn 0.15s ease"}}>
+            <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#1e293b",fontWeight:700,background:"#f8fafc",position:"sticky",top:0}}>
+              🔔 {aTeamName} — {rowLabels[rowType]||rowType}<br/>
+              <span style={{fontSize:10,color:"#94a3b8",fontWeight:400}}>{dateLabel}</span>
             </div>
             {astreintes[aKey]&&(
-              <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer l'astreinte</button>
+              <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer</button>
             )}
             {aTeamAgents.length===0&&<div style={{padding:"16px",fontSize:12,color:"#94a3b8",textAlign:"center"}}>Aucun agent dans cette équipe</div>}
             {aTeamAgents.map(a=>(
               <button key={a.id} onClick={()=>{setAstreintes(prev=>({...prev,[aKey]:a.id}));setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[aKey]===a.id?700:400}}>
                 <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
-                <span>{a.name}</span>
-                {astreintes[aKey]===a.id&&<span style={{marginLeft:"auto",color:"#f59e0b"}}>✓</span>}
+                <span style={{flex:1,textAlign:"left"}}>{a.name}</span>
+                {astreintes[aKey]===a.id&&<span style={{color:"#f59e0b"}}>✓</span>}
               </button>
             ))}
             <button onClick={()=>setAstreinteDropdown(null)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",background:"none",cursor:"pointer",fontSize:12,color:"#94a3b8"}}>✕ Fermer</button>
