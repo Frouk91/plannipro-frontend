@@ -132,47 +132,118 @@ function LoginPage({onLogin}){
     setLoading(false);
   }
   return(
-    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#667eea 0%,#764ba2 100%)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_STYLE}</style>
-      <div style={{width:"100%",maxWidth:440,padding:"0 24px",animation:"fadeIn 0.5s ease"}}>
-        <div style={{textAlign:"center",marginBottom:32}}>
-          <div style={{width:64,height:64,borderRadius:20,background:"rgba(255,255,255,0.2)",backdropFilter:"blur(10px)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:28,marginBottom:16,border:"1px solid rgba(255,255,255,0.3)"}}>📅</div>
-          <h1 style={{color:"#fff",fontSize:28,fontWeight:800,margin:0,letterSpacing:"-0.5px"}}>Planning</h1>
-          <p style={{color:"rgba(255,255,255,0.7)",fontSize:14,margin:"6px 0 0"}}>Gestion des présences et congés</p>
-        </div>
-        <div style={{background:"#fff",borderRadius:24,padding:36,boxShadow:"0 25px 50px rgba(0,0,0,0.15)"}}>
-          <h2 style={{margin:"0 0 24px",fontSize:20,fontWeight:700,color:"#111827"}}>Connexion</h2>
-          <div style={{marginBottom:16}}>
-            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Email</label>
-            <input type="email" value={email} onChange={e=>{setEmail(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="prenom@entreprise.fr"
-              style={{width:"100%",padding:"12px 16px",borderRadius:10,border:error?"1.5px solid #fca5a5":"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
+      
+      {/* Éléments de fond animés */}
+      <div style={{position:"absolute",top:"-50%",left:"-10%",width:"600px",height:"600px",background:"radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)",borderRadius:"50%",animation:"float 20s infinite ease-in-out"}}/>
+      <div style={{position:"absolute",bottom:"-30%",right:"-5%",width:"500px",height:"500px",background:"radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)",borderRadius:"50%",animation:"float 25s infinite ease-in-out reverse"}}/>
+      
+      <style>{`
+        @keyframes float { 0%, 100% { transform: translate(0px, 0px); } 50% { transform: translate(30px, 30px); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+
+      <div style={{width:"100%",maxWidth:"500px",padding:"24px",animation:"slideInUp 0.8s ease",position:"relative",zIndex:10}}>
+        
+        {/* En-tête */}
+        <div style={{marginBottom:"48px",textAlign:"center"}}>
+          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:"80px",height:"80px",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",borderRadius:"24px",marginBottom:"20px",boxShadow:"0 20px 40px rgba(59, 130, 246, 0.3)",animation:"slideInUp 0.8s ease 0.1s both"}}>
+            <span style={{fontSize:"40px"}}>📅</span>
           </div>
-          <div style={{marginBottom:8}}>
-            <label style={{display:"block",fontSize:12,fontWeight:600,color:"#6b7280",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.5px"}}>Mot de passe</label>
+          <h1 style={{color:"#f8fafc",fontSize:"36px",fontWeight:"800",margin:"0 0 8px",letterSpacing:"-1px",animation:"slideInUp 0.8s ease 0.2s both"}}>Planning</h1>
+          <p style={{color:"#cbd5e1",fontSize:"14px",margin:"0",animation:"slideInUp 0.8s ease 0.3s both"}}>Gestion des présences & congés</p>
+        </div>
+
+        {/* Formulaire */}
+        <div style={{background:"rgba(15,23,42,0.6)",border:"1px solid rgba(148,163,184,0.15)",borderRadius:"20px",padding:"40px",backdropFilter:"blur(20px)",boxShadow:"0 25px 50px rgba(0,0,0,0.4)",animation:"slideInUp 0.8s ease 0.4s both"}}>
+          
+          {/* Email */}
+          <div style={{marginBottom:"20px"}}>
+            <label style={{display:"block",fontSize:"12px",fontWeight:"600",color:"#94a3b8",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Email</label>
             <div style={{position:"relative"}}>
-              <input type={showPwd?"text":"password"} value={password} onChange={e=>{setPassword(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&handleLogin()} placeholder="••••••••"
-                style={{width:"100%",padding:"12px 44px 12px 16px",borderRadius:10,border:error?"1.5px solid #fca5a5":"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}/>
-              <button onClick={()=>setShowPwd(!showPwd)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#9ca3af"}}>{showPwd?"🙈":"👁"}</button>
+              <span style={{position:"absolute",left:"16px",top:"50%",transform:"translateY(-50%)",fontSize:"16px",zIndex:5}}>✉️</span>
+              <input 
+                id="email" 
+                name="email"
+                type="email" 
+                value={email} 
+                onChange={e=>{setEmail(e.target.value);setError("");}} 
+                onKeyDown={e=>e.key==="Enter"&&handleLogin()} 
+                placeholder="vous@entreprise.fr"
+                style={{width:"100%",padding:"14px 16px 14px 48px",borderRadius:"12px",border:"1.5px solid rgba(148,163,184,0.2)",background:"rgba(30,41,59,0.5)",fontSize:"14px",color:"#f1f5f9",transition:"all 0.3s",boxSizing:"border-box"}}
+                onFocus={e=>{e.target.style.border="1.5px solid #3b82f6";e.target.style.background="rgba(30,41,59,0.8)";e.target.style.boxShadow="0 0 20px rgba(59, 130, 246, 0.2)";}}
+                onBlur={e=>{e.target.style.border="1.5px solid rgba(148,163,184,0.2)";e.target.style.background="rgba(30,41,59,0.5)";e.target.style.boxShadow="none";}}
+              />
             </div>
           </div>
-          {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"10px 14px",marginBottom:16,fontSize:13,color:"#dc2626"}}>⚠️ {error}</div>}
-          <button onClick={handleLogin} disabled={loading} className="btn-primary"
-            style={{width:"100%",padding:"13px 0",borderRadius:10,border:"none",background:"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",marginTop:16}}>
-            {loading?"Connexion...":"Se connecter →"}
+
+          {/* Mot de passe */}
+          <div style={{marginBottom:"24px"}}>
+            <label style={{display:"block",fontSize:"12px",fontWeight:"600",color:"#94a3b8",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Mot de passe</label>
+            <div style={{position:"relative"}}>
+              <span style={{position:"absolute",left:"16px",top:"50%",transform:"translateY(-50%)",fontSize:"16px"}}>🔐</span>
+              <input 
+                id="password" 
+                name="password"
+                type={showPwd?"text":"password"} 
+                value={password} 
+                onChange={e=>{setPassword(e.target.value);setError("");}} 
+                onKeyDown={e=>e.key==="Enter"&&handleLogin()} 
+                placeholder="••••••••"
+                style={{width:"100%",padding:"14px 48px 14px 48px",borderRadius:"12px",border:"1.5px solid rgba(148,163,184,0.2)",background:"rgba(30,41,59,0.5)",fontSize:"14px",color:"#f1f5f9",transition:"all 0.3s",boxSizing:"border-box"}}
+                onFocus={e=>{e.target.style.border="1.5px solid #3b82f6";e.target.style.background="rgba(30,41,59,0.8)";e.target.style.boxShadow="0 0 20px rgba(59, 130, 246, 0.2)";}}
+                onBlur={e=>{e.target.style.border="1.5px solid rgba(148,163,184,0.2)";e.target.style.background="rgba(30,41,59,0.5)";e.target.style.boxShadow="none";}}
+              />
+              <button 
+                onClick={()=>setShowPwd(!showPwd)} 
+                style={{position:"absolute",right:"14px",top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:"18px",color:"#94a3b8",transition:"color 0.2s",padding:"4px 8px"}}
+                onMouseEnter={e=>e.target.style.color="#3b82f6"}
+                onMouseLeave={e=>e.target.style.color="#94a3b8"}
+              >
+                {showPwd?"👁️":"🙈"}
+              </button>
+            </div>
+          </div>
+
+          {/* Message d'erreur */}
+          {error&&<div style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:"10px",padding:"12px 14px",marginBottom:"24px",fontSize:"13px",color:"#fca5a5",display:"flex",alignItems:"center",gap:"8px"}}>
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>}
+
+          {/* Bouton de connexion */}
+          <button 
+            onClick={handleLogin} 
+            disabled={loading}
+            style={{width:"100%",padding:"14px 0",borderRadius:"12px",border:"none",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:loading?"default":"pointer",transition:"all 0.3s",boxShadow:"0 10px 30px rgba(59, 130, 246, 0.3)",opacity:loading?0.7:1}}
+            onMouseEnter={e=>!loading&&(e.target.style.boxShadow="0 15px 40px rgba(59, 130, 246, 0.4)")}
+            onMouseLeave={e=>!loading&&(e.target.style.boxShadow="0 10px 30px rgba(59, 130, 246, 0.3)")}
+          >
+            {loading?"Connexion en cours...":"Se connecter →"}
           </button>
         </div>
-        <div style={{background:"rgba(255,255,255,0.15)",backdropFilter:"blur(10px)",borderRadius:16,padding:20,marginTop:16,border:"1px solid rgba(255,255,255,0.2)"}}>
-          <div style={{fontSize:11,color:"rgba(255,255,255,0.6)",marginBottom:12,textAlign:"center",textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Comptes demo</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+
+        {/* Comptes démo */}
+        <div style={{marginTop:"28px",padding:"20px",background:"rgba(30,41,59,0.4)",border:"1px solid rgba(148,163,184,0.1)",borderRadius:"16px",backdropFilter:"blur(10px)"}}>
+          <div style={{fontSize:"11px",color:"#94a3b8",marginBottom:"14px",textAlign:"center",textTransform:"uppercase",letterSpacing:"1px",fontWeight:"600"}}>📋 Comptes de test</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
             {DEMO_USERS.map((u,i)=>(
-              <button key={i} onClick={()=>{setEmail(u.email);setPassword(u.password);setError("");}}
-                style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.25)",borderRadius:10,padding:"8px 12px",cursor:"pointer",textAlign:"left"}}>
-                <div style={{color:"#fff",fontSize:11,fontWeight:600}}>{u.email.split("@")[0]}</div>
-                <div style={{color:"rgba(255,255,255,0.5)",fontSize:10,marginTop:1}}>{u.email}</div>
+              <button 
+                key={i} 
+                onClick={()=>{setEmail(u.email);setPassword(u.password);setError("");}}
+                style={{background:"rgba(59,130,246,0.1)",border:"1px solid rgba(59,130,246,0.3)",borderRadius:"10px",padding:"10px 12px",cursor:"pointer",textAlign:"left",transition:"all 0.3s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(59,130,246,0.2)";e.currentTarget.style.borderColor="rgba(59,130,246,0.6)";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(59,130,246,0.1)";e.currentTarget.style.borderColor="rgba(59,130,246,0.3)";}}
+              >
+                <div style={{color:"#f1f5f9",fontSize:"11px",fontWeight:"600"}}>{u.email.split("@")[0]}</div>
+                <div style={{color:"#94a3b8",fontSize:"10px",marginTop:"2px"}}>{u.email}</div>
               </button>
             ))}
           </div>
         </div>
+
       </div>
     </div>
   );
