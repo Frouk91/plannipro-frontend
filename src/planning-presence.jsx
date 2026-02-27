@@ -510,6 +510,7 @@ function PlanningApp({currentUser,onLogout}){
   const [astreinteSelStart,setAstreinteSelStart]=useState(null); // { aKey base, rowType, teamName }
   const [astreinteHovered,setAstreinteHovered]=useState(null); // dateKey hovered
   const [astreinteEraseStart,setAstreinteEraseStart]=useState(null); // { teamName, rowId, key } mode effacement plage
+  const [showBilanAstreinte,setShowBilanAstreinte]=useState(false);
   const [seenRejected,setSeenRejected]=useState(()=>{
     try{return JSON.parse(localStorage.getItem(`seenRejected_${currentUser.id}`)||"[]");}
     catch{return [];}
@@ -1103,6 +1104,7 @@ function PlanningApp({currentUser,onLogout}){
 
             {/* VUE MOIS */}
             {planView==="month"&&filterMode==="astreinte"&&(
+              <React.Fragment>
               <div style={{background:"#fff",borderRadius:14,
                 border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
                 overflow:"auto",
@@ -1272,6 +1274,112 @@ function PlanningApp({currentUser,onLogout}){
                   </tbody>
                 </table>
               </div>
+
+              {/* BILAN ANNUEL ASTREINTES */}
+              {(()=>{
+                // Calculer le cumul par agent sur toute l'année pour toutes les clés astreintes
+                const bilanByTeam={};
+                ASTREINTE_TEAMS.forEach(teamName=>{
+                  const teamAgentsList=agents.filter(a=>a.team===teamName&&a.role!=="admin");
+                  const rows=teamName==="Mailing Solution"
+                    ?["astreinte","action_serveur","mail","es"]
+                    :["astreinte"];
+                  const rowLabels={"astreinte":"Astreinte vendredi","action_serveur":"Action Serveur / Admin","mail":"Mail","es":"ES"};
+                  // Compter sur toute l'année (toutes les clés du localStorage)
+                  const agentCounts={};
+                  teamAgentsList.forEach(a=>{agentCounts[a.id]={};rows.forEach(r=>{agentCounts[a.id][r]=0;});});
+                  Object.entries(astreintes).forEach(([key,agentId])=>{
+                    const parts=key.split("|");
+                    if(parts.length!==3)return;
+                    const [kTeam,kRow,kDate]=parts;
+                    if(kTeam!==teamName)return;
+                    if(!agentCounts[agentId])return;
+                    if(agentCounts[agentId][kRow]!==undefined)agentCounts[agentId][kRow]++;
+                  });
+                  bilanByTeam[teamName]={agents:teamAgentsList,rows,rowLabels,agentCounts};
+                });
+                const showCssBilan=astreinteFilter==="all"||astreinteFilter==="Css Digital";
+                const showMailBilan=astreinteFilter==="all"||astreinteFilter==="Mailing Solution";
+                return(
+                  <div style={{marginTop:8}}>
+                    <button onClick={()=>setShowBilanAstreinte(p=>!p)} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",background:"#fff",border:"2px solid #f59e0b",borderRadius:10,cursor:"pointer",fontSize:12,fontWeight:700,color:"#92400e",boxShadow:"0 1px 6px rgba(245,158,11,0.15)"}}>
+                      <span>📊 Bilan annuel des astreintes {year}</span>
+                      <span style={{marginLeft:"auto",fontSize:14,transition:"transform 0.2s",display:"inline-block",transform:showBilanAstreinte?"rotate(180deg)":"none"}}>▾</span>
+                    </button>
+                    {showBilanAstreinte&&(
+                      <div style={{background:"#fff",border:"2px solid #f59e0b",borderTop:"none",borderRadius:"0 0 10px 10px",overflow:"hidden",boxShadow:"0 4px 16px rgba(245,158,11,0.1)"}}>
+                        {[...(showCssBilan?["Css Digital"]:[]),...(showMailBilan?["Mailing Solution"]:[])].map(teamName=>{
+                          const {agents:tAgents,rows,rowLabels,agentCounts}=bilanByTeam[teamName];
+                          const teamColor=teamName==="Css Digital"?"#3b82f6":"#7c3aed";
+                          const teamBg=teamName==="Css Digital"?"#eff6ff":"#fdf4ff";
+                          return(
+                            <div key={teamName}>
+                              <div style={{padding:"8px 16px",background:teamBg,borderTop:"1px solid #f1f5f9",fontSize:11,fontWeight:700,color:teamColor,textTransform:"uppercase",letterSpacing:"0.5px"}}>
+                                🔔 {teamName}
+                              </div>
+                              <div style={{overflowX:"auto"}}>
+                                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                                  <thead>
+                                    <tr style={{background:"#fafafa"}}>
+                                      <th style={{padding:"8px 16px",textAlign:"left",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>Agent</th>
+                                      {rows.map(r=>(
+                                        <th key={r} style={{padding:"8px 12px",textAlign:"center",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>{rowLabels[r]}</th>
+                                      ))}
+                                      {rows.length>1&&<th style={{padding:"8px 12px",textAlign:"center",fontWeight:700,color:"#1e293b",fontSize:11,borderBottom:"1px solid #f1f5f9"}}>Total</th>}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {tAgents.sort((a,b)=>{
+                                      const totA=rows.reduce((s,r)=>s+(agentCounts[a.id]?.[r]||0),0);
+                                      const totB=rows.reduce((s,r)=>s+(agentCounts[b.id]?.[r]||0),0);
+                                      return totB-totA;
+                                    }).map((agent,i)=>{
+                                      const total=rows.reduce((s,r)=>s+(agentCounts[agent.id]?.[r]||0),0);
+                                      const maxTotal=Math.max(...tAgents.map(a=>rows.reduce((s,r)=>s+(agentCounts[a.id]?.[r]||0),0)),1);
+                                      return(
+                                        <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}
+                                          onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                                          <td style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8}}>
+                                            <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                                            <span style={{fontWeight:600,color:"#1e293b"}}>{agent.name}</span>
+                                          </td>
+                                          {rows.map(r=>{
+                                            const count=agentCounts[agent.id]?.[r]||0;
+                                            return(
+                                              <td key={r} style={{padding:"8px 12px",textAlign:"center"}}>
+                                                {count>0
+                                                  ?<span style={{display:"inline-block",background:teamBg,color:teamColor,borderRadius:6,padding:"2px 10px",fontWeight:700,fontSize:12,border:`1px solid ${teamColor}30`}}>{count}</span>
+                                                  :<span style={{color:"#d1d5db",fontSize:12}}>—</span>
+                                                }
+                                              </td>
+                                            );
+                                          })}
+                                          {rows.length>1&&(
+                                            <td style={{padding:"8px 12px",textAlign:"center"}}>
+                                              <div style={{display:"flex",alignItems:"center",gap:6,justifyContent:"center"}}>
+                                                <div style={{flex:1,maxWidth:60,height:6,background:"#f1f5f9",borderRadius:3,overflow:"hidden"}}>
+                                                  <div style={{height:"100%",background:teamColor,borderRadius:3,width:`${Math.round((total/maxTotal)*100)}%`,transition:"width 0.3s"}}/>
+                                                </div>
+                                                <span style={{fontWeight:700,color:teamColor,minWidth:20,textAlign:"right"}}>{total}</span>
+                                              </div>
+                                            </td>
+                                          )}
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              </React.Fragment>
             )}
             {planView==="month"&&filterMode!=="astreinte"&&(
               <div style={{background:"#fff",borderRadius:14,
@@ -1597,7 +1705,7 @@ function PlanningApp({currentUser,onLogout}){
       {astreinteDropdown&&(()=>{
         const {aKey,teamName:aTeamName,rowType,rowId,key:aDateKey,onAgentPicked}=astreinteDropdown;
         const aTeamAgents=agents.filter(a=>a.team===aTeamName&&a.role!=="admin");
-        const rowLabels={astreinte:"Astreinte vendredi",action_serveur:"Action Serveur / Admin",mail:"Mail",es:"ES"};
+        const rowLabels={"astreinte":"Astreinte vendredi","action_serveur":"Action Serveur / Admin","mail":"Mail","es":"ES"};
         const [ay,am,ad]=(aDateKey||"").split("-");
         const dateLabel=`${ad}/${am}`;
         return(
