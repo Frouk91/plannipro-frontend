@@ -1193,8 +1193,9 @@ function PlanningApp({currentUser,onLogout}){
                                     setAstreinteSelStart(null);setAstreinteHovered(null);
                                   }else{
                                     // Premier clic : ouvrir dropdown
-                                    setAstreinteDropdown({aKey,teamName,rowId,rowType:rowId,key:k,x:e.clientX,y:e.clientY,
-                                      onAgentPicked:(agentId)=>{
+                                    // fridayOnly = assignation directe (1 clic), sinon mode glisser
+                                    setAstreinteDropdown({aKey,teamName,rowId,rowType:rowId,key:k,x:e.clientX,y:e.clientY,fridayOnly,
+                                      onAgentPicked:fridayOnly?null:(agentId)=>{
                                         setAstreinteSelStart({teamName,rowId,key:k,agentId});
                                         setAstreinteHovered(k);
                                       },
@@ -1603,7 +1604,10 @@ function PlanningApp({currentUser,onLogout}){
           <div onClick={e=>e.stopPropagation()} style={{position:"fixed",top:Math.min(astreinteDropdown.y,window.innerHeight-320),left:Math.min(astreinteDropdown.x,window.innerWidth-240),background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:230,maxHeight:360,overflowY:"auto",animation:"slideIn 0.15s ease"}}>
             <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#1e293b",fontWeight:700,background:"#fef3c7",position:"sticky",top:0}}>
               🔔 {aTeamName} — {rowLabels[rowType||rowId]||rowType||rowId}<br/>
-              <span style={{fontSize:10,color:"#92400e",fontWeight:400}}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
+              {astreinteDropdown.fridayOnly
+                ? <span style={{fontSize:10,color:"#92400e",fontWeight:400}}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
+                : <span style={{fontSize:10,color:"#92400e",fontWeight:400}}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
+              }
             </div>
             {!onAgentPicked&&astreintes[aKey]&&(
               <button onClick={()=>{setAstreintes(prev=>{const n={...prev};delete n[aKey];return n;});setAstreinteDropdown(null);}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"10px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:12,color:"#ef4444",fontWeight:600}}>✕ Retirer ce jour uniquement</button>
@@ -1618,18 +1622,18 @@ function PlanningApp({currentUser,onLogout}){
             {aTeamAgents.map(a=>(
               <button key={a.id} onClick={()=>{
                 if(onAgentPicked){
-                  // Mode sélection : choisir agent puis glisser
+                  // Mode glisser : choisir agent puis glisser jusqu'à la date de fin
                   onAgentPicked(a.id);
                   setAstreinteDropdown(null);
                 }else{
-                  // Mode simple : assigner ce jour uniquement
+                  // Mode direct (fridayOnly ou simple) : assigner ce jour uniquement
                   setAstreintes(prev=>({...prev,[aKey]:a.id}));
                   setAstreinteDropdown(null);
                 }
-              }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:!onAgentPicked&&astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:!onAgentPicked&&astreintes[aKey]===a.id?700:400,transition:"background 0.1s"}}>
+              }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"9px 16px",border:"none",borderBottom:"1px solid #f8fafc",background:astreintes[aKey]===a.id?"#fef3c7":"none",cursor:"pointer",fontSize:12,color:"#1e293b",fontWeight:astreintes[aKey]===a.id?700:400,transition:"background 0.1s"}}>
                 <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
                 <span style={{flex:1,textAlign:"left"}}>{a.name}</span>
-                {!onAgentPicked&&astreintes[aKey]===a.id&&<span style={{color:"#f59e0b"}}>✓</span>}
+                {astreintes[aKey]===a.id&&<span style={{color:"#f59e0b"}}>✓</span>}
                 {onAgentPicked&&<span style={{fontSize:10,color:"#94a3b8"}}>→ puis glisser</span>}
               </button>
             ))}
