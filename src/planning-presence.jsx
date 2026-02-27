@@ -32,6 +32,8 @@ const GLOBAL_STYLE = `
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   .cell-hover:hover { background: #f0f1ff !important; }
   .btn-primary { transition: all 0.2s ease; }
   .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.3) !important; }
@@ -241,11 +243,18 @@ function LoginPage({onLogin}){
           <button 
             onClick={handleLogin} 
             disabled={loading}
-            style={{width:"100%",padding:"14px 0",borderRadius:"12px",border:"none",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:loading?"default":"pointer",transition:"all 0.3s",boxShadow:"0 10px 30px rgba(59, 130, 246, 0.3)",opacity:loading?0.7:1}}
+            style={{width:"100%",padding:"14px 0",borderRadius:"12px",border:"none",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",color:"#fff",fontSize:"15px",fontWeight:"700",cursor:loading?"default":"pointer",transition:"all 0.3s",boxShadow:"0 10px 30px rgba(59, 130, 246, 0.3)",opacity:loading?0.7:1,display:"flex",alignItems:"center",justifyContent:"center"}}
             onMouseEnter={e=>!loading&&(e.target.style.boxShadow="0 15px 40px rgba(59, 130, 246, 0.4)")}
             onMouseLeave={e=>!loading&&(e.target.style.boxShadow="0 10px 30px rgba(59, 130, 246, 0.3)")}
           >
-            {loading?"Connexion en cours...":"Se connecter →"}
+            {loading?(
+              <>
+                <svg width="16" height="16" viewBox="0 0 16 16" style={{marginRight:"8px",animation:"spin 1s linear infinite"}}>
+                  <circle cx="8" cy="8" r="6" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="10,16"/>
+                </svg>
+                Connexion...
+              </>
+            ):"Se connecter →"}
           </button>
         </div>
 
@@ -991,11 +1000,56 @@ function PlanningApp({currentUser,onLogout}){
   ];
 
   if(!dataLoaded)return(
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f5f6fa",fontFamily:"'Outfit',sans-serif"}}>
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)",fontFamily:"'Outfit',sans-serif",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_STYLE}</style>
-      <div style={{textAlign:"center"}}>
-        <div style={{width:56,height:56,borderRadius:16,background:"linear-gradient(135deg,#667eea,#764ba2)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:24,marginBottom:16}}>📅</div>
-        <div style={{fontSize:15,color:"#94a3b8",fontWeight:500}}>Chargement en cours...</div>
+      
+      {/* Éléments de fond animés */}
+      <div style={{position:"absolute",top:"-50%",left:"-10%",width:"600px",height:"600px",background:"radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)",borderRadius:"50%",animation:"float 20s infinite ease-in-out"}}/>
+      <div style={{position:"absolute",bottom:"-30%",right:"-5%",width:"500px",height:"500px",background:"radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)",borderRadius:"50%",animation:"float 25s infinite ease-in-out reverse"}}/>
+      
+      <style>{`
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
+
+      <div style={{textAlign:"center",position:"relative",zIndex:10,animation:"slideInUp 0.8s ease"}}>
+        {/* Spinner circulaire */}
+        <div style={{width:"100px",height:"100px",marginBottom:"32px",position:"relative",display:"inline-block"}}>
+          {/* Cercle extérieur animé */}
+          <svg width="100" height="100" style={{position:"absolute",inset:0,animation:"spin 3s linear infinite"}}>
+            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#grad1)" strokeWidth="3" strokeLinecap="round" strokeDasharray="180,280"/>
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{stopColor:"#3b82f6",stopOpacity:1}} />
+                <stop offset="100%" style={{stopColor:"#06b6d4",stopOpacity:1}} />
+              </linearGradient>
+            </defs>
+          </svg>
+          
+          {/* Cercle intérieur (contour) */}
+          <svg width="100" height="100" style={{position:"absolute",inset:0,animation:"spin 2s linear infinite reverse"}}>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="2"/>
+          </svg>
+          
+          {/* Centre avec logo */}
+          <div style={{position:"absolute",inset:"50%",transform:"translate(-50%,-50%)",width:"60px",height:"60px",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",borderRadius:"14px",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 10px 30px rgba(59, 130, 246, 0.3)"}}>
+            <span style={{fontSize:"28px"}}>📅</span>
+          </div>
+        </div>
+
+        {/* Texte de chargement */}
+        <div style={{color:"#f8fafc",fontSize:"18px",fontWeight:"600",marginBottom:"12px",animation:"slideInUp 0.8s ease 0.2s both"}}>Chargement en cours</div>
+        
+        {/* Points animés */}
+        <div style={{display:"flex",justifyContent:"center",gap:"6px",height:"20px"}}>
+          <div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#3b82f6",animation:"pulse 1.4s ease-in-out infinite"}}/>
+          <div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#06b6d4",animation:"pulse 1.4s ease-in-out infinite 0.2s"}}/>
+          <div style={{width:"8px",height:"8px",borderRadius:"50%",background:"#3b82f6",animation:"pulse 1.4s ease-in-out infinite 0.4s"}}/>
+        </div>
+
+        {/* Sous-texte */}
+        <div style={{color:"#cbd5e1",fontSize:"12px",marginTop:"16px",fontWeight:"400"}}>Veuillez patienter...</div>
       </div>
     </div>
   );
