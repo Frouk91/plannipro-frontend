@@ -743,6 +743,16 @@ function PlanningApp({currentUser,onLogout}){
     }).length;
   }
 
+  function countPresence(k,siteCode){
+    return filteredAgents.filter(a=>{
+      const l=leaves[a.id]?.[k+"__presence"]||leaves[a.id]?.[k];
+      if(!l)return false;
+      if(!isPresenceCode(l.code,l.label))return false;
+      if(l.status!=="approved"&&!(l.status==="pending"&&isManager))return false;
+      return (l.code||"").toLowerCase()===siteCode||(l.label||"").toLowerCase()===siteCode;
+    }).length;
+  }
+
   async function handleCellClick(agentId,day){
     if(contextMenu){setContextMenu(null);return;}
     if(isWeekend(year,month,day))return;
@@ -1283,6 +1293,16 @@ function PlanningApp({currentUser,onLogout}){
                           {isFer&&!wk&&<div title={feries[k]} style={{fontSize:8,color:"#f59e0b"}}>🗓</div>}
                           {isToday&&<div style={{width:4,height:4,borderRadius:"50%",background:"#6366f1",margin:"1px auto 0"}}/>}
                           {filterMode!=="presence"&&!wk&&!isFer&&absent>0&&<div style={{fontSize:8,color:"#fff",background:"#94a3b8",borderRadius:4,padding:"0 3px",margin:"1px auto 0",display:"inline-block",fontWeight:700}}>{absent}</div>}
+                          {filterMode==="presence"&&!wk&&(()=>{
+                            const nRueil=countPresence(k,"rueil");
+                            const nParis=countPresence(k,"paris");
+                            return(
+                              <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:2,alignItems:"center"}}>
+                                {nRueil>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:"#0d9488",borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>R{nRueil}</div>}
+                                {nParis>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:"#7c3aed",borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>P{nParis}</div>}
+                              </div>
+                            );
+                          })()}
                         </th>;
                       })}
                     </tr>
@@ -1390,6 +1410,16 @@ function PlanningApp({currentUser,onLogout}){
                           <div style={{fontSize:10,color:"#94a3b8"}}>{MONTHS_FR[d.getMonth()].slice(0,3)}</div>
                           {isFer&&<div style={{fontSize:9,color:"#d97706",marginTop:2}} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
                           {filterMode!=="presence"&&!wk&&!isFer&&absent>0&&<div style={{marginTop:4,fontSize:9,color:"#fff",background:"#94a3b8",borderRadius:6,padding:"1px 5px",display:"inline-block",fontWeight:700}}>{absent} absent{absent>1?"s":""}</div>}
+                          {filterMode==="presence"&&!wk&&(()=>{
+                            const nRueil=countPresence(k,"rueil");
+                            const nParis=countPresence(k,"paris");
+                            return(
+                              <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4,flexWrap:"wrap"}}>
+                                {nRueil>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:"#0d9488",borderRadius:5,padding:"2px 7px"}}>🏢 Rueil {nRueil}</div>}
+                                {nParis>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:"#7c3aed",borderRadius:5,padding:"2px 7px"}}>🏢 Paris {nParis}</div>}
+                              </div>
+                            );
+                          })()}
                         </th>;
                       })}
                     </tr>
