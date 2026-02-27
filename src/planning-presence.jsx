@@ -193,7 +193,7 @@ function LoginPage({onLogin}){
           
           {/* Email */}
           <div style={{marginBottom:"20px"}}>
-            <label style={{display:"block",fontSize:"12px",fontWeight:"600",color:"#94a3b8",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Email</label>
+            <label style={{display:"block",fontSize:"12px",fontWeight:"600",color:"#94a3b8",marginBottom:"10px",textTransform:"uppercase",letterSpacing:"0.5px"}}>Identifiant</label>
             <div style={{position:"relative"}}>
               <span style={{position:"absolute",left:"16px",top:"50%",transform:"translateY(-50%)",fontSize:"16px",zIndex:5}}>✉️</span>
               <input 
@@ -203,7 +203,7 @@ function LoginPage({onLogin}){
                 value={email} 
                 onChange={e=>{setEmail(e.target.value);setError("");}} 
                 onKeyDown={e=>e.key==="Enter"&&handleLogin()} 
-                placeholder="identifiant"
+                placeholder="vous@quadient.com"
                 style={{width:"100%",padding:"14px 16px 14px 48px",borderRadius:"12px",border:"1.5px solid rgba(148,163,184,0.2)",background:"rgba(30,41,59,0.5)",fontSize:"14px",color:"#f1f5f9",transition:"all 0.3s",boxSizing:"border-box"}}
                 onFocus={e=>{e.target.style.border="1.5px solid #3b82f6";e.target.style.background="rgba(30,41,59,0.8)";e.target.style.boxShadow="0 0 20px rgba(59, 130, 246, 0.2)";}}
                 onBlur={e=>{e.target.style.border="1.5px solid rgba(148,163,184,0.2)";e.target.style.background="rgba(30,41,59,0.5)";e.target.style.boxShadow="none";}}
