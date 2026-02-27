@@ -1281,9 +1281,8 @@ function PlanningApp({currentUser,onLogout}){
                 const bilanByTeam={};
                 ASTREINTE_TEAMS.forEach(teamName=>{
                   const teamAgentsList=agents.filter(a=>a.team===teamName&&a.role!=="admin");
-                  const rows=teamName==="Mailing Solution"
-                    ?["astreinte","action_serveur","mail","es"]
-                    :["astreinte"];
+                  // ✅ MODIFICATION : Toutes les équipes n'affichent que "astreinte" (vendredi)
+                  const rows=["astreinte"];
                   const rowLabels={"astreinte":"Astreinte vendredi","action_serveur":"Action Serveur / Admin","mail":"Mail","es":"ES"};
                   // Compter sur toute l'année (toutes les clés du localStorage)
                   const agentCounts={};
@@ -1329,7 +1328,10 @@ function PlanningApp({currentUser,onLogout}){
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {tAgents.sort((a,b)=>{
+                                    {tAgents
+                                      // ✅ MODIFICATION : Filtrer les agents ayant au moins 1 astreinte du vendredi
+                                      .filter(a=>agentCounts[a.id]?.["astreinte"]>0)
+                                      .sort((a,b)=>{
                                       const totA=rows.reduce((s,r)=>s+(agentCounts[a.id]?.[r]||0),0);
                                       const totB=rows.reduce((s,r)=>s+(agentCounts[b.id]?.[r]||0),0);
                                       return totB-totA;
