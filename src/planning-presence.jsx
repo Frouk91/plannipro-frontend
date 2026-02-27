@@ -149,8 +149,40 @@ function LoginPage({onLogin}){
         
         {/* En-tête */}
         <div style={{marginBottom:"48px",textAlign:"center"}}>
-          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:"80px",height:"80px",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",borderRadius:"24px",marginBottom:"20px",boxShadow:"0 20px 40px rgba(59, 130, 246, 0.3)",animation:"slideInUp 0.8s ease 0.1s both"}}>
-            <span style={{fontSize:"40px"}}>📅</span>
+          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:"80px",height:"80px",background:"linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",borderRadius:"24px",marginBottom:"20px",boxShadow:"0 20px 40px rgba(59, 130, 246, 0.3)",animation:"slideInUp 0.8s ease 0.1s both",padding:"12px"}}>
+            <svg viewBox="0 0 64 64" width="56" height="56" style={{filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.2))"}}>
+              {/* Arrière-plan */}
+              <rect x="8" y="8" width="48" height="48" rx="8" fill="none" stroke="white" strokeWidth="2" opacity="0.3"/>
+              
+              {/* En-tête du calendrier */}
+              <rect x="8" y="8" width="48" height="12" rx="2" fill="white" opacity="0.2"/>
+              
+              {/* Grille */}
+              <line x1="16" y1="20" x2="16" y2="52" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="24" y1="20" x2="24" y2="52" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="32" y1="20" x2="32" y2="52" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="40" y1="20" x2="40" y2="52" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="48" y1="20" x2="48" y2="52" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              
+              <line x1="8" y1="28" x2="56" y2="28" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="8" y1="36" x2="56" y2="36" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              <line x1="8" y1="44" x2="56" y2="44" stroke="white" strokeWidth="1.5" opacity="0.6"/>
+              
+              {/* Points d'accent (jours importants) */}
+              <circle cx="20" cy="32" r="2" fill="white"/>
+              <circle cx="36" cy="40" r="2" fill="white"/>
+              <circle cx="44" cy="48" r="2" fill="white"/>
+              
+              {/* Ligne courbe (dynamique) */}
+              <path d="M 10 30 Q 32 20 54 35" stroke="url(#gradBlue)" strokeWidth="2" fill="none" opacity="0.8" strokeLinecap="round"/>
+              
+              <defs>
+                <linearGradient id="gradBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{stopColor:"#fff",stopOpacity:1}} />
+                  <stop offset="100%" style={{stopColor:"#fff",stopOpacity:0.5}} />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
           <h1 style={{color:"#f8fafc",fontSize:"36px",fontWeight:"800",margin:"0 0 8px",letterSpacing:"-1px",animation:"slideInUp 0.8s ease 0.2s both"}}>Planning</h1>
           <p style={{color:"#cbd5e1",fontSize:"14px",margin:"0",animation:"slideInUp 0.8s ease 0.3s both"}}>Gestion des présences & congés</p>
@@ -171,7 +203,7 @@ function LoginPage({onLogin}){
                 value={email} 
                 onChange={e=>{setEmail(e.target.value);setError("");}} 
                 onKeyDown={e=>e.key==="Enter"&&handleLogin()} 
-                placeholder="vous@entreprise.fr"
+                placeholder="identifiant"
                 style={{width:"100%",padding:"14px 16px 14px 48px",borderRadius:"12px",border:"1.5px solid rgba(148,163,184,0.2)",background:"rgba(30,41,59,0.5)",fontSize:"14px",color:"#f1f5f9",transition:"all 0.3s",boxSizing:"border-box"}}
                 onFocus={e=>{e.target.style.border="1.5px solid #3b82f6";e.target.style.background="rgba(30,41,59,0.8)";e.target.style.boxShadow="0 0 20px rgba(59, 130, 246, 0.2)";}}
                 onBlur={e=>{e.target.style.border="1.5px solid rgba(148,163,184,0.2)";e.target.style.background="rgba(30,41,59,0.5)";e.target.style.boxShadow="none";}}
@@ -196,14 +228,6 @@ function LoginPage({onLogin}){
                 onFocus={e=>{e.target.style.border="1.5px solid #3b82f6";e.target.style.background="rgba(30,41,59,0.8)";e.target.style.boxShadow="0 0 20px rgba(59, 130, 246, 0.2)";}}
                 onBlur={e=>{e.target.style.border="1.5px solid rgba(148,163,184,0.2)";e.target.style.background="rgba(30,41,59,0.5)";e.target.style.boxShadow="none";}}
               />
-              <button 
-                onClick={()=>setShowPwd(!showPwd)} 
-                style={{position:"absolute",right:"14px",top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",fontSize:"18px",color:"#94a3b8",transition:"color 0.2s",padding:"4px 8px"}}
-                onMouseEnter={e=>e.target.style.color="#3b82f6"}
-                onMouseLeave={e=>e.target.style.color="#94a3b8"}
-              >
-                {showPwd?"👁️":"🙈"}
-              </button>
             </div>
           </div>
 
