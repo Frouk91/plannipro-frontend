@@ -285,9 +285,9 @@ function LoginPage({onLogin}){
 
 function Modal({title,children}){
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(3px)"}}>
-      <div style={{background:"#fff",borderRadius:20,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 25px 60px rgba(0,0,0,0.15)",maxHeight:"90vh",overflowY:"auto",animation:"slideIn 0.2s ease"}}>
-        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700,color:"#111827"}}>{title}</h2>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,backdropFilter:"blur(8px)"}}>
+      <div style={{background:"rgba(15,23,42,0.8)",backdropFilter:"blur(20px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:20,padding:32,width:480,maxWidth:"95vw",boxShadow:"0 25px 60px rgba(59, 130, 246, 0.3)",maxHeight:"90vh",overflowY:"auto",animation:"slideIn 0.2s ease"}}>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:700,color:"#f1f5f9"}}>{title}</h2>
         {children}
       </div>
     </div>
@@ -295,8 +295,8 @@ function Modal({title,children}){
 }
 function ModalButtons({onCancel,onConfirm,confirmLabel,confirmColor,disabled}){
   return(<div style={{display:"flex",gap:10}}>
-    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1.5px solid #e5e7eb",background:"#fff",cursor:"pointer",fontSize:14,color:"#6b7280",fontWeight:500}}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"linear-gradient(135deg,#667eea,#764ba2)",color:"#fff",cursor:disabled?"default":"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.5:1}}>{confirmLabel}</button>
+    <button onClick={onCancel} style={{flex:1,padding:10,borderRadius:8,border:"1.5px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",cursor:"pointer",fontSize:14,color:"#cbd5e1",fontWeight:500,transition:"all 0.2s"}}>Annuler</button>
+    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{flex:1,padding:10,borderRadius:8,border:"none",background:confirmColor||"linear-gradient(135deg,#3b82f6,#06b6d4)",color:"#fff",cursor:disabled?"default":"pointer",fontSize:14,fontWeight:600,opacity:disabled?0.5:1,transition:"all 0.2s"}}>{confirmLabel}</button>
   </div>);
 }
 function Field({label,value,onChange,placeholder,style={}}){
@@ -311,13 +311,13 @@ function ContextMenu({x,y,leave,onDeleteDay,onDeleteAll,onClose}){
   const isMultiDay=leave.leaveStart!==leave.leaveEnd;
   return(
     <div onClick={e=>e.stopPropagation()}
-      style={{position:"fixed",top:y,left:x,background:"#fff",borderRadius:12,boxShadow:"0 10px 40px rgba(0,0,0,0.15)",border:"1px solid #f1f5f9",zIndex:99999,minWidth:230,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
-      <div style={{padding:"10px 16px",borderBottom:"1px solid #f8fafc",fontSize:12,color:"#64748b",fontWeight:600,background:"#f8fafc"}}>
+      style={{position:"fixed",top:y,left:x,background:"rgba(15,23,42,0.9)",backdropFilter:"blur(15px)",borderRadius:12,boxShadow:"0 10px 40px rgba(59, 130, 246, 0.4)",border:"1px solid rgba(59,130,246,0.2)",zIndex:99999,minWidth:230,overflow:"hidden",animation:"slideIn 0.15s ease"}}>
+      <div style={{padding:"10px 16px",borderBottom:"1px solid rgba(148,163,184,0.1)",fontSize:12,color:"#cbd5e1",fontWeight:600,background:"rgba(59,130,246,0.1)"}}>
         <span style={{display:"inline-block",width:10,height:10,borderRadius:3,background:leave.color,marginRight:8}}></span>{leave.label}
       </div>
-      <button onClick={e=>{e.stopPropagation();onDeleteDay();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",background:"none",cursor:"pointer",fontSize:13,color:"#d97706",fontWeight:500}}>✂️ Supprimer ce jour seulement</button>
-      {isMultiDay&&<button onClick={e=>{e.stopPropagation();onDeleteAll();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",borderTop:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:13,color:"#ef4444",fontWeight:500}}>🗑 Supprimer toute la période</button>}
-      <button onClick={e=>{e.stopPropagation();onClose();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",borderTop:"1px solid #f8fafc",background:"none",cursor:"pointer",fontSize:13,color:"#9ca3af"}}>✕ Annuler</button>
+      <button onClick={e=>{e.stopPropagation();onDeleteDay();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",background:"none",cursor:"pointer",fontSize:13,color:"#fbbf24",fontWeight:500,transition:"all 0.2s"}}>✂️ Supprimer ce jour seulement</button>
+      {isMultiDay&&<button onClick={e=>{e.stopPropagation();onDeleteAll();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"11px 16px",border:"none",borderTop:"1px solid rgba(148,163,184,0.1)",background:"none",cursor:"pointer",fontSize:13,color:"#f87171",fontWeight:500,transition:"all 0.2s"}}>🗑 Supprimer toute la période</button>}
+      <button onClick={e=>{e.stopPropagation();onClose();}} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"9px 16px",border:"none",borderTop:"1px solid rgba(148,163,184,0.1)",background:"none",cursor:"pointer",fontSize:13,color:"#94a3b8",transition:"all 0.2s"}}>✕ Annuler</button>
     </div>
   );
 }
@@ -392,36 +392,36 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
 
   return(
     <div style={{padding:24,animation:"fadeIn 0.3s ease",maxWidth:900}}>
-      <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:4,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
-        <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
+      <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",gap:4,boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
+        <div style={{display:"flex",background:"rgba(59,130,246,0.1)",borderRadius:7,padding:2,gap:1}}>
           {[{id:"agents",label:"Agents"},{id:"teams",label:"Équipes"},{id:"leavetypes",label:"Types de congés"}].map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"5px 16px",borderRadius:5,border:"none",background:tab===t.id?"#fff":"transparent",color:tab===t.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:tab===t.id?700:400,boxShadow:tab===t.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>{t.label}</button>
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{padding:"5px 16px",borderRadius:5,border:"none",background:tab===t.id?"linear-gradient(135deg, rgba(59,130,246,0.3), rgba(6,182,212,0.3))":"transparent",color:tab===t.id?"#f1f5f9":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:tab===t.id?700:400,boxShadow:tab===t.id?"0 2px 8px rgba(59, 130, 246, 0.2)":"none",transition:"all 0.15s",border:tab===t.id?"1px solid rgba(59,130,246,0.4)":"none"}}>{t.label}</button>
           ))}
         </div>
       </div>
       {tab==="agents"&&(
         <div>
-          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-            <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <span style={{fontSize:12,fontWeight:700,color:"#64748b"}}>{agents.length} agent{agents.length>1?"s":""}</span>
-              <button onClick={()=>setAddModal(true)} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600}}>+ Ajouter</button>
+          <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
+            <div style={{padding:"10px 16px",background:"rgba(59,130,246,0.1)",borderBottom:"1px solid rgba(59,130,246,0.2)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:12,fontWeight:700,color:"#cbd5e1"}}>{agents.length} agent{agents.length>1?"s":""}</span>
+              <button onClick={()=>setAddModal(true)} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"linear-gradient(135deg, #3b82f6, #06b6d4)",color:"#fff",cursor:"pointer",fontSize:11,fontWeight:600,transition:"all 0.2s",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.3)"}}>+ Ajouter</button>
             </div>
             {agents.map((a,i)=>(
-              <div key={a.id} style={{display:"grid",gridTemplateColumns:"40px 1fr auto",alignItems:"center",gap:14,padding:"11px 16px",borderBottom:i<agents.length-1?"1px solid #f8fafc":"none",transition:"background 0.1s"}}
-                onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+              <div key={a.id} style={{display:"grid",gridTemplateColumns:"40px 1fr auto",alignItems:"center",gap:14,padding:"11px 16px",borderBottom:i<agents.length-1?"1px solid rgba(59,130,246,0.1)":"none",transition:"all 0.2s"}}
+                onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,0.15)"}
                 onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700}}>{a.avatar}</div>
+                <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,boxShadow:"0 4px 12px rgba(0,0,0,0.3)"}}>{a.avatar}</div>
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span>
-                    <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#f1f5f9",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#64748b",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":"Agent"}</span>
-                    {a.role==="agent"&&a.can_book_presence_sites&&<span style={{background:"#dbeafe",color:"#0369a1",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>🏢 Présences</span>}
+                    <span style={{fontWeight:600,fontSize:13,color:"#f1f5f9"}}>{a.name}</span>
+                    <span style={{background:a.role==="admin"?"rgba(251,191,36,0.2)":a.role==="manager"?"rgba(168,85,247,0.2)":"rgba(59,130,246,0.2)",color:a.role==="admin"?"#fbbf24":a.role==="manager"?"#c4b5fd":"#3b82f6",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":"Agent"}</span>
+                    {a.role==="agent"&&a.can_book_presence_sites&&<span style={{background:"rgba(6,182,212,0.2)",color:"#06b6d4",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>🏢 Présences</span>}
                   </div>
-                  <div style={{fontSize:11,color:"#94a3b8",marginTop:1}}>{a.email}{a.team&&<span style={{marginLeft:8,color:"#64748b"}}>· {a.team}</span>}</div>
+                  <div style={{fontSize:11,color:"#cbd5e1",marginTop:1}}>{a.email}{a.team&&<span style={{marginLeft:8,color:"#94a3b8"}}>· {a.team}</span>}</div>
                 </div>
                 <div style={{display:"flex",gap:6}}>
-                  <button onClick={()=>{const parts=a.name.split(" ");setEditModal(a);setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:"",can_book_presence_sites:a.can_book_presence_sites||false});}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b",fontWeight:500}}>Modifier</button>
-                  {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{padding:"4px 8px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>}
+                  <button onClick={()=>{const parts=a.name.split(" ");setEditModal(a);setEditData({first_name:parts[0]||"",last_name:parts.slice(1).join(" ")||"",email:a.email,team:a.team,role:a.role,password:"",can_book_presence_sites:a.can_book_presence_sites||false});}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",cursor:"pointer",fontSize:11,color:"#cbd5e1",fontWeight:500,transition:"all 0.2s"}}>Modifier</button>
+                  {a.role!=="admin"&&<button onClick={()=>setDeleteModal(a)} style={{padding:"4px 8px",borderRadius:6,border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.1)",cursor:"pointer",fontSize:11,color:"#f87171",transition:"all 0.2s"}}>✕</button>}
                 </div>
               </div>
             ))}
@@ -430,35 +430,35 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
       )}
       {tab==="teams"&&(
         <div>
-          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-            <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()} style={{flex:1,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
-            <button onClick={handleAddTeam} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
+          <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:8,boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
+            <input value={newTeam} onChange={e=>setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e=>e.key==="Enter"&&handleAddTeam()} style={{flex:1,padding:"6px 12px",borderRadius:7,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",fontSize:12,color:"#f1f5f9",outline:"none",transition:"all 0.2s"}}/>
+            <button onClick={handleAddTeam} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"linear-gradient(135deg, #3b82f6, #06b6d4)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"all 0.2s",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.3)"}}>+ Ajouter</button>
           </div>
           {teams.map(team=>{
             const teamAgents=agents.filter(a=>a.team===team.name);
             const unassigned=agents.filter(a=>!a.team||a.team!==team.name);
             return(
-              <div key={team.id||team.name} style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:10,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-                <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div key={team.id||team.name} style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,overflow:"hidden",marginBottom:10,boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
+                <div style={{padding:"10px 16px",background:"rgba(59,130,246,0.1)",borderBottom:"1px solid rgba(59,130,246,0.2)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontWeight:700,fontSize:13,color:"#1e293b"}}>{team.name}</span>
+                    <span style={{fontWeight:700,fontSize:13,color:"#f1f5f9"}}>{team.name}</span>
                     <span style={{fontSize:11,color:"#94a3b8"}}>{teamAgents.length} agent{teamAgents.length>1?"s":""}</span>
                   </div>
-                  {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>Supprimer</button>}
+                  {team.name!=="Admin"&&<button onClick={()=>handleDeleteTeam(team)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.1)",cursor:"pointer",fontSize:11,color:"#f87171",transition:"all 0.2s"}}>Supprimer</button>}
                 </div>
                 {teamAgents.map((a,i)=>(
-                  <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 16px",borderBottom:i<teamAgents.length-1?"1px solid #f8fafc":"none"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                  <div key={a.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 16px",borderBottom:i<teamAgents.length-1?"1px solid rgba(59,130,246,0.1)":"none",transition:"all 0.2s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,0.15)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{a.avatar}</div>
-                    <span style={{fontSize:12,fontWeight:500,color:"#1e293b",flex:1}}>{a.name}</span>
-                    <button onClick={()=>handleAssignAgentTeam(a.id,"")} style={{padding:"2px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#f8fafc",cursor:"pointer",fontSize:10,color:"#94a3b8"}}>Retirer</button>
+                    <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.3)"}}>{a.avatar}</div>
+                    <span style={{fontSize:12,fontWeight:500,color:"#f1f5f9",flex:1}}>{a.name}</span>
+                    <button onClick={()=>handleAssignAgentTeam(a.id,"")} style={{padding:"2px 8px",borderRadius:5,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",cursor:"pointer",fontSize:10,color:"#cbd5e1",transition:"all 0.2s"}}>Retirer</button>
                   </div>
                 ))}
                 {unassigned.filter(a=>a.role!=="admin").length>0&&(
-                  <div style={{padding:"8px 16px",borderTop:teamAgents.length>0?"1px solid #f8fafc":"none",background:"#fafafa"}}>
+                  <div style={{padding:"8px 16px",borderTop:teamAgents.length>0?"1px solid rgba(59,130,246,0.1)":"none",background:"rgba(59,130,246,0.05)"}}>
                     <select onChange={e=>{if(e.target.value)handleAssignAgentTeam(e.target.value,team.name);e.target.value="";}}
-                      style={{width:"100%",padding:"5px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",fontSize:11,color:"#64748b",cursor:"pointer"}}>
+                      style={{width:"100%",padding:"5px 10px",borderRadius:6,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",fontSize:11,color:"#cbd5e1",cursor:"pointer",transition:"all 0.2s"}}>
                       <option value="">+ Ajouter un agent à cette équipe...</option>
                       {unassigned.filter(a=>a.role!=="admin").map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
                     </select>
@@ -471,18 +471,18 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
       )}
       {tab==="leavetypes"&&(
         <div>
-          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 14px",marginBottom:14,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+          <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,padding:"12px 14px",marginBottom:14,boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:10}}>
-              <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Nom du type de congé..." onKeyDown={e=>e.key==="Enter"&&handleAddLT()} style={{flex:1,minWidth:160,padding:"6px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,outline:"none"}}/>
-              <button onClick={handleAddLT} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1e293b",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600}}>+ Ajouter</button>
+              <input value={newLT.label} onChange={e=>setNewLT(p=>({...p,label:e.target.value}))} placeholder="Nom du type de congé..." onKeyDown={e=>e.key==="Enter"&&handleAddLT()} style={{flex:1,minWidth:160,padding:"6px 12px",borderRadius:7,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",fontSize:12,color:"#f1f5f9",outline:"none",transition:"all 0.2s"}}/>
+              <button onClick={handleAddLT} style={{padding:"6px 14px",borderRadius:7,border:"none",background:"linear-gradient(135deg, #3b82f6, #06b6d4)",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"all 0.2s",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.3)"}}>+ Ajouter</button>
             </div>
             <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
               <ColorPicker selected={newLT.color} onChange={c=>setNewLT(p=>({...p,color:c}))}/>
             </div>
           </div>
-          <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+          <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,overflow:"hidden",boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
             {sortLeaveTypes(leaveTypes).map((lt,i)=>(
-              <div key={lt.id} style={{borderBottom:i<leaveTypes.length-1?"1px solid #f8fafc":"none"}}>
+              <div key={lt.id} style={{borderBottom:i<leaveTypes.length-1?"1px solid rgba(59,130,246,0.1)":"none"}}>
                 {editLT===lt.id?(
                   <LeaveTypeEditRow
                     lt={lt}
@@ -490,15 +490,15 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                     onCancel={()=>setEditLT(null)}
                   />
                 ):(
-                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+                  <div style={{display:"flex",alignItems:"center",gap:12,padding:"10px 16px",transition:"all 0.2s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,0.15)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{width:12,height:12,borderRadius:"50%",background:lt.color,flexShrink:0}}/>
-                    <span style={{flex:1,fontWeight:600,fontSize:13,color:"#1e293b"}}>{lt.label}</span>
-                    <div style={{fontSize:10,color:"#94a3b8",background:hexToLight(lt.color),padding:"2px 8px",borderRadius:4,fontWeight:700}}>{leaveAbbr(lt.label)}</div>
+                    <span style={{flex:1,fontWeight:600,fontSize:13,color:"#f1f5f9"}}>{lt.label}</span>
+                    <div style={{fontSize:10,color:lt.color,background:`${lt.color}20`,padding:"2px 8px",borderRadius:4,fontWeight:700}}>{leaveAbbr(lt.label)}</div>
                     <div style={{display:"flex",gap:4}}>
-                      <button type="button" onClick={()=>setEditLT(lt.id)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,color:"#64748b"}}>Modifier</button>
-                      <button type="button" onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid #fecaca",background:"#fef2f2",cursor:"pointer",fontSize:11,color:"#ef4444"}}>✕</button>
+                      <button type="button" onClick={()=>setEditLT(lt.id)} style={{padding:"3px 8px",borderRadius:5,border:"1px solid rgba(59,130,246,0.3)",background:"rgba(59,130,246,0.1)",cursor:"pointer",fontSize:11,color:"#cbd5e1",transition:"all 0.2s"}}>Modifier</button>
+                      <button type="button" onClick={()=>handleDeleteLT(lt)} style={{padding:"3px 7px",borderRadius:5,border:"1px solid rgba(239,68,68,0.3)",background:"rgba(239,68,68,0.1)",cursor:"pointer",fontSize:11,color:"#f87171",transition:"all 0.2s"}}>✕</button>
                     </div>
                   </div>
                 )}
@@ -1152,23 +1152,23 @@ function PlanningApp({currentUser,onLogout}){
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{height:4,borderRadius:4,marginBottom:12,background:filterMode==="presence"?"linear-gradient(90deg,#0d9488,#14b8a6)":filterMode==="astreinte"?"linear-gradient(90deg,#f59e0b,#fbbf24)":"linear-gradient(90deg,#6366f1,#818cf8)",boxShadow:filterMode==="presence"?"0 2px 8px rgba(13,148,136,0.4)":filterMode==="astreinte"?"0 2px 8px rgba(245,158,11,0.4)":"0 2px 8px rgba(99,102,241,0.4)"}}/>
             {/* BARRE DE CONTRÔLES */}
-            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+            <div style={{background:"rgba(30,41,59,0.6)",backdropFilter:"blur(15px)",border:"1px solid rgba(59,130,246,0.2)",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 4px 16px rgba(59, 130, 246, 0.15)"}}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{display:"flex",gap:4,marginBottom:12}}>
                 {[
-                  {mode:"all",label:"🗓 Planning",color:"#6366f1",bg:"#eef2ff"},
-                  {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488",bg:"#f0fdfa"},
-                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b",bg:"#fffbeb"},
+                  {mode:"all",label:"🗓 Planning",color:"#3b82f6",bg:"rgba(59,130,246,0.2)"},
+                  {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488",bg:"rgba(13,148,136,0.2)"},
+                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b",bg:"rgba(245,158,11,0.2)"},
                 ].map(tab=>(
                   <button key={tab.mode} onClick={()=>{
                     setFilterMode(tab.mode);
                     if(tab.mode==="presence"){const pt=leaveTypes.find(t=>isPresenceType(t));if(pt)setSelectedLTId(pt.id);}
                   }} style={{
-                    padding:"8px 18px",border:`2px solid ${filterMode===tab.mode?tab.color:"#e2e8f0"}`,
+                    padding:"8px 18px",border:`2px solid ${filterMode===tab.mode?tab.color:"rgba(59,130,246,0.2)"}`,
                     borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:filterMode===tab.mode?700:500,
                     color:filterMode===tab.mode?tab.color:"#94a3b8",
-                    background:filterMode===tab.mode?tab.bg:"#fff",
-                    boxShadow:filterMode===tab.mode?`0 2px 8px ${tab.color}30`:"none",
+                    background:filterMode===tab.mode?tab.bg:"rgba(59,130,246,0.05)",
+                    boxShadow:filterMode===tab.mode?`0 2px 8px ${tab.color}40`:"none",
                     transition:"all 0.15s"
                   }}>
                     {tab.label}
