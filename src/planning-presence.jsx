@@ -1317,7 +1317,12 @@ function PlanningApp({currentUser,onLogout}){
                                 🔔 {teamName}
                               </div>
                               <div style={{overflowX:"auto"}}>
-                                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,tableLayout:"fixed"}}>
+                                  <colgroup>
+                                    <col style={{width:"60%"}}/>
+                                    {rows.map(r=><col key={`col-${r}`} style={{width:`${20/rows.length}%`}}/>)}
+                                    {rows.length>1&&<col style={{width:"20%"}}/>}
+                                  </colgroup>
                                   <thead>
                                     <tr style={{background:"#fafafa"}}>
                                       <th style={{padding:"8px 16px",textAlign:"left",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>Agent</th>
