@@ -1296,10 +1296,12 @@ function PlanningApp({currentUser,onLogout}){
                           {filterMode==="presence"&&!wk&&(()=>{
                             const nRueil=countPresence(k,"rueil");
                             const nParis=countPresence(k,"paris");
+                            const rueilColor=leaveTypes.find(t=>(t.code||"").toLowerCase()==="rueil"||(t.label||"").toLowerCase()==="rueil")?.color||"#0d9488";
+                            const parisColor=leaveTypes.find(t=>(t.code||"").toLowerCase()==="paris"||(t.label||"").toLowerCase()==="paris")?.color||"#7c3aed";
                             return(
                               <div style={{display:"flex",flexDirection:"column",gap:1,marginTop:2,alignItems:"center"}}>
-                                {nRueil>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:"#0d9488",borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>R{nRueil}</div>}
-                                {nParis>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:"#7c3aed",borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>P{nParis}</div>}
+                                {nRueil>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:rueilColor,borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>R{nRueil}</div>}
+                                {nParis>0&&<div style={{fontSize:7,fontWeight:700,color:"#fff",background:parisColor,borderRadius:3,padding:"0 3px",lineHeight:"14px",minWidth:14,textAlign:"center"}}>P{nParis}</div>}
                               </div>
                             );
                           })()}
@@ -1413,10 +1415,12 @@ function PlanningApp({currentUser,onLogout}){
                           {filterMode==="presence"&&!wk&&(()=>{
                             const nRueil=countPresence(k,"rueil");
                             const nParis=countPresence(k,"paris");
+                            const rueilColor=leaveTypes.find(t=>(t.code||"").toLowerCase()==="rueil"||(t.label||"").toLowerCase()==="rueil")?.color||"#0d9488";
+                            const parisColor=leaveTypes.find(t=>(t.code||"").toLowerCase()==="paris"||(t.label||"").toLowerCase()==="paris")?.color||"#7c3aed";
                             return(
                               <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4,flexWrap:"wrap"}}>
-                                {nRueil>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:"#0d9488",borderRadius:5,padding:"2px 7px"}}>🏢 Rueil {nRueil}</div>}
-                                {nParis>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:"#7c3aed",borderRadius:5,padding:"2px 7px"}}>🏢 Paris {nParis}</div>}
+                                {nRueil>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:rueilColor,borderRadius:5,padding:"2px 7px"}}>🏢 Rueil {nRueil}</div>}
+                                {nParis>0&&<div style={{fontSize:10,fontWeight:700,color:"#fff",background:parisColor,borderRadius:5,padding:"2px 7px"}}>🏢 Paris {nParis}</div>}
                               </div>
                             );
                           })()}
