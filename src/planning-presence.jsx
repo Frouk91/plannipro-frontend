@@ -755,16 +755,8 @@ function PlanningApp({currentUser,onLogout}){
     else{
       const start=Math.min(selectionStart,day),end=Math.max(selectionStart,day);
       setSelectionStart(null);setSelectedAgent(null);
-      // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
-      if(filterMode==="presence"&&!isManager){
-        try{
-          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:dateKey(year,month,start),end_date:dateKey(year,month,end),agent_id:agentId,allow_presence_overlap:true})});
-          if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
-          await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
-        }catch{showNotif("Erreur sauvegarde","error");}
-      }else{
-        setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end),x:null,y:null});setRequestReason("");
-      }
+      // Toujours ouvrir la popup (agent ou manager)
+      setRequestModal({agentId,start:dateKey(year,month,start),end:dateKey(year,month,end),x:null,y:null});setRequestReason("");
     }
   }
 
@@ -787,15 +779,7 @@ function PlanningApp({currentUser,onLogout}){
       const end=weekSelStart<k?k:weekSelStart;
       setWeekSelStart(null);setWeekSelAgent(null);
       // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
-      if(filterMode==="presence"&&!isManager){
-        try{
-          const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:currentLT.code,start_date:start,end_date:end,agent_id:agentId,allow_presence_overlap:true})});
-          if(data.leave){await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});}
-          await loadLeaves(leaveTypes,token,year,month);showNotif("Présence enregistrée ✅");
-        }catch{showNotif("Erreur sauvegarde","error");}
-      }else{
-        setRequestModal({agentId,start,end,x:null,y:null});setRequestReason("");
-      }
+      setRequestModal({agentId,start,end,x:null,y:null});setRequestReason("");
     }
   }
 
@@ -808,15 +792,22 @@ function PlanningApp({currentUser,onLogout}){
   function handleCellRightClick(e,agentId,day){
     e.preventDefault();e.stopPropagation();
     if(currentUser.id!==agentId&&!isManager)return;
-    const leave=leaves[agentId]?.[dateKey(year,month,day)];
+    const k=dateKey(year,month,day);
+    // En mode présence : chercher la présence (__presence key)
+    const leave=filterMode==="presence"
+      ?(leaves[agentId]?.[k+"__presence"]||leaves[agentId]?.[k])
+      :leaves[agentId]?.[k];
     if(!leave||!leave.leaveId)return;
-    setContextMenu({x:e.clientX,y:e.clientY,agentId,day,leave,leaveId:leave.leaveId,clickedDate:dateKey(year,month,day)});
+    setContextMenu({x:e.clientX,y:e.clientY,agentId,day,leave,leaveId:leave.leaveId,clickedDate:k});
   }
 
   function handleWeekCellRightClick(e,agentId,dateObj){
     e.preventDefault();e.stopPropagation();
     if(currentUser.id!==agentId&&!isManager)return;
-    const k=dKey(dateObj);const leave=leaves[agentId]?.[k];
+    const k=dKey(dateObj);
+    const leave=filterMode==="presence"
+      ?(leaves[agentId]?.[k+"__presence"]||leaves[agentId]?.[k])
+      :leaves[agentId]?.[k];
     if(!leave||!leave.leaveId)return;
     setContextMenu({x:e.clientX,y:e.clientY,agentId,leave,leaveId:leave.leaveId,clickedDate:k});
   }
@@ -844,10 +835,11 @@ function PlanningApp({currentUser,onLogout}){
     try{
       const data=await apiFetch("/leaves",token,{method:"POST",body:JSON.stringify({leave_type_code:leaveType.code,start_date:start,end_date:end,reason:reason||null,agent_id:agentId})});
       if(data.leave){
-        // Manager/admin : approuver directement
-        if(isManager){
+        const agentCanPresence=agents.find(a=>a.id===agentId)?.can_book_presence_sites;
+        const autoApprove=isManager||(filterMode==="presence"&&agentCanPresence&&isPresenceType(leaveType));
+        if(autoApprove){
           await apiFetch(`/leaves/${data.leave.id}/approve`,token,{method:"PATCH",body:JSON.stringify({})});
-          showNotif("Congé sauvegardé ✅");
+          showNotif(filterMode==="presence"?"Présence enregistrée ✅":"Congé sauvegardé ✅");
         }else{
           setRequests(prev=>[...prev,{id:data.leave.id,agentId,agentName:agent.name,agentAvatar:agent.avatar,agentTeam:agent.team,leaveType,start,end,reason:reason||null,status:"pending",createdAt:new Date().toISOString()}]);
           showNotif("Demande envoyée au manager !");
