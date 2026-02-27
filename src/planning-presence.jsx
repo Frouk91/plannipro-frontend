@@ -26,22 +26,23 @@ const DEMO_USERS = [
 const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Outfit', sans-serif; background: #f5f6fa; }
+  body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: #f1f5f9; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: rgba(148,163,184,0.1); }
+  ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-  .cell-hover:hover { background: #f0f1ff !important; }
+  .cell-hover:hover { background: rgba(59,130,246,0.15) !important; }
   .btn-primary { transition: all 0.2s ease; }
-  .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.3) !important; }
+  .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.4) !important; }
   .nav-btn { transition: all 0.15s ease; }
-  .nav-btn:hover { background: rgba(255,255,255,0.08) !important; }
+  .nav-btn:hover { background: rgba(59,130,246,0.1) !important; }
   .card { transition: all 0.2s ease; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
-  input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important; outline: none; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
+  input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -1055,34 +1056,34 @@ function PlanningApp({currentUser,onLogout}){
   );
 
   return(
-    <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"#f5f6fa",display:"flex"}}
+    <div style={{fontFamily:"'Outfit','Segoe UI',sans-serif",minHeight:"100vh",background:"linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)",display:"flex",position:"relative"}}
       onClick={()=>{if(contextMenu)setContextMenu(null);if(showMonthPicker)setShowMonthPicker(false);if(astreinteDropdown)setAstreinteDropdown(null);if(astreinteEraseStart){setAstreinteEraseStart(null);setAstreinteHovered(null);}}}> 
 
-      {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"#fef2f2":"#f0fdf4",border:`1px solid ${notification.type==="error"?"#fecaca":"#bbf7d0"}`,color:notification.type==="error"?"#dc2626":"#16a34a",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:"0 8px 24px rgba(0,0,0,0.1)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
+      {notification&&<div style={{position:"fixed",top:20,right:20,zIndex:9999,background:notification.type==="error"?"rgba(239,68,68,0.9)":"rgba(16,185,129,0.9)",backdropFilter:"blur(10px)",border:`1px solid ${notification.type==="error"?"rgba(239,68,68,0.5)":"rgba(16,185,129,0.5)"}`,color:"#fff",padding:"12px 20px",borderRadius:12,fontWeight:600,fontSize:14,boxShadow:notification.type==="error"?"0 8px 24px rgba(239,68,68,0.4)":"0 8px 24px rgba(16,185,129,0.4)",animation:"slideIn 0.3s ease"}}>{notification.msg}</div>}
       {contextMenu&&<ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={()=>setContextMenu(null)}/>}
 
       {/* SIDEBAR */}
-      <aside style={{width:230,background:"linear-gradient(180deg,#1e1b4b 0%,#312e81 100%)",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0,boxShadow:"4px 0 20px rgba(0,0,0,0.1)"}}>
-        <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+      <aside style={{width:230,background:"rgba(15,23,42,0.4)",backdropFilter:"blur(20px)",border:"1px solid rgba(148,163,184,0.1)",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0,boxShadow:"0 10px 30px rgba(0,0,0,0.3)"}}>
+        <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(148,163,184,0.15)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#667eea,#764ba2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 4px 12px rgba(102,126,234,0.4)"}}>📅</div>
-            <div><div style={{fontSize:15,fontWeight:800,color:"#fff",letterSpacing:"-0.3px"}}>Planning {new Date().getFullYear()}</div></div>
+            <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#3b82f6,#06b6d4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 8px 20px rgba(59, 130, 246, 0.4)"}}>📅</div>
+            <div><div style={{fontSize:15,fontWeight:800,color:"#f8fafc",letterSpacing:"-0.3px"}}>Planning {new Date().getFullYear()}</div></div>
           </div>
         </div>
-        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
+        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(148,163,184,0.15)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{position:"relative"}}>
-              <div style={{width:38,height:38,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id)+40},65%,60%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700}}>
+              <div style={{width:38,height:38,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id)+40},65%,60%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:13,fontWeight:700,boxShadow:"0 4px 12px rgba(0,0,0,0.3)"}}>
                 {currentUser.avatar_initials||getInitials(`${currentUser.first_name||""} ${currentUser.last_name||""}`)}
               </div>
-              <div style={{position:"absolute",bottom:0,right:0,width:10,height:10,borderRadius:"50%",background:"#34d399",border:"2px solid #1e1b4b"}}/>
+              <div style={{position:"absolute",bottom:0,right:0,width:10,height:10,borderRadius:"50%",background:"#10b981",border:"2px solid #0f172a"}}/>
             </div>
             <div style={{flex:1,overflow:"hidden"}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.first_name} {currentUser.last_name}</div>
-              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#c4b5fd":"#6ee7b7",fontWeight:500}}>{currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"}</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#f8fafc",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.first_name} {currentUser.last_name}</div>
+              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#a78bfa":"#6ee7b7",fontWeight:500}}>{currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"}</div>
             </div>
           </div>
-          <button onClick={onLogout} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.5)",fontSize:11,cursor:"pointer",fontWeight:600}}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.3)",color:"#cbd5e1",fontSize:11,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>🚪 Déconnexion</button>
         </div>
         <nav style={{padding:"12px",flex:1}}>
           {navItems.map(item=>(
@@ -1093,45 +1094,45 @@ function PlanningApp({currentUser,onLogout}){
                 setSeenRejected(newSeen);
                 localStorage.setItem(`seenRejected_${currentUser.id}`,JSON.stringify(newSeen));
               }
-            }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:view===item.id?"rgba(255,255,255,0.12)":"transparent",color:view===item.id?"#fff":"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:14,fontWeight:view===item.id?600:400,marginBottom:2,boxShadow:view===item.id?"inset 0 0 0 1px rgba(255,255,255,0.15)":"none"}}>
+            }} style={{display:"flex",alignItems:"center",gap:10,width:"100%",padding:"10px 12px",border:"none",borderRadius:10,background:view===item.id?"linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2))":"transparent",color:view===item.id?"#f1f5f9":"#94a3b8",cursor:"pointer",fontSize:14,fontWeight:view===item.id?600:400,marginBottom:2,boxShadow:view===item.id?"inset 0 0 0 1px rgba(59,130,246,0.3)":"none",transition:"all 0.2s"}}>
               <span style={{fontSize:16}}>{item.icon}</span><span style={{flex:1,textAlign:"left"}}>{item.label}</span>
-              {item.badge>0&&<span style={{background:"#e94560",color:"#fff",borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
+              {item.badge>0&&<span style={{background:"linear-gradient(135deg,#ef4444,#f97316)",color:"#fff",borderRadius:20,padding:"1px 7px",fontSize:10,fontWeight:700}}>{item.badge}</span>}
             </button>
           ))}
         </nav>
-        <div style={{padding:"16px 20px",borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:10,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Légende</div>
+        <div style={{padding:"16px 20px",borderTop:"1px solid rgba(148,163,184,0.15)"}}>
+          <div style={{fontSize:10,color:"#94a3b8",marginBottom:10,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>Légende</div>
           {leaveTypes.filter(t=>!isPresenceType(t)).map(t=>(
             <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-              <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
+              <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"#cbd5e1"}}>{t.label}</span>
             </div>
           ))}
           {leaveTypes.filter(t=>isPresenceType(t)).length>0&&(
-            <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-              <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🏢 Présences site</div>
+            <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(148,163,184,0.15)"}}>
+              <div style={{fontSize:10,color:"#94a3b8",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t=>isPresenceType(t))).map(t=>(
                 <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{t.label}</span>
+                  <div style={{width:10,height:10,borderRadius:3,background:t.color}}/><span style={{fontSize:11,color:"#cbd5e1"}}>{t.label}</span>
                 </div>
               ))}
             </div>
           )}
           <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
-            <div style={{width:10,height:10,borderRadius:3,border:"1.5px dashed #fbbf24",background:"#fef9ec"}}/><span style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Jour férié</span>
+            <div style={{width:10,height:10,borderRadius:3,border:"1.5px dashed #fbbf24",background:"#fef9ec"}}/><span style={{fontSize:11,color:"#cbd5e1"}}>Jour férié</span>
           </div>
           {isManager&&(
-            <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-              <div style={{fontSize:10,color:"rgba(255,255,255,0.3)",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🔔 Astreintes vendredi</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
+            <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(148,163,184,0.15)"}}>
+              <div style={{fontSize:10,color:"#94a3b8",marginBottom:6,textTransform:"uppercase",letterSpacing:"1px",fontWeight:600}}>🔔 Astreintes vendredi</div>
+              <div style={{fontSize:11,color:"#cbd5e1"}}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
             </div>
           )}
         </div>
       </aside>
 
       {/* MAIN */}
-      <main style={{flex:1,overflow:"auto"}}>
-        <div style={{background:"#fff",borderBottom:"1px solid #f1f5f9",padding:"11px 24px",display:"flex",alignItems:"center",gap:10}}>
-          <h1 style={{margin:0,fontSize:15,fontWeight:700,color:"#1e293b"}}>{view==="planning"?"Planning":view==="validations"?"Demandes de congés":view==="stats"?"Statistiques":"Administration"}</h1>
+      <main style={{flex:1,overflow:"auto",background:"linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)"}}>
+        <div style={{background:"rgba(15,23,42,0.5)",backdropFilter:"blur(10px)",border:"1px solid rgba(148,163,184,0.1)",borderBottom:"2px solid rgba(59,130,246,0.2)",padding:"11px 24px",display:"flex",alignItems:"center",gap:10}}>
+          <h1 style={{margin:0,fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{view==="planning"?"Planning":view==="validations"?"Demandes de congés":view==="stats"?"Statistiques":"Administration"}</h1>
           {view==="validations"&&<span style={{fontSize:12,color:"#94a3b8"}}>{isManager?`${pendingRequests.length} en attente`:`${myRequests.length} demande(s)`}</span>}
         </div>
 
