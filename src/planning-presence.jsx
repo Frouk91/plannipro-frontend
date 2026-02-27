@@ -988,6 +988,8 @@ function PlanningApp({currentUser,onLogout}){
 
         {view==="planning"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
+            {/* BANDE COLORÉE INDICATEUR MODE */}
+            <div style={{height:4,borderRadius:4,marginBottom:12,background:filterMode==="presence"?"linear-gradient(90deg,#0d9488,#14b8a6)":filterMode==="astreinte"?"linear-gradient(90deg,#f59e0b,#fbbf24)":"linear-gradient(90deg,#6366f1,#818cf8)",boxShadow:filterMode==="presence"?"0 2px 8px rgba(13,148,136,0.4)":filterMode==="astreinte"?"0 2px 8px rgba(245,158,11,0.4)":"0 2px 8px rgba(99,102,241,0.4)"}}/>
             {/* BARRE DE CONTRÔLES */}
             <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
@@ -1091,7 +1093,10 @@ function PlanningApp({currentUser,onLogout}){
 
             {/* VUE MOIS */}
             {planView==="month"&&filterMode==="astreinte"&&(
-              <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
+              <div style={{background:"#fff",borderRadius:14,
+                border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
+                overflow:"auto",
+                boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:200}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead>
@@ -1258,7 +1263,10 @@ function PlanningApp({currentUser,onLogout}){
               </div>
             )}
             {planView==="month"&&filterMode!=="astreinte"&&(
-              <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
+              <div style={{background:"#fff",borderRadius:14,
+                border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
+                overflow:"auto",
+                boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead>
@@ -1363,7 +1371,10 @@ function PlanningApp({currentUser,onLogout}){
 
             {/* VUE SEMAINE */}
             {planView==="week"&&(
-              <div style={{background:"#fff",borderRadius:14,border:"1px solid #f1f5f9",overflow:"auto",boxShadow:"0 2px 16px rgba(0,0,0,0.06)"}}>
+              <div style={{background:"#fff",borderRadius:14,
+                border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
+                overflow:"auto",
+                boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead>
                     <tr>
