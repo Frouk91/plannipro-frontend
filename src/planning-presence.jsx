@@ -710,7 +710,42 @@ function PlanningApp({currentUser,onLogout}){
     loadAll();
   },[token]);
 
-  useEffect(()=>{if(dataLoaded&&leaveTypes.length>0)loadLeaves(leaveTypes,token,year,month);},[year,month]);
+  useEffect(()=>{
+    if(!dataLoaded||leaveTypes.length===0)return;
+    if(statsFilter==="year"){
+      // Charger tous les mois de l'année
+      const loadAllMonths=async()=>{
+        const allLeavesMap={};
+        for(let m=0;m<12;m++){
+          try{
+            const monthStr=`${year}-${String(m+1).padStart(2,"0")}`;
+            const data=await apiFetch(`/leaves?month=${monthStr}`,token);
+            const leavesData=(data.leaves||[]).filter(l=>l.status!=="cancelled"&&l.status!=="rejected");
+            leavesData.forEach(l=>{
+              if(!allLeavesMap[l.agent_id])allLeavesMap[l.agent_id]={};
+              const lt=leaveFromBackend(l);
+              const leaveStart=l.start_date.split("T")[0],leaveEnd=l.end_date.split("T")[0];
+              const isPresence=PRESENCE_CODES.includes((l.leave_type_code||"").toLowerCase());
+              for(let d=new Date(l.start_date);d<=new Date(l.end_date);d.setDate(d.getDate()+1)){
+                const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"00")}-${String(d.getDate()).padStart(2,"0")}`;
+                const entry={...lt,status:l.status,leaveId:l.id,leaveStart,leaveEnd,leaveCode:l.leave_type_code,agentId:l.agent_id};
+                if(isPresence){
+                  allLeavesMap[l.agent_id][k+"__presence"]=entry;
+                }else{
+                  allLeavesMap[l.agent_id][k]=entry;
+                }
+              }
+            });
+          }catch(e){console.error(`Erreur chargement mois ${m}:`,e);}
+        }
+        setLeaves(allLeavesMap);
+      };
+      loadAllMonths();
+    }else{
+      // Mode mois : charger juste le mois actuel
+      loadLeaves(leaveTypes,token,year,month);
+    }
+  },[year,month,statsFilter,dataLoaded,leaveTypes.length]);
 
   async function loadLeaves(ltList,tok,y,m){
     try{
