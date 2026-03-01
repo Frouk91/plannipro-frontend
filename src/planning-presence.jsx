@@ -1542,8 +1542,8 @@ function PlanningApp({currentUser,onLogout}){
             {planView==="month"&&filterMode!=="astreinte"&&(
               <div style={{background:"#fff",borderRadius:14,
                 border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
-                overflow:"auto",
                 boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
+                <div style={{overflow:"auto",maxHeight:"calc(100vh - 250px)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
@@ -1658,6 +1658,7 @@ function PlanningApp({currentUser,onLogout}){
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
 
@@ -1665,8 +1666,8 @@ function PlanningApp({currentUser,onLogout}){
             {planView==="week"&&(
               <div style={{background:"#fff",borderRadius:14,
                 border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
-                overflow:"auto",
                 boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
+                <div style={{overflow:"auto",maxHeight:"calc(100vh - 250px)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
                     <tr>
@@ -1769,6 +1770,7 @@ function PlanningApp({currentUser,onLogout}){
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>
