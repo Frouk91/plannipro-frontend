@@ -586,6 +586,7 @@ function PlanningApp({currentUser,onLogout}){
   const [filterStatus,setFilterStatus]=useState("all");
   const [filterMode,setFilterMode]=useState("all");
   const [selectedLTId,setSelectedLTId]=useState(null);
+  const [selectedAgentRow,setSelectedAgentRow]=useState(null);
   const [selectionStart,setSelectionStart]=useState(null);
   const [hoveredDay,setHoveredDay]=useState(null);
   const [selectedAgent,setSelectedAgent]=useState(null);
@@ -1473,9 +1474,9 @@ function PlanningApp({currentUser,onLogout}){
                                     {rows.map(r=><col key={`col-${r}`} style={{width:`${20/rows.length}%`}}/>)}
                                     {rows.length>1&&<col style={{width:"20%"}}/>}
                                   </colgroup>
-                                  <thead>
+                                  <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
                                     <tr style={{background:"#fafafa"}}>
-                                      <th style={{padding:"8px 16px",textAlign:"left",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>Agent</th>
+                                      <th style={{padding:"8px 16px",textAlign:"left",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap",position:"sticky",left:0,zIndex:21,background:"#fafafa"}}>Agent</th>
                                       {rows.map(r=>(
                                         <th key={r} style={{padding:"8px 12px",textAlign:"center",fontWeight:600,color:"#64748b",fontSize:11,borderBottom:"1px solid #f1f5f9",whiteSpace:"nowrap"}}>{rowLabels[r]}</th>
                                       ))}
@@ -1494,10 +1495,10 @@ function PlanningApp({currentUser,onLogout}){
                                       const total=rows.reduce((s,r)=>s+(agentCounts[agent.id]?.[r]||0),0);
                                       const maxTotal=Math.max(...tAgents.map(a=>rows.reduce((s,r)=>s+(agentCounts[a.id]?.[r]||0),0)),1);
                                       return(
-                                        <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc"}}
-                                          onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
-                                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                                          <td style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8}}>
+                                        <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc",transition:"all 0.15s"}}
+                                          onMouseEnter={e=>{e.currentTarget.style.background="#fafafa";Array.from(e.currentTarget.querySelectorAll("td")).forEach((td,idx)=>{if(idx===0)td.style.background="#fafafa";});}}
+                                          onMouseLeave={e=>{e.currentTarget.style.background="transparent";Array.from(e.currentTarget.querySelectorAll("td")).forEach((td,idx)=>{if(idx===0)td.style.background="transparent";});}}>
+                                          <td style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8,position:"sticky",left:0,zIndex:5,background:"transparent"}}>
                                             <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
                                             <span style={{fontWeight:600,color:"#1e293b"}}>{agent.name}</span>
                                           </td>
@@ -1545,9 +1546,9 @@ function PlanningApp({currentUser,onLogout}){
                 boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
-                  <thead>
+                  <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
                     <tr>
-                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px"}}>AGENT</th>
+                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px",position:"sticky",left:0,zIndex:21}}>AGENT</th>
                       {Array.from({length:daysInMonth},(_,i)=>{
                         const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day,isFer=!!feries[k];
                         const absent=countAbsents(k);
@@ -1582,11 +1583,14 @@ function PlanningApp({currentUser,onLogout}){
                           <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
                         {teamAgents.map(agent=>(
-                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36}}>
-                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:"#fff",fontSize:12}}>
-                              <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
+                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":"transparent",transition:"all 0.15s",cursor:"pointer"}}
+                            onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
+                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background="#f9fafb")}
+                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background="transparent")}>
+                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:12,position:"sticky",left:0,zIndex:5}}>
+                              <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0}}>
-                                <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
+                                <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
                             </td>
                             {Array.from({length:daysInMonth},(_,i)=>{
