@@ -1798,9 +1798,11 @@ function PlanningApp({currentUser,onLogout}){
         {view==="stats"&&(
           <div style={{padding:24,animation:"fadeIn 0.3s ease"}}>
             {isManager&&(
-              <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+              <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)",transition:"all 0.2s"}}
+                onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(0,0,0,0.08)"}
+                onMouseLeave={e=>e.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)"}>
                 <label style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Agent :</label>
-                <select value={selectedAgentForStats||""} onChange={e=>setSelectedAgentForStats(e.target.value||null)} style={{flex:1,maxWidth:300,padding:"8px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,color:"#1e293b",cursor:"pointer",background:"#fff"}}>
+                <select value={selectedAgentForStats||""} onChange={e=>setSelectedAgentForStats(e.target.value||null)} style={{flex:1,maxWidth:300,padding:"8px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,color:"#1e293b",cursor:"pointer",background:"#fff",transition:"all 0.2s"}}>
                   <option value="">Mon profil</option>
                   {agents.filter(a=>a.role!=="admin").map(a=>(
                     <option key={a.id} value={a.id}>{a.name}</option>
@@ -1808,7 +1810,9 @@ function PlanningApp({currentUser,onLogout}){
                 </select>
               </div>
             )}
-            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+            <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:12,boxShadow:"0 1px 6px rgba(0,0,0,0.05)",transition:"all 0.2s"}}
+              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(0,0,0,0.08)"}
+              onMouseLeave={e=>e.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)"}>
               <span style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Période :</span>
               <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
                 {[{id:"month",label:`${MONTHS_FR[month]} ${year}`},{id:"year",label:`Année ${year}`}].map(f=>(
@@ -1836,16 +1840,18 @@ function PlanningApp({currentUser,onLogout}){
                       </div>
                     )}
                     {stats.map(s=>(
-                      <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 2px 12px rgba(0,0,0,0.06)",position:"relative",overflow:"hidden"}}>
+                      <div key={s.key} className="card" style={{background:"#fff",borderRadius:14,border:`2px solid ${s.color}20`,padding:24,boxShadow:"0 4px 16px rgba(0,0,0,0.08)",position:"relative",overflow:"hidden",transition:"all 0.3s",cursor:"default"}}
+                        onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 8px 24px rgba(0,0,0,0.12)";e.currentTarget.style.transform="translateY(-2px)";}}
+                        onMouseLeave={e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.08)";e.currentTarget.style.transform="translateY(0)";}}>
                         <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:`${s.color}15`}}/>
                         <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
                           <span style={{fontSize:24}}>{s.icon}</span>
-                          <span style={{fontSize:13,color:"#64748b",fontWeight:600}}>{s.label}</span>
+                          <span style={{fontSize:13,color:"#64748b",fontWeight:600,letterSpacing:"0.3px"}}>{s.label}</span>
                         </div>
-                        <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:4}}>
+                        <div style={{fontSize:48,fontWeight:800,color:s.color,letterSpacing:"-1px",marginBottom:8}}>
                           {s.days.toLocaleString('fr-FR',{minimumFractionDigits:s.days%1===0?0:1,maximumFractionDigits:1})}
                         </div>
-                        <div style={{fontSize:12,color:"#94a3b8",fontWeight:500}}>
+                        <div style={{fontSize:11,color:"#94a3b8",fontWeight:500,letterSpacing:"0.3px"}}>
                           {statsFilter==="month"?`${MONTHS_FR[month]} ${year}`:`Année ${year}`}
                         </div>
                       </div>
@@ -1964,10 +1970,10 @@ function RequestRow({req,isManager,onApprove,onReject}){
   const meta=STATUS_META[req.status]||{label:req.status,dot:"#94a3b8",text:"#64748b",bg:"#f8fafc"};
   const period=req.start===req.end?formatDate(req.start):`${formatDate(req.start)} – ${formatDate(req.end)}`;
   return(
-    <div style={{display:"grid",gridTemplateColumns:"36px 1fr auto",alignItems:"center",gap:14,padding:"12px 16px",borderBottom:"1px solid #f8fafc",transition:"background 0.1s"}}
-      onMouseEnter={e=>e.currentTarget.style.background="#fafafa"}
+    <div style={{display:"grid",gridTemplateColumns:"36px 1fr auto",alignItems:"center",gap:14,padding:"12px 16px",borderBottom:"1px solid #e5e7eb",transition:"all 0.2s"}}
+      onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-      <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0}}>{req.agentAvatar}</div>
+      <div style={{width:36,height:36,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId)+30},60%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:700,flexShrink:0,boxShadow:"0 2px 6px rgba(0,0,0,0.15)"}}>{req.agentAvatar}</div>
       <div style={{minWidth:0}}>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
           <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{req.agentName}</span>
@@ -1978,7 +1984,7 @@ function RequestRow({req,isManager,onApprove,onReject}){
           </span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:3,flexWrap:"wrap"}}>
-          <span style={{fontSize:12,color:"#475569",fontWeight:500}}>{period}</span>
+          <span style={{fontSize:12,color:"#64748b",fontWeight:500}}>{period}</span>
           <span style={{width:3,height:3,borderRadius:"50%",background:"#cbd5e1",display:"inline-block"}}/>
           <span style={{fontSize:12,color:req.leaveType?.color||"#6366f1",fontWeight:600}}>{req.leaveType?.label}</span>
           {req.reason&&<><span style={{width:3,height:3,borderRadius:"50%",background:"#cbd5e1",display:"inline-block"}}/><span style={{fontSize:11,color:"#94a3b8",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:200}}>{req.reason}</span></>}
@@ -1987,10 +1993,12 @@ function RequestRow({req,isManager,onApprove,onReject}){
       </div>
       {isManager&&req.status==="pending"?(
         <div style={{display:"flex",gap:6,flexShrink:0}}>
-          <button onClick={onApprove} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#10b981",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"opacity 0.15s"}}
-            onMouseEnter={e=>e.target.style.opacity="0.85"} onMouseLeave={e=>e.target.style.opacity="1"}>Approuver</button>
-          <button onClick={onReject} style={{padding:"5px 12px",borderRadius:6,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontSize:12,fontWeight:600,transition:"opacity 0.15s"}}
-            onMouseEnter={e=>e.target.style.opacity="0.7"} onMouseLeave={e=>e.target.style.opacity="1"}>Refuser</button>
+          <button onClick={onApprove} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#10b981",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,transition:"all 0.2s",boxShadow:"0 2px 6px rgba(16, 185, 129, 0.2)"}}
+            onMouseEnter={e=>{e.target.style.background="#059669";e.target.style.boxShadow="0 4px 10px rgba(16, 185, 129, 0.3)";}} 
+            onMouseLeave={e=>{e.target.style.background="#10b981";e.target.style.boxShadow="0 2px 6px rgba(16, 185, 129, 0.2)";}}>Approuver</button>
+          <button onClick={onReject} style={{padding:"5px 12px",borderRadius:6,border:"1px solid #fecaca",background:"#fff",color:"#ef4444",cursor:"pointer",fontSize:12,fontWeight:600,transition:"all 0.2s"}}
+            onMouseEnter={e=>{e.target.style.background="#fef2f2";e.target.style.borderColor="#fb7185";}} 
+            onMouseLeave={e=>{e.target.style.background="#fff";e.target.style.borderColor="#fecaca";}}>Refuser</button>
         </div>
       ):<div/>}
     </div>
@@ -2007,7 +2015,9 @@ function ValidationsView({isManager,requests,pendingRequests,myRequests,onApprov
   const counts={all:sourceList.length,pending:pending.length,approved:history.filter(r=>r.status==="approved").length,rejected:history.filter(r=>r.status==="rejected").length};
   return(
     <div style={{padding:24,maxWidth:820,animation:"fadeIn 0.3s ease"}}>
-      <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>
+      <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",transition:"all 0.2s"}}
+        onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(0,0,0,0.08)"}
+        onMouseLeave={e=>e.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)"}>
         <div style={{display:"flex",background:"#f1f5f9",borderRadius:7,padding:2,gap:1}}>
           {[{id:"all",label:"Toutes"},{id:"pending",label:"En attente"},{id:"approved",label:"Approuvées"},{id:"rejected",label:"Refusées"}].map(f=>(
             <button key={f.id} onClick={()=>setStatusFilter(f.id)} style={{padding:"4px 11px",borderRadius:5,border:"none",background:statusFilter===f.id?"#fff":"transparent",color:statusFilter===f.id?"#1e293b":"#94a3b8",cursor:"pointer",fontSize:12,fontWeight:statusFilter===f.id?600:400,boxShadow:statusFilter===f.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all 0.15s"}}>
@@ -2018,27 +2028,31 @@ function ValidationsView({isManager,requests,pendingRequests,myRequests,onApprov
         <div style={{marginLeft:"auto",display:"flex",gap:6,alignItems:"center"}}>
           {history.length>0&&isManager&&(
             <>
-              <button onClick={()=>{if(window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500}}>Effacer l'historique</button>
-              <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500}}>🗑 Vider le planning</button>
+              <button onClick={()=>{if(window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning."))onClearHistory();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fecaca",background:"#fef2f2",color:"#ef4444",cursor:"pointer",fontSize:11,fontWeight:500,transition:"all 0.2s"}}>Effacer l'historique</button>
+              <button onClick={()=>{if(window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?"))onClearPlanningData();}} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #fed7aa",background:"#fffbeb",color:"#b45309",cursor:"pointer",fontSize:11,fontWeight:500,transition:"all 0.2s"}}>🗑 Vider le planning</button>
             </>
           )}
-          <button onClick={()=>setShowHistory(h=>!h)} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5}}>
+          <button onClick={()=>setShowHistory(h=>!h)} style={{padding:"4px 11px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:"pointer",fontSize:11,fontWeight:500,display:"flex",alignItems:"center",gap:5,transition:"all 0.2s"}}>
             {showHistory?"Masquer":"Afficher"} l'historique
             <span style={{fontSize:10,color:"#94a3b8",transform:showHistory?"rotate(180deg)":"none",transition:"transform 0.2s",display:"inline-block"}}>▾</span>
           </button>
         </div>
       </div>
       {!isManager&&(
-        <div style={{fontSize:12,color:"#6366f1",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8,padding:"8px 14px",marginBottom:14}}>
+        <div style={{fontSize:12,color:"#4338ca",background:"#eef2ff",border:"1px solid #d5d9f7",borderRadius:8,padding:"8px 14px",marginBottom:14,transition:"all 0.2s"}}
+          onMouseEnter={e=>{e.currentTarget.style.background="#e6ebff";e.currentTarget.style.borderColor="#c7d2fe";}}
+          onMouseLeave={e=>{e.currentTarget.style.background="#eef2ff";e.currentTarget.style.borderColor="#d5d9f7";}}>
           Sélectionnez des dates dans le planning pour déposer une demande de congé.
         </div>
       )}
       {filtered.length===0?(
-        <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,padding:"48px 0",textAlign:"center",color:"#94a3b8",fontSize:13}}>Aucune demande</div>
+        <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:12,padding:"48px 0",textAlign:"center",color:"#94a3b8",fontSize:13,boxShadow:"0 1px 6px rgba(0,0,0,0.05)"}}>Aucune demande</div>
       ):(
         <>
           {(statusFilter==="all"||statusFilter==="pending")&&pending.length>0&&(
-            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",marginBottom:12,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+            <div style={{background:"#fff",border:"1px solid #fde68a",borderRadius:12,overflow:"hidden",marginBottom:12,boxShadow:"0 2px 10px rgba(245,158,11,0.1)",transition:"all 0.2s"}}
+              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(245,158,11,0.15)"}
+              onMouseLeave={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(245,158,11,0.1)"}>
               <div style={{padding:"10px 16px",background:"#fffbeb",borderBottom:"1px solid #fde68a",display:"flex",alignItems:"center",gap:8}}>
                 <span style={{width:7,height:7,borderRadius:"50%",background:"#f59e0b",display:"inline-block"}}/>
                 <span style={{fontSize:12,fontWeight:700,color:"#92400e"}}>En attente</span>
@@ -2050,8 +2064,10 @@ function ValidationsView({isManager,requests,pendingRequests,myRequests,onApprov
             </div>
           )}
           {showHistory&&(statusFilter==="all"||statusFilter==="approved"||statusFilter==="rejected")&&history.filter(r=>statusFilter==="all"||r.status===statusFilter).length>0&&(
-            <div style={{background:"#fff",border:"1px solid #f1f5f9",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
-              <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #f1f5f9",display:"flex",alignItems:"center",gap:8}}>
+            <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 6px rgba(0,0,0,0.05)",transition:"all 0.2s"}}
+              onMouseEnter={e=>e.currentTarget.style.boxShadow="0 2px 10px rgba(0,0,0,0.08)"}
+              onMouseLeave={e=>e.currentTarget.style.boxShadow="0 1px 6px rgba(0,0,0,0.05)"}>
+              <div style={{padding:"10px 16px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",display:"flex",alignItems:"center",gap:8}}>
                 <span style={{fontSize:12,fontWeight:700,color:"#64748b"}}>Historique</span>
                 <span style={{fontSize:11,color:"#94a3b8"}}>{history.filter(r=>statusFilter==="all"||r.status===statusFilter).length} demande{history.length>1?"s":""}</span>
               </div>
