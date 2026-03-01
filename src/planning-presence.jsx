@@ -1498,7 +1498,7 @@ function PlanningApp({currentUser,onLogout}){
                                         <tr key={agent.id} style={{borderBottom:"1px solid #f8fafc",transition:"all 0.15s"}}
                                           onMouseEnter={e=>{e.currentTarget.style.background="#fafafa";Array.from(e.currentTarget.querySelectorAll("td")).forEach((td,idx)=>{if(idx===0)td.style.background="#fafafa";});}}
                                           onMouseLeave={e=>{e.currentTarget.style.background="transparent";Array.from(e.currentTarget.querySelectorAll("td")).forEach((td,idx)=>{if(idx===0)td.style.background="transparent";});}}>
-                                          <td style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8,position:"sticky",left:0,zIndex:5,background:"transparent"}}>
+                                          <td style={{padding:"8px 16px",display:"flex",alignItems:"center",gap:8,background:"transparent"}}>
                                             <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0}}>{agent.avatar}</div>
                                             <span style={{fontWeight:600,color:"#1e293b"}}>{agent.name}</span>
                                           </td>
@@ -1543,12 +1543,11 @@ function PlanningApp({currentUser,onLogout}){
               <div style={{background:"#fff",borderRadius:14,
                 border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
                 boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
-                <div style={{overflow:"auto",maxHeight:"calc(100vh - 250px)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",tableLayout:"fixed"}}>
                   <colgroup><col style={{width:160}}/>{Array.from({length:daysInMonth},(_,i)=><col key={i}/>)}</colgroup>
                   <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
                     <tr>
-                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px",position:"sticky",left:0,zIndex:21}}>AGENT</th>
+                      <th style={{padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px"}}>AGENT</th>
                       {Array.from({length:daysInMonth},(_,i)=>{
                         const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isToday=todayDay===day,isFer=!!feries[k];
                         const absent=countAbsents(k);
@@ -1587,7 +1586,7 @@ function PlanningApp({currentUser,onLogout}){
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
                             onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background="#f9fafb")}
                             onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background="transparent")}>
-                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:12,position:"sticky",left:0,zIndex:5}}>
+                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:12}}>
                               <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
@@ -1658,7 +1657,6 @@ function PlanningApp({currentUser,onLogout}){
                     ))}
                   </tbody>
                 </table>
-                </div>
               </div>
             )}
 
@@ -1667,11 +1665,10 @@ function PlanningApp({currentUser,onLogout}){
               <div style={{background:"#fff",borderRadius:14,
                 border:`2px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`,
                 boxShadow:filterMode==="presence"?"0 2px 24px rgba(13,148,136,0.15)":filterMode==="astreinte"?"0 2px 24px rgba(245,158,11,0.15)":"0 2px 24px rgba(99,102,241,0.15)"}}>
-                <div style={{overflow:"auto",maxHeight:"calc(100vh - 250px)"}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead style={{position:"sticky",top:0,zIndex:20,background:"#fff"}}>
                     <tr>
-                      <th style={{width:160,padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px",position:"sticky",left:0,zIndex:21}}>AGENT</th>
+                      <th style={{width:160,padding:"12px 16px",textAlign:"left",fontSize:10,color:"#94a3b8",fontWeight:600,borderBottom:"1px solid #f1f5f9",background:"#f8fafc",textTransform:"uppercase",letterSpacing:"0.5px"}}>AGENT</th>
                       {weekDays.map((d,i)=>{
                         const k=dKey(d),wk=d.getDay()===0||d.getDay()===6,isToday=k===dKey(now);
                         const feriesDay=getFeries(d.getFullYear());
@@ -1710,7 +1707,7 @@ function PlanningApp({currentUser,onLogout}){
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
                             onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background="#f9fafb")}
                             onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background="transparent")}>
-                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:11,position:"sticky",left:0,zIndex:5}}>
+                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:11}}>
                               <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
@@ -1770,7 +1767,6 @@ function PlanningApp({currentUser,onLogout}){
                     ))}
                   </tbody>
                 </table>
-                </div>
               </div>
             )}
           </div>
