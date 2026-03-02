@@ -1132,8 +1132,7 @@ function PlanningApp({currentUser,onLogout}){
       <aside style={{width:230,background:"rgba(15,23,42,0.4)",backdropFilter:"blur(20px)",border:"1px solid rgba(148,163,184,0.1)",color:"#fff",display:"flex",flexDirection:"column",padding:"24px 0",flexShrink:0,boxShadow:"0 10px 30px rgba(0,0,0,0.3)"}}>
         <div style={{padding:"0 20px 20px",borderBottom:"1px solid rgba(148,163,184,0.15)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:38,height:38,borderRadius:"50%",background:"linear-gradient(135deg,#3b82f6,#06b6d4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 8px 20px rgba(59, 130, 246, 0.4)"}}>📅</div>
-            <div><div style={{fontSize:15,fontWeight:800,color:"#f8fafc",letterSpacing:"-0.3px"}}>Planning {new Date().getFullYear()}</div></div>
+            <div><div style={{fontSize:16,fontWeight:900,color:"#f8fafc",letterSpacing:"-0.3px"}}>Planning {new Date().getFullYear()}</div></div>
           </div>
         </div>
         <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(148,163,184,0.15)"}}>
