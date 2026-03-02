@@ -1922,7 +1922,7 @@ function PlanningApp({currentUser,onLogout}){
                 <label style={{fontSize:12,fontWeight:600,color:"#64748b",textTransform:"uppercase",letterSpacing:"0.5px"}}>Agent :</label>
                 <select value={selectedAgentForStats||""} onChange={e=>setSelectedAgentForStats(e.target.value||null)} style={{flex:1,maxWidth:300,padding:"8px 12px",borderRadius:7,border:"1px solid #e2e8f0",fontSize:12,color:"#1e293b",cursor:"pointer",background:"#fff",transition:"all 0.2s"}}>
                   <option value="">Mon profil</option>
-                  {agents.filter(a=>a.role!=="admin").map(a=>(
+                  {agents.map(a=>(
                     <option key={a.id} value={a.id}>{a.name}</option>
                   ))}
                 </select>
