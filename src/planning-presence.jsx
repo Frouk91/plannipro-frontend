@@ -696,7 +696,15 @@ function PlanningApp({currentUser,onLogout}){
   // ─── FONCTION MANQUANTE : getAgentsByTeam ───
   function getAgentsByTeam(){
     const sorted=getSortedAgents();
-    const filtered=(filterTeam==="Tous"?sorted:sorted.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team);
+    let filtered;
+    if(filterTeam.startsWith("agent-")){
+      // Filtre "Moi" - afficher seulement l'agent connecté
+      const agentId=filterTeam.replace("agent-","");
+      filtered=sorted.filter(a=>a.id===agentId);
+    }else{
+      // Filtres normaux par équipe
+      filtered=(filterTeam==="Tous"?sorted:sorted.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team);
+    }
     const grouped=[];
     const teamMap={};
     filtered.forEach(agent=>{
@@ -825,7 +833,7 @@ function PlanningApp({currentUser,onLogout}){
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
   const allTeams=["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)];
-  const filteredAgents=(filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team);
+  const filteredAgents=filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team));
   const pendingRequests=requests.filter(r=>r.status==="pending");
   const myRequests=requests.filter(r=>r.agentId===currentUser.id);
   const todayDay=now.getFullYear()===year&&now.getMonth()===month?now.getDate():null;
@@ -1292,10 +1300,16 @@ function PlanningApp({currentUser,onLogout}){
                 <button onClick={()=>{setYear(now.getFullYear());setMonth(now.getMonth());setWeekAnchor(new Date(now.getFullYear(),now.getMonth(),now.getDate()));}} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #e2e8f0",background:"#fff",cursor:"pointer",fontSize:11,fontWeight:500,color:"#64748b"}}>Aujourd'hui</button>
 
                 {/* Filtres équipe - masqués en mode astreinte */}
-                {filterMode!=="astreinte"&&<div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap"}}>
+                {filterMode!=="astreinte"&&<div style={{marginLeft:"auto",display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}}>
                   {allTeams.map(t=>(
                     <button key={t} onClick={()=>setFilterTeam(t)} style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterTeam===t?700:400,background:filterTeam===t?"#1e293b":"#fff",color:filterTeam===t?"#fff":"#64748b",borderColor:filterTeam===t?"#1e293b":"#e2e8f0",transition:"all 0.15s"}}>{t}</button>
                   ))}
+                  {!isAdmin&&(
+                    <>
+                      <div style={{width:"1px",height:20,background:"#e2e8f0",marginLeft:4,marginRight:4}}/>
+                      <button onClick={()=>setFilterTeam(`agent-${currentUser.id}`)} style={{padding:"4px 10px",borderRadius:6,border:"1px solid",fontSize:11,cursor:"pointer",fontWeight:filterTeam===`agent-${currentUser.id}`?700:400,background:filterTeam===`agent-${currentUser.id}`?"#6366f1":"#fff",color:filterTeam===`agent-${currentUser.id}`?"#fff":"#64748b",borderColor:filterTeam===`agent-${currentUser.id}`?"#6366f1":"#e2e8f0",transition:"all 0.15s"}}>👤 Moi</button>
+                    </>
+                  )}
                 </div>}
               </div>
               {/* Ligne 2 */}
