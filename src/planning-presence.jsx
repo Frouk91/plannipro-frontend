@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 
 const API = "https://plannipro-backend-production.up.railway.app/api";
 const DAYS_FR = ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
@@ -651,8 +651,8 @@ function PlanningApp({currentUser,onLogout}){
     });
   }
 
-  // Fonctions de réordonnement des agents
-  function moveAgent(agentId,direction){
+  // Fonctions de réordonnement des agents optimisées avec useCallback
+  const moveAgent=useCallback((agentId,direction)=>{
     const currentOrder=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
     const idx=currentOrder.indexOf(agentId);
     if((direction==="up"&&idx===0)||(direction==="down"&&idx===currentOrder.length-1))return;
@@ -665,12 +665,12 @@ function PlanningApp({currentUser,onLogout}){
     }
     setAgentsOrder(newOrder);
     localStorage.setItem("agentsOrder",JSON.stringify(newOrder));
-  }
+  },[agentsOrder,agents]);
 
-  function getSortedAgents(){
+  const getSortedAgents=useCallback(()=>{
     if(agentsOrder.length===0)return agents;
     return agents.sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
-  }
+  },[agentsOrder,agents]);
 
   function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
@@ -853,10 +853,13 @@ function PlanningApp({currentUser,onLogout}){
 
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
-  const allTeams=["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)];
-  const filteredAgents=filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team));
-  const pendingRequests=requests.filter(r=>r.status==="pending");
-  const myRequests=requests.filter(r=>r.agentId===currentUser.id);
+  const allTeams=useMemo(()=>["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)],[teams]);
+  const filteredAgents=useMemo(()=>filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team)),[agents,filterTeam]);
+  
+  // Cache les agents groupés par équipe pour éviter les recalculs
+  const agentsByTeam=useMemo(()=>getAgentsByTeam(),[filteredAgents,agentsOrder]);
+  const pendingRequests=useMemo(()=>requests.filter(r=>r.status==="pending"),[requests]);
+  const myRequests=useMemo(()=>requests.filter(r=>r.agentId===currentUser.id),[requests,currentUser.id]);
   const todayDay=now.getFullYear()===year&&now.getMonth()===month?now.getDate():null;
   const currentLT=leaveTypes.find(t=>t.id===selectedLTId)||leaveTypes[0];
   const validationBadge=isManager?pendingRequests.length:myRequests.filter(r=>r.status==="pending"||(r.status==="rejected"&&!seenRejected.includes(r.id))).length;
@@ -1679,11 +1682,11 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {getAgentsByTeam().map(([teamName,teamAgents],teamIdx)=>{
+                    {agentsByTeam.map(([teamName,teamAgents],teamIdx)=>{
                       let agentIndex=0;
                       // Calculer l'index global des agents
                       if(teamIdx>0){
-                        agentIndex=getAgentsByTeam().slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
+                        agentIndex=agentsByTeam.slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
                       }
                       return(
                       <React.Fragment key={teamName}>
@@ -1816,10 +1819,10 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {getAgentsByTeam().map(([teamName,teamAgents],teamIdx)=>{
+                    {agentsByTeam.map(([teamName,teamAgents],teamIdx)=>{
                       let agentIndex=0;
                       if(teamIdx>0){
-                        agentIndex=getAgentsByTeam().slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
+                        agentIndex=agentsByTeam.slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
                       }
                       return(
                       <React.Fragment key={teamName}>
