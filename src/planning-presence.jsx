@@ -597,6 +597,7 @@ function PlanningApp({currentUser,onLogout}){
   const [rejectComment,setRejectComment]=useState("");
   const [notification,setNotification]=useState(null);
   const [dataLoaded,setDataLoaded]=useState(false);
+  const [loadingYearStats,setLoadingYearStats]=useState(false);  // Indicateur de chargement année
   const [showMonthPicker,setShowMonthPicker]=useState(false);
   const [statsFilter,setStatsFilter]=useState("month");
   const [selectedAgentForStats,setSelectedAgentForStats]=useState(null);
@@ -754,13 +755,28 @@ function PlanningApp({currentUser,onLogout}){
   useEffect(()=>{
     if(!dataLoaded||leaveTypes.length===0)return;
     if(statsFilter==="year"){
-      // Charger tous les mois de l'année
+      // Vérifier si on a déjà les données de cette année en cache
+      const cacheKey=`yearLeaves_${year}`;
+      const cached=sessionStorage.getItem(cacheKey);
+      if(cached){
+        setLeaves(JSON.parse(cached));
+        setLoadingYearStats(false);
+        return;
+      }
+      
+      // Charger tous les mois de l'année EN PARALLÈLE (plus rapide)
       const loadAllMonths=async()=>{
-        const allLeavesMap={};
-        for(let m=0;m<12;m++){
-          try{
+        setLoadingYearStats(true);
+        try{
+          const monthRequests=[];
+          for(let m=0;m<12;m++){
             const monthStr=`${year}-${String(m+1).padStart(2,"0")}`;
-            const data=await apiFetch(`/leaves?month=${monthStr}`,token);
+            monthRequests.push(apiFetch(`/leaves?month=${monthStr}`,token));
+          }
+          const allMonthsData=await Promise.all(monthRequests);
+          const allLeavesMap={};
+          
+          allMonthsData.forEach(data=>{
             const leavesData=(data.leaves||[]).filter(l=>l.status!=="cancelled"&&l.status!=="rejected");
             leavesData.forEach(l=>{
               if(!allLeavesMap[l.agent_id])allLeavesMap[l.agent_id]={};
@@ -777,13 +793,18 @@ function PlanningApp({currentUser,onLogout}){
                 }
               }
             });
-          }catch(e){console.error(`Erreur chargement mois ${m}:`,e);}
+          });
+          setLeaves(allLeavesMap);
+          // Mettre en cache pour cette session
+          sessionStorage.setItem(cacheKey,JSON.stringify(allLeavesMap));
+        }catch(e){console.error("Erreur chargement année:",e);}finally{
+          setLoadingYearStats(false);
         }
-        setLeaves(allLeavesMap);
       };
       loadAllMonths();
     }else{
       // Mode mois : charger juste le mois actuel
+      setLoadingYearStats(false);
       loadLeaves(leaveTypes,token,year,month);
     }
   },[year,month,statsFilter,dataLoaded,leaveTypes.length]);
@@ -1939,7 +1960,15 @@ function PlanningApp({currentUser,onLogout}){
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:16}}>
-              {(()=>{
+              {loadingYearStats&&statsFilter==="year"&&(
+                <div style={{gridColumn:"1 / -1",padding:24,textAlign:"center"}}>
+                  <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 16px",background:"#eef2ff",border:"1px solid #c7d2fe",borderRadius:8}}>
+                    <div style={{width:16,height:16,border:"2px solid #6366f1",borderTop:"2px solid transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                    <span style={{fontSize:12,color:"#4338ca",fontWeight:600}}>Chargement des statistiques de l'année...</span>
+                  </div>
+                </div>
+              )}
+              {!loadingYearStats&&(()=>{
                 const displayAgentId=isManager?(selectedAgentForStats||currentUser.id):currentUser.id;
                 const displayAgent=agents.find(a=>a.id===displayAgentId);
                 if(!displayAgent)return <div style={{color:"#94a3b8",fontSize:12}}>Agent non trouvé</div>;
