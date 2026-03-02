@@ -1611,17 +1611,26 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {getAgentsByTeam().map(([teamName,teamAgents])=>(
+                    {getAgentsByTeam().map(([teamName,teamAgents],teamIdx)=>{
+                      let agentIndex=0;
+                      // Calculer l'index global des agents
+                      if(teamIdx>0){
+                        agentIndex=getAgentsByTeam().slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
+                      }
+                      return(
                       <React.Fragment key={teamName}>
                         <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
                           <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
-                        {teamAgents.map(agent=>(
-                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":"transparent",transition:"all 0.15s",cursor:"pointer"}}
+                        {teamAgents.map((agent,i)=>{
+                          const globalIndex=agentIndex+i;
+                          const rowBg=globalIndex%2===0?"#fff":"#fafbfc";
+                          return(
+                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background="#f9fafb")}
-                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background="transparent")}>
-                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:12}}>
+                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5")}
+                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}>
+                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:12}}>
                               <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
@@ -1640,7 +1649,7 @@ function PlanningApp({currentUser,onLogout}){
                                 onMouseLeave={()=>setHoveredDay(null)}
                                 className={canInteract?"cell-hover":""}
                                 title={isFer?`🗓 ${feries[k]}`:""}
-                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:36,position:"relative",transition:"background 0.15s"}}>
+                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?globalIndex%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:36,position:"relative",transition:"background 0.15s"}}>
                                 {filterMode==="astreinte"&&isFridayCell&&!wk&&(()=>{
                                   const aKey=dateKey(year,month,day);
                                   const aAgentId=astreintes[aKey];
@@ -1687,9 +1696,10 @@ function PlanningApp({currentUser,onLogout}){
                               </td>;
                             })}
                           </tr>
-                        ))}
+                        )})}
                       </React.Fragment>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1732,17 +1742,25 @@ function PlanningApp({currentUser,onLogout}){
                     </tr>
                   </thead>
                   <tbody>
-                    {getAgentsByTeam().map(([teamName,teamAgents])=>(
+                    {getAgentsByTeam().map(([teamName,teamAgents],teamIdx)=>{
+                      let agentIndex=0;
+                      if(teamIdx>0){
+                        agentIndex=getAgentsByTeam().slice(0,teamIdx).reduce((sum,[_,agents])=>sum+agents.length,0);
+                      }
+                      return(
                       <React.Fragment key={teamName}>
                         <tr style={{background:"#f8fafc",borderBottom:"2px solid #e2e8f0"}}>
                           <td colSpan={8} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
-                        {teamAgents.map(agent=>(
-                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38,background:selectedAgentRow===agent.id?"#f0f1ff":"transparent",transition:"all 0.15s",cursor:"pointer"}}
+                        {teamAgents.map((agent,i)=>{
+                          const globalIndex=agentIndex+i;
+                          const rowBg=globalIndex%2===0?"#fff":"#fafbfc";
+                          return(
+                          <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background="#f9fafb")}
-                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background="transparent")}>
-                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":"#fff",fontSize:11}}>
+                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5")}
+                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}>
+                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:11}}>
                               <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
@@ -1764,7 +1782,7 @@ function PlanningApp({currentUser,onLogout}){
                                 onMouseLeave={()=>setWeekHovered(null)}
                                 className={canInteract?"cell-hover":""}
                                 title={isFer?`🗓 ${feriesDay[k]}`:""}
-                                style={{padding:"2px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?"#fafafa":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":"#fff",borderLeft:"1px solid #f8fafc",height:38,verticalAlign:"middle",transition:"background 0.15s"}}>
+                                style={{padding:"2px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?globalIndex%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:38,verticalAlign:"middle",transition:"background 0.15s"}}>
                                 {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                                 {leave&&!wk&&!isFer&&(
                                   filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
@@ -1797,9 +1815,10 @@ function PlanningApp({currentUser,onLogout}){
                               </td>;
                             })}
                           </tr>
-                        ))}
+                        )})}
                       </React.Fragment>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
