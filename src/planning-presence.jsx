@@ -575,6 +575,7 @@ function PlanningApp({currentUser,onLogout}){
   const [year,setYear]=useState(now.getFullYear());
   const [month,setMonth]=useState(now.getMonth());
   const [agents,setAgents]=useState([]);
+  const [agentsOrder,setAgentsOrder]=useState([]);  // Ordre personnalisé des agents
   const [teams,setTeams]=useState([]);
   const [leaveTypes,setLeaveTypes]=useState([]);
   const [leaves,setLeaves]=useState({});
@@ -649,6 +650,27 @@ function PlanningApp({currentUser,onLogout}){
     });
   }
 
+  // Fonctions de réordonnement des agents
+  function moveAgent(agentId,direction){
+    const currentOrder=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
+    const idx=currentOrder.indexOf(agentId);
+    if((direction==="up"&&idx===0)||(direction==="down"&&idx===currentOrder.length-1))return;
+    
+    const newOrder=[...currentOrder];
+    if(direction==="up"){
+      [newOrder[idx],newOrder[idx-1]]=[newOrder[idx-1],newOrder[idx]];
+    }else{
+      [newOrder[idx],newOrder[idx+1]]=[newOrder[idx+1],newOrder[idx]];
+    }
+    setAgentsOrder(newOrder);
+    localStorage.setItem("agentsOrder",JSON.stringify(newOrder));
+  }
+
+  function getSortedAgents(){
+    if(agentsOrder.length===0)return agents;
+    return agents.sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
+  }
+
   function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
     const agent=agents.find(a=>a.id===agentId);
@@ -673,9 +695,11 @@ function PlanningApp({currentUser,onLogout}){
 
   // ─── FONCTION MANQUANTE : getAgentsByTeam ───
   function getAgentsByTeam(){
+    const sorted=getSortedAgents();
+    const filtered=(filterTeam==="Tous"?sorted:sorted.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team);
     const grouped=[];
     const teamMap={};
-    filteredAgents.forEach(agent=>{
+    filtered.forEach(agent=>{
       const teamName=agent.team||"Sans équipe";
       if(!teamMap[teamName]){
         teamMap[teamName]=[];
@@ -701,7 +725,16 @@ function PlanningApp({currentUser,onLogout}){
         const allowedFirst=ltFormatted.find(t=>AGENT_ALLOWED_CODES.includes(t.code));
         if(ltFormatted.length>0)setSelectedLTId((allowedFirst||ltFormatted[0]).id);
         const agentsRaw=agentsData.agents||(Array.isArray(agentsData)?agentsData:[]);
-        setAgents(agentsRaw.map(a=>({id:a.id,name:`${a.first_name||""} ${a.last_name||""}`.trim(),email:a.email,role:a.role||"agent",team:a.team_name||a.team||"",avatar:a.avatar_initials||getInitials(`${a.first_name||""} ${a.last_name||""}`),can_book_presence_sites:a.can_book_presence_sites||false})));
+        const agentsList=agentsRaw.map(a=>({id:a.id,name:`${a.first_name||""} ${a.last_name||""}`.trim(),email:a.email,role:a.role||"agent",team:a.team_name||a.team||"",avatar:a.avatar_initials||getInitials(`${a.first_name||""} ${a.last_name||""}`),can_book_presence_sites:a.can_book_presence_sites||false}));
+        setAgents(agentsList);
+        // Charger l'ordre personnalisé depuis localStorage
+        const savedOrder=localStorage.getItem("agentsOrder");
+        if(savedOrder){
+          try{
+            const parsedOrder=JSON.parse(savedOrder);
+            setAgentsOrder(parsedOrder);
+          }catch(e){console.log("Erreur chargement ordre agents:",e);}
+        }
         await loadLeaves(ltFormatted,token,now.getFullYear(),now.getMonth());
         await loadRequests(token);
       }catch(e){console.error("Erreur chargement:",e);}
@@ -1628,13 +1661,19 @@ function PlanningApp({currentUser,onLogout}){
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5")}
-                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}>
-                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:12}}>
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5");if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="1";}}}}
+                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg);if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="0";}}}}>
+                            <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:12,position:"relative"}}>
                               <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
-                              <div style={{minWidth:0}}>
+                              <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
+                              {isAdmin&&(
+                                <div style={{display:"flex",gap:2,opacity:0,transition:"opacity 0.2s"}}>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} disabled={globalIndex===0} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===0?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===0?0.5:1}}>▲</button>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} disabled={globalIndex===getSortedAgents().length-1} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===getSortedAgents().length-1?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===getSortedAgents().length-1?0.5:1}}>▼</button>
+                                </div>
+                              )}
                             </td>
                             {Array.from({length:daysInMonth},(_,i)=>{
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
@@ -1758,13 +1797,19 @@ function PlanningApp({currentUser,onLogout}){
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5")}
-                            onMouseLeave={e=>!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}>
-                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:11}}>
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5");if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="1";}}}}
+                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg);if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="0";}}}}>
+                            <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:11,position:"relative"}}>
                               <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
-                              <div style={{minWidth:0}}>
+                              <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
+                              {isAdmin&&(
+                                <div style={{display:"flex",gap:2,opacity:0,transition:"opacity 0.2s"}}>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} disabled={globalIndex===0} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===0?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===0?0.5:1}}>▲</button>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} disabled={globalIndex===getSortedAgents().length-1} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===getSortedAgents().length-1?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===getSortedAgents().length-1?0.5:1}}>▼</button>
+                                </div>
+                              )}
                             </td>
                             {weekDays.map((d,i)=>{
                               const k=dKey(d),wk=d.getDay()===0||d.getDay()===6;
