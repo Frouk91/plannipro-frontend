@@ -616,9 +616,32 @@ function PlanningApp({currentUser,onLogout}){
     });
   }
 
-  // Tri des agents DÉSACTIVÉ pour l'instant
-  const moveAgent=()=>{};
-  const sortedAgents=agents;
+  // Tri des agents - SIMPLE ET EFFICACE
+  const moveAgent=(agentId,direction)=>{
+    const current=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
+    const idx=current.indexOf(agentId);
+    if(idx<0)return;
+    if(direction==="up"&&idx===0)return;
+    if(direction==="down"&&idx===current.length-1)return;
+    
+    const newOrder=[...current];
+    if(direction==="up"){
+      const temp=newOrder[idx];
+      newOrder[idx]=newOrder[idx-1];
+      newOrder[idx-1]=temp;
+    }else{
+      const temp=newOrder[idx];
+      newOrder[idx]=newOrder[idx+1];
+      newOrder[idx+1]=temp;
+    }
+    setAgentsOrder(newOrder);
+    setTimeout(()=>localStorage.setItem("agentsOrder",JSON.stringify(newOrder)),0);
+  };
+  
+  const sortedAgents=useMemo(()=>{
+    if(agentsOrder.length===0)return agents;
+    return agents.slice().sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
+  },[agentsOrder,agents]);
 
   function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
@@ -1654,6 +1677,7 @@ function PlanningApp({currentUser,onLogout}){
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
+                              {isAdmin&&<div style={{display:"flex",gap:2}}><button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"2px 6px",borderRadius:3,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:9,fontWeight:700,color:"#3b82f6",opacity:sortedAgents.findIndex(a=>a.id===agent.id)===0?0.4:1,pointerEvents:sortedAgents.findIndex(a=>a.id===agent.id)===0?"none":"auto"}}>▲</button><button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"2px 6px",borderRadius:3,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:9,fontWeight:700,color:"#3b82f6",opacity:sortedAgents.findIndex(a=>a.id===agent.id)===sortedAgents.length-1?0.4:1,pointerEvents:sortedAgents.findIndex(a=>a.id===agent.id)===sortedAgents.length-1?"none":"auto"}}>▼</button></div>}
                             </td>
                             {Array.from({length:daysInMonth},(_,i)=>{
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
@@ -1786,6 +1810,7 @@ function PlanningApp({currentUser,onLogout}){
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
+                              {isAdmin&&<div style={{display:"flex",gap:2}}><button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"2px 6px",borderRadius:3,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:9,fontWeight:700,color:"#3b82f6",opacity:sortedAgents.findIndex(a=>a.id===agent.id)===0?0.4:1,pointerEvents:sortedAgents.findIndex(a=>a.id===agent.id)===0?"none":"auto"}}>▲</button><button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"2px 6px",borderRadius:3,border:"1px solid #ddd",background:"#fff",cursor:"pointer",fontSize:9,fontWeight:700,color:"#3b82f6",opacity:sortedAgents.findIndex(a=>a.id===agent.id)===sortedAgents.length-1?0.4:1,pointerEvents:sortedAgents.findIndex(a=>a.id===agent.id)===sortedAgents.length-1?"none":"auto"}}>▼</button></div>}
                             </td>
                             {weekDays.map((d,i)=>{
                               const k=dKey(d),wk=d.getDay()===0||d.getDay()===6;
