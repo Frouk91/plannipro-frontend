@@ -1745,7 +1745,8 @@ function PlanningApp({currentUser,onLogout}){
                               </td>;
                             })}
                           </tr>
-                        )})}
+                        );
+                        })}
                       </React.Fragment>
                       );
                     })}
@@ -1873,7 +1874,8 @@ function PlanningApp({currentUser,onLogout}){
                               </td>;
                             })}
                           </tr>
-                        )})}
+                        );
+                        })}
                       </React.Fragment>
                       );
                     })}
