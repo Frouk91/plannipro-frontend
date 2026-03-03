@@ -616,31 +616,9 @@ function PlanningApp({currentUser,onLogout}){
     });
   }
 
-  // Fonctions de réordonnement SIMPLIFIÉES - ultra rapides
-  const moveAgent=(agentId,direction)=>{
-    const current=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
-    const idx=current.indexOf(agentId);
-    if(idx<0||(direction==="up"&&idx===0)||(direction==="down"&&idx===current.length-1))return;
-    
-    const newOrder=[...current];
-    const temp=newOrder[idx];
-    if(direction==="up"){
-      newOrder[idx]=newOrder[idx-1];
-      newOrder[idx-1]=temp;
-    }else{
-      newOrder[idx]=newOrder[idx+1];
-      newOrder[idx+1]=temp;
-    }
-    setAgentsOrder(newOrder);
-    // Sauvegarder asynchrone sans bloquer
-    setTimeout(()=>localStorage.setItem("agentsOrder",JSON.stringify(newOrder)),0);
-  };
-
-  // Tableau trié MEMOIZE - calculé une seule fois
-  const sortedAgents=useMemo(()=>{
-    if(agentsOrder.length===0)return agents;
-    return [...agents].sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
-  },[agentsOrder,agents]);
+  // Tri des agents DÉSACTIVÉ pour l'instant
+  const moveAgent=()=>{};
+  const sortedAgents=agents;
 
   function getStatsCounts(filterType,agentId){
     const stats={cp:0,rtt:0,pont:0,absence:0};
@@ -1664,26 +1642,18 @@ function PlanningApp({currentUser,onLogout}){
                         </tr>
                         {teamAgents.map((agent,i)=>{
                           // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
-                          const agentIndexInSorted=sortedAgents.findIndex(a=>a.id===agent.id);
-                          const isFirst=agentIndexInSorted===0;
-                          const isLast=agentIndexInSorted===sortedAgents.length-1;
-                          const rowBg=(agentIndexInSorted)%2===0?"#fff":"#fafbfc";
+                          // Tri désactivé
+                          const rowBg=(agentIndex+i)%2===0?"#fff":"#fafbfc";
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=agentIndexInSorted%2===0?"#f5f6f8":"#f0f2f5")}}
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=(agentIndex+i)%2===0?"#f5f6f8":"#f0f2f5")}}
                             onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}}>
                             <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:12,position:"relative"}}>
                               <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
-                              {isAdmin&&(
-                                <div style={{display:"flex",gap:3}}>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"3px 8px",borderRadius:4,border:isFirst?"1px solid #ddd":"1px solid #3b82f6",background:isFirst?"#f5f5f5":"#fff",color:isFirst?"#999":"#3b82f6",cursor:isFirst?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isFirst?"none":"auto"}}>▲</button>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"3px 8px",borderRadius:4,border:isLast?"1px solid #ddd":"1px solid #3b82f6",background:isLast?"#f5f5f5":"#fff",color:isLast?"#999":"#3b82f6",cursor:isLast?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isLast?"none":"auto"}}>▼</button>
-                                </div>
-                              )}
                             </td>
                             {Array.from({length:daysInMonth},(_,i)=>{
                               const day=i+1,k=dateKey(year,month,day),wk=isWeekend(year,month,day),isFer=!!feries[k];
@@ -1698,7 +1668,7 @@ function PlanningApp({currentUser,onLogout}){
                                 onMouseLeave={()=>setHoveredDay(null)}
                                 className={canInteract?"cell-hover":""}
                                 title={isFer?`🗓 ${feries[k]}`:""}
-                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?globalIndex%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:36,position:"relative",transition:"background 0.15s"}}>
+                                style={{padding:"2px 1px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?(agentIndex+i)%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:36,position:"relative",transition:"background 0.15s"}}>
                                 {filterMode==="astreinte"&&isFridayCell&&!wk&&(()=>{
                                   const aKey=dateKey(year,month,day);
                                   const aAgentId=astreintes[aKey];
@@ -1804,26 +1774,18 @@ function PlanningApp({currentUser,onLogout}){
                         </tr>
                         {teamAgents.map((agent,i)=>{
                           // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
-                          const agentIndexInSorted=sortedAgents.findIndex(a=>a.id===agent.id);
-                          const isFirst=agentIndexInSorted===0;
-                          const isLast=agentIndexInSorted===sortedAgents.length-1;
-                          const rowBg=(agentIndexInSorted)%2===0?"#fff":"#fafbfc";
+                          // Tri désactivé
+                          const rowBg=(agentIndex+i)%2===0?"#fff":"#fafbfc";
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=agentIndexInSorted%2===0?"#f5f6f8":"#f0f2f5")}}
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=(agentIndex+i)%2===0?"#f5f6f8":"#f0f2f5")}}
                             onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}}>
                             <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:11,position:"relative"}}>
                               <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
-                              {isAdmin&&(
-                                <div style={{display:"flex",gap:3}}>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"3px 8px",borderRadius:4,border:isFirst?"1px solid #ddd":"1px solid #3b82f6",background:isFirst?"#f5f5f5":"#fff",color:isFirst?"#999":"#3b82f6",cursor:isFirst?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isFirst?"none":"auto"}}>▲</button>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"3px 8px",borderRadius:4,border:isLast?"1px solid #ddd":"1px solid #3b82f6",background:isLast?"#f5f5f5":"#fff",color:isLast?"#999":"#3b82f6",cursor:isLast?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isLast?"none":"auto"}}>▼</button>
-                                </div>
-                              )}
                             </td>
                             {weekDays.map((d,i)=>{
                               const k=dKey(d),wk=d.getDay()===0||d.getDay()===6;
@@ -1841,7 +1803,7 @@ function PlanningApp({currentUser,onLogout}){
                                 onMouseLeave={()=>setWeekHovered(null)}
                                 className={canInteract?"cell-hover":""}
                                 title={isFer?`🗓 ${feriesDay[k]}`:""}
-                                style={{padding:"2px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?globalIndex%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:38,verticalAlign:"middle",transition:"background 0.15s"}}>
+                                style={{padding:"2px 2px",textAlign:"center",cursor:canInteract?"pointer":"default",background:selectedAgentRow===agent.id?"#f0f1ff":wk?(agentIndex+i)%2===0?"#f5f5f5":"#f0f2f5":isFer?"#fef9ec":inSel?"#e0e7ff":isToday?"#f5f3ff":rowBg,borderLeft:"1px solid #f8fafc",height:38,verticalAlign:"middle",transition:"background 0.15s"}}>
                                 {isFer&&!wk&&<div style={{width:"calc(100% - 4px)",height:24,margin:"0 2px",background:"rgba(251,191,36,0.15)",border:"1px dashed #fbbf24",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:9,color:"#d97706",fontWeight:700}}>🗓</span></div>}
                                 {leave&&!wk&&!isFer&&(
                                   filterMode==="presence"&&isPresenceCode(leave.code,leave.label)?(
