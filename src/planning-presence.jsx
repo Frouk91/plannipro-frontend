@@ -592,6 +592,9 @@ function PlanningApp({currentUser,onLogout}){
   const token=currentUser.token;
   const isManager=currentUser.role==="manager"||currentUser.role==="admin";
   const isAdmin=currentUser.role==="admin";
+  const isCoordinator=currentUser.role==="coordinator";
+  const canValidateRequests=currentUser.role==="manager"||currentUser.role==="admin";
+  const canManageAstreintes=currentUser.role==="manager"||currentUser.role==="admin"||currentUser.role==="coordinator";
   const feries=getFeries(year);
 
   function getDaysForLeaveType(leave){
@@ -840,7 +843,12 @@ function PlanningApp({currentUser,onLogout}){
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
   const allTeams=useMemo(()=>["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)],[teams]);
-  const filteredAgents=useMemo(()=>filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team)),[agents,filterTeam]);
+  const filteredAgents=useMemo(()=>{
+    let result=filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team));
+    // Admin invisible sauf si c'est toi
+    result=result.filter(a=>a.role!=="admin"||a.id===currentUser.id);
+    return result;
+  },[agents,filterTeam,currentUser.id]);
   
   // Cache les agents groupés par équipe pour éviter les recalculs
   const agentsByTeam=useMemo(()=>getAgentsByTeam(),[sortedAgents,filterTeam]);
@@ -1084,7 +1092,7 @@ function PlanningApp({currentUser,onLogout}){
     {id:"planning",icon:"🗓",label:"Planning"},
     {id:"validations",icon:"✅",label:"Validations",badge:validationBadge},
     {id:"stats",icon:"📊",label:"Statistiques"},
-    ...(isAdmin?[{id:"admin",icon:"⚙️",label:"Administration"}]:[]),
+    ...(isManager?[{id:"admin",icon:"⚙️",label:"Administration"}]:[]),
   ];
 
   if(!dataLoaded)return(
@@ -1219,10 +1227,10 @@ function PlanningApp({currentUser,onLogout}){
       <main style={{flex:1,overflow:"auto",background:"linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)"}}>
         <div style={{background:"rgba(15,23,42,0.5)",backdropFilter:"blur(10px)",border:"1px solid rgba(148,163,184,0.1)",borderBottom:"2px solid rgba(59,130,246,0.2)",padding:"11px 24px",display:"flex",alignItems:"center",gap:10}}>
           <h1 style={{margin:0,fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{view==="planning"?"Planning":view==="validations"?"Demandes de congés":view==="stats"?"Statistiques":"Administration"}</h1>
-          {view==="validations"&&<span style={{fontSize:12,color:"#94a3b8"}}>{isManager?`${pendingRequests.length} en attente`:`${myRequests.length} demande(s)`}</span>}
+          {view==="validations"&&<span style={{fontSize:12,color:"#94a3b8"}}>{canValidateRequests?`${pendingRequests.length} en attente`:`${myRequests.length} demande(s)`}</span>}
         </div>
 
-        {view==="admin"&&isAdmin&&<AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
+        {view==="admin"&&isManager&&<AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           onAgentAdded={a=>setAgents(prev=>[...prev,a])}
           onAgentUpdated={(id,data)=>setAgents(prev=>prev.map(a=>a.id===id?{...a,...(data.name?{name:data.name,avatar:getInitials(data.name)}:{}),email:data.email||a.email,team:data.team!==undefined?data.team:a.team,role:data.role||a.role,can_book_presence_sites:data.can_book_presence_sites!==undefined?data.can_book_presence_sites:a.can_book_presence_sites}:a))}
           onAgentDeleted={id=>setAgents(prev=>prev.filter(a=>a.id!==id))}
