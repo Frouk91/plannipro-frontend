@@ -616,29 +616,30 @@ function PlanningApp({currentUser,onLogout}){
     });
   }
 
-  // Fonctions de réordonnement des agents optimisées avec useCallback
-  const moveAgent=useCallback((agentId,direction)=>{
-    setAgentsOrder(prevOrder=>{
-      const currentOrder=prevOrder.length>0?prevOrder:agents.map(a=>a.id);
-      const idx=currentOrder.indexOf(agentId);
-      if((direction==="up"&&idx===0)||(direction==="down"&&idx===currentOrder.length-1))return prevOrder;
-      
-      const newOrder=[...currentOrder];
-      if(direction==="up"){
-        [newOrder[idx],newOrder[idx-1]]=[newOrder[idx-1],newOrder[idx]];
-      }else{
-        [newOrder[idx],newOrder[idx+1]]=[newOrder[idx+1],newOrder[idx]];
-      }
-      // Sauvegarder dans localStorage de manière asynchrone
-      requestIdleCallback(()=>localStorage.setItem("agentsOrder",JSON.stringify(newOrder)),{timeout:1000});
-      return newOrder;
-    });
-  },[agents]);
+  // Fonctions de réordonnement SIMPLIFIÉES - ultra rapides
+  const moveAgent=(agentId,direction)=>{
+    const current=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
+    const idx=current.indexOf(agentId);
+    if(idx<0||(direction==="up"&&idx===0)||(direction==="down"&&idx===current.length-1))return;
+    
+    const newOrder=[...current];
+    const temp=newOrder[idx];
+    if(direction==="up"){
+      newOrder[idx]=newOrder[idx-1];
+      newOrder[idx-1]=temp;
+    }else{
+      newOrder[idx]=newOrder[idx+1];
+      newOrder[idx+1]=temp;
+    }
+    setAgentsOrder(newOrder);
+    // Sauvegarder asynchrone sans bloquer
+    setTimeout(()=>localStorage.setItem("agentsOrder",JSON.stringify(newOrder)),0);
+  };
 
-  const getSortedAgents=useCallback(()=>{
+  // Tableau trié MEMOIZE - calculé une seule fois
+  const sortedAgents=useMemo(()=>{
     if(agentsOrder.length===0)return agents;
-    // Important : faire un slice() pour ne pas muter l'array original !
-    return agents.slice().sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
+    return [...agents].sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
   },[agentsOrder,agents]);
 
   function getStatsCounts(filterType,agentId){
@@ -665,7 +666,7 @@ function PlanningApp({currentUser,onLogout}){
 
   // ─── FONCTION MANQUANTE : getAgentsByTeam ───
   function getAgentsByTeam(){
-    const sorted=getSortedAgents();
+    const sorted=sortedAgents;
     let filtered;
     if(filterTeam.startsWith("agent-")){
       // Filtre "Moi" - afficher seulement l'agent connecté
@@ -826,7 +827,7 @@ function PlanningApp({currentUser,onLogout}){
   const filteredAgents=useMemo(()=>filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team)),[agents,filterTeam]);
   
   // Cache les agents groupés par équipe pour éviter les recalculs
-  const agentsByTeam=useMemo(()=>getAgentsByTeam(),[filteredAgents,agentsOrder]);
+  const agentsByTeam=useMemo(()=>getAgentsByTeam(),[sortedAgents,filterTeam]);
   const pendingRequests=useMemo(()=>requests.filter(r=>r.status==="pending"),[requests]);
   const myRequests=useMemo(()=>requests.filter(r=>r.agentId===currentUser.id),[requests,currentUser.id]);
   const todayDay=now.getFullYear()===year&&now.getMonth()===month?now.getDate():null;
@@ -1662,22 +1663,25 @@ function PlanningApp({currentUser,onLogout}){
                           <td colSpan={daysInMonth+1} style={{padding:"6px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
                         {teamAgents.map((agent,i)=>{
-                          const globalIndex=agentIndex+i;
-                          const rowBg=globalIndex%2===0?"#fff":"#fafbfc";
+                          // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
+                          const agentIndexInSorted=sortedAgents.findIndex(a=>a.id===agent.id);
+                          const isFirst=agentIndexInSorted===0;
+                          const isLast=agentIndexInSorted===sortedAgents.length-1;
+                          const rowBg=(agentIndexInSorted)%2===0?"#fff":"#fafbfc";
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:36,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5");if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="1";}}}}
-                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg);if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="0";}}}}>
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=agentIndexInSorted%2===0?"#f5f6f8":"#f0f2f5")}}
+                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}}>
                             <td style={{padding:"4px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:12,position:"relative"}}>
                               <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:9,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
                               {isAdmin&&(
-                                <div style={{display:"flex",gap:2,opacity:0,transition:"opacity 0.2s"}}>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} disabled={globalIndex===0} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===0?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===0?0.5:1}}>▲</button>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} disabled={globalIndex===getSortedAgents().length-1} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===getSortedAgents().length-1?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===getSortedAgents().length-1?0.5:1}}>▼</button>
+                                <div style={{display:"flex",gap:3}}>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"3px 8px",borderRadius:4,border:isFirst?"1px solid #ddd":"1px solid #3b82f6",background:isFirst?"#f5f5f5":"#fff",color:isFirst?"#999":"#3b82f6",cursor:isFirst?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isFirst?"none":"auto"}}>▲</button>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"3px 8px",borderRadius:4,border:isLast?"1px solid #ddd":"1px solid #3b82f6",background:isLast?"#f5f5f5":"#fff",color:isLast?"#999":"#3b82f6",cursor:isLast?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isLast?"none":"auto"}}>▼</button>
                                 </div>
                               )}
                             </td>
@@ -1798,22 +1802,25 @@ function PlanningApp({currentUser,onLogout}){
                           <td colSpan={8} style={{padding:"5px 12px",fontSize:11,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:"0.5px"}}>🏢 {teamName}</td>
                         </tr>
                         {teamAgents.map((agent,i)=>{
-                          const globalIndex=agentIndex+i;
-                          const rowBg=globalIndex%2===0?"#fff":"#fafbfc";
+                          // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
+                          const agentIndexInSorted=sortedAgents.findIndex(a=>a.id===agent.id);
+                          const isFirst=agentIndexInSorted===0;
+                          const isLast=agentIndexInSorted===sortedAgents.length-1;
+                          const rowBg=(agentIndexInSorted)%2===0?"#fff":"#fafbfc";
                           return(
                           <tr key={agent.id} style={{borderBottom:"1px solid #f1f5f9",height:38,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,transition:"all 0.15s",cursor:"pointer"}}
                             onClick={()=>setSelectedAgentRow(selectedAgentRow===agent.id?null:agent.id)}
-                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=globalIndex%2===0?"#f5f6f8":"#f0f2f5");if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="1";}}}}
-                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg);if(isAdmin){const buttons=e.currentTarget.querySelector("button");if(buttons){const parent=buttons.parentElement;if(parent)parent.style.opacity="0";}}}}>
+                            onMouseEnter={e=>{!selectedAgentRow&&(e.currentTarget.style.background=agentIndexInSorted%2===0?"#f5f6f8":"#f0f2f5")}}
+                            onMouseLeave={e=>{!selectedAgentRow&&(e.currentTarget.style.background=rowBg)}}>
                             <td style={{padding:"5px 10px",display:"flex",alignItems:"center",gap:6,background:selectedAgentRow===agent.id?"#f0f1ff":rowBg,fontSize:11,position:"relative"}}>
                               <div style={{width:26,height:26,borderRadius:"50%",background:`linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id)+30},65%,65%))`,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:10,fontWeight:700,flexShrink:0,boxShadow:selectedAgentRow===agent.id?"0 0 0 2px #e0e7ff":"none"}}>{agent.avatar}</div>
                               <div style={{minWidth:0,flex:1}}>
                                 <div style={{fontSize:11,fontWeight:600,color:agent.id===currentUser.id?"#6366f1":selectedAgentRow===agent.id?"#4338ca":"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:90}}>{agent.name.split(" ")[0]} {agent.role==="manager"?"👑":""}</div>
                               </div>
                               {isAdmin&&(
-                                <div style={{display:"flex",gap:2,opacity:0,transition:"opacity 0.2s"}}>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} disabled={globalIndex===0} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===0?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===0?0.5:1}}>▲</button>
-                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} disabled={globalIndex===getSortedAgents().length-1} style={{padding:"2px 6px",borderRadius:4,border:"1px solid #e2e8f0",background:"#fff",color:"#64748b",cursor:globalIndex===getSortedAgents().length-1?"default":"pointer",fontSize:10,fontWeight:600,opacity:globalIndex===getSortedAgents().length-1?0.5:1}}>▼</button>
+                                <div style={{display:"flex",gap:3}}>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"up");}} style={{padding:"3px 8px",borderRadius:4,border:isFirst?"1px solid #ddd":"1px solid #3b82f6",background:isFirst?"#f5f5f5":"#fff",color:isFirst?"#999":"#3b82f6",cursor:isFirst?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isFirst?"none":"auto"}}>▲</button>
+                                  <button onClick={e=>{e.stopPropagation();moveAgent(agent.id,"down");}} style={{padding:"3px 8px",borderRadius:4,border:isLast?"1px solid #ddd":"1px solid #3b82f6",background:isLast?"#f5f5f5":"#fff",color:isLast?"#999":"#3b82f6",cursor:isLast?"not-allowed":"pointer",fontSize:10,fontWeight:700,pointerEvents:isLast?"none":"auto"}}>▼</button>
                                 </div>
                               )}
                             </td>
