@@ -831,16 +831,11 @@ function PlanningApp({currentUser,onLogout}){
           setSelectedAgent(null);
           setSelectionStart(null);
         }
-        // Annuler la sélection de semaine en cours
-        if(weekSelAgent||weekSelStart){
-          setWeekSelAgent(null);
-          setWeekSelStart(null);
-        }
       }
     };
     window.addEventListener("keydown",handleKeyDown);
     return()=>window.removeEventListener("keydown",handleKeyDown);
-  },[selectedAgent,selectionStart,weekSelAgent,weekSelStart]);
+  },[selectedAgent,selectionStart]);
 
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
