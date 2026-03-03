@@ -822,6 +822,26 @@ function PlanningApp({currentUser,onLogout}){
     try{localStorage.setItem("astreintes",JSON.stringify(astreintes));}catch{}
   },[astreintes]);
 
+  // Touche Échap pour annuler la sélection en cours
+  useEffect(()=>{
+    const handleKeyDown=e=>{
+      if(e.key==="Escape"){
+        // Annuler la sélection de congés en cours
+        if(selectedAgent||selectionStart){
+          setSelectedAgent(null);
+          setSelectionStart(null);
+        }
+        // Annuler la sélection de semaine en cours
+        if(weekSelAgent||weekSelStart){
+          setWeekSelAgent(null);
+          setWeekSelStart(null);
+        }
+      }
+    };
+    window.addEventListener("keydown",handleKeyDown);
+    return()=>window.removeEventListener("keydown",handleKeyDown);
+  },[selectedAgent,selectionStart,weekSelAgent,weekSelStart]);
+
   const daysInMonth=getDaysInMonth(year,month);
   const firstDay=getFirstDayOfMonth(year,month);
   const allTeams=useMemo(()=>["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)],[teams]);
