@@ -618,23 +618,27 @@ function PlanningApp({currentUser,onLogout}){
 
   // Fonctions de réordonnement des agents optimisées avec useCallback
   const moveAgent=useCallback((agentId,direction)=>{
-    const currentOrder=agentsOrder.length>0?agentsOrder:agents.map(a=>a.id);
-    const idx=currentOrder.indexOf(agentId);
-    if((direction==="up"&&idx===0)||(direction==="down"&&idx===currentOrder.length-1))return;
-    
-    const newOrder=[...currentOrder];
-    if(direction==="up"){
-      [newOrder[idx],newOrder[idx-1]]=[newOrder[idx-1],newOrder[idx]];
-    }else{
-      [newOrder[idx],newOrder[idx+1]]=[newOrder[idx+1],newOrder[idx]];
-    }
-    setAgentsOrder(newOrder);
-    localStorage.setItem("agentsOrder",JSON.stringify(newOrder));
-  },[agentsOrder,agents]);
+    setAgentsOrder(prevOrder=>{
+      const currentOrder=prevOrder.length>0?prevOrder:agents.map(a=>a.id);
+      const idx=currentOrder.indexOf(agentId);
+      if((direction==="up"&&idx===0)||(direction==="down"&&idx===currentOrder.length-1))return prevOrder;
+      
+      const newOrder=[...currentOrder];
+      if(direction==="up"){
+        [newOrder[idx],newOrder[idx-1]]=[newOrder[idx-1],newOrder[idx]];
+      }else{
+        [newOrder[idx],newOrder[idx+1]]=[newOrder[idx+1],newOrder[idx]];
+      }
+      // Sauvegarder dans localStorage de manière asynchrone
+      requestIdleCallback(()=>localStorage.setItem("agentsOrder",JSON.stringify(newOrder)),{timeout:1000});
+      return newOrder;
+    });
+  },[agents]);
 
   const getSortedAgents=useCallback(()=>{
     if(agentsOrder.length===0)return agents;
-    return agents.sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
+    // Important : faire un slice() pour ne pas muter l'array original !
+    return agents.slice().sort((a,b)=>agentsOrder.indexOf(a.id)-agentsOrder.indexOf(b.id));
   },[agentsOrder,agents]);
 
   function getStatsCounts(filterType,agentId){
