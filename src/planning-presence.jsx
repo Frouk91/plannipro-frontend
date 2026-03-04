@@ -678,7 +678,7 @@ function PlanningApp({currentUser,onLogout}){
       filtered=sorted.filter(a=>a.id===agentId);
     }else{
       // Filtres normaux par équipe
-      filtered=(filterTeam==="Tous"?sorted:sorted.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin"||a.team);
+      filtered=(filterTeam==="Tous"?sorted:sorted.filter(a=>a.team===filterTeam)).filter(a=>a.role!=="admin");
     }
     const grouped=[];
     const teamMap={};
@@ -845,7 +845,6 @@ function PlanningApp({currentUser,onLogout}){
   const allTeams=useMemo(()=>["Tous",...teams.filter(t=>t.name!=="Admin").map(t=>t.name)],[teams]);
   const filteredAgents=useMemo(()=>{
     let result=filterTeam.startsWith("agent-")?agents.filter(a=>a.id===filterTeam.replace("agent-","")):((filterTeam==="Tous"?agents:agents.filter(a=>a.team===filterTeam)));
-    // Exclure les admins du planning
     result=result.filter(a=>a.role!=="admin");
     return result;
   },[agents,filterTeam,currentUser.id]);
