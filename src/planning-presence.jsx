@@ -2219,7 +2219,18 @@ function ValidationsView({isManager,requests,pendingRequests,myRequests,onApprov
 }
 
 export default function App(){
-  const [currentUser,setCurrentUser]=useState(null);
-  if(!currentUser)return <LoginPage onLogin={setCurrentUser}/>;
-  return <PlanningApp currentUser={currentUser} onLogout={()=>setCurrentUser(null)}/>;
+  const [currentUser,setCurrentUser]=useState(()=>{
+    try{const saved=localStorage.getItem("plannipro_user");return saved?JSON.parse(saved):null;}
+    catch{return null;}
+  });
+  function handleLogin(user){
+    try{localStorage.setItem("plannipro_user",JSON.stringify(user));}catch{}
+    setCurrentUser(user);
+  }
+  function handleLogout(){
+    try{localStorage.removeItem("plannipro_user");}catch{}
+    setCurrentUser(null);
+  }
+  if(!currentUser)return <LoginPage onLogin={handleLogin}/>;
+  return <PlanningApp currentUser={currentUser} onLogout={handleLogout}/>;
 }
