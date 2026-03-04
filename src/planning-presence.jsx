@@ -1251,7 +1251,7 @@ function PlanningApp({currentUser,onLogout}){
                 {[
                   {mode:"all",label:"🗓 Planning",color:"#6366f1",bg:"#eef2ff"},
                   {mode:"presence",label:"🏢 Présences sur site",color:"#0d9488",bg:"#f0fdfa"},
-                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b",bg:"#fffbeb"},
+                  {mode:"astreinte",label:"🔔 Astreintes",color:"#f59e0b",bg:"#fffbeb",managerOnly:false},
                 ].map(tab=>(
                   <button key={tab.mode} onClick={()=>{
                     setFilterMode(tab.mode);
@@ -1477,7 +1477,7 @@ function PlanningApp({currentUser,onLogout}){
                                     <span style={{fontSize:7,color:textColor,fontWeight:700}}>{aAgent.name.split(" ")[0]}</span>
                                   </div>
                                 ):(
-                                  isManager&&!astreinteSelStart&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:`1.5px dashed ${border}`,background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  canManageAstreintes&&!astreinteSelStart&&<div style={{width:"calc(100% - 4px)",height:30,margin:"0 2px",borderRadius:3,border:`1.5px dashed ${border}`,background:bg,display:"flex",alignItems:"center",justifyContent:"center"}}>
                                     <span style={{fontSize:12,color:border,fontWeight:700}}>+</span>
                                   </div>
                                 ))}
@@ -1706,7 +1706,7 @@ function PlanningApp({currentUser,onLogout}){
                               const leave=getLeaveForDay(agent.id,day),inSel=isInSelection(agent.id,day),isToday=todayDay===day;
                               const agentCanPresence=!!agents.find(a=>a.id===agent.id)?.can_book_presence_sites;
                               const isFridayCell=new Date(year,month,day).getDay()===5;
-                              const canInteract=filterMode==="astreinte"?(isManager&&isFridayCell&&!wk):(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
+                              const canInteract=filterMode==="astreinte"?(canManageAstreintes&&isFridayCell&&!wk):(filterMode==="presence"?(isManager||(currentUser.id===agent.id&&agentCanPresence)):(isManager||currentUser.id===agent.id))&&!wk&&(!isFer||isManager);
                               return<td key={i}
                                 onClick={e=>{if(filterMode==="astreinte"&&canInteract){e.stopPropagation();setAstreinteDropdown(d=>d&&d.key===dateKey(year,month,day)?null:{key:dateKey(year,month,day),x:e.clientX,y:e.clientY});}else canInteract&&handleCellClick(agent.id,day);}}
                                 onContextMenu={e=>!wk&&handleCellRightClick(e,agent.id,day)}
