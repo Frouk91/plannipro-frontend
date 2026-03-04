@@ -1393,7 +1393,7 @@ function PlanningApp({currentUser,onLogout}){
                               const isFriday=dow===5;
                               const isWorkday=!wk;
                               const eligible=isWorkday&&(fridayOnly?isFriday:true);
-                              const canClick=isManager&&eligible;
+                              const canClick=canManageAstreintes&&eligible;
                               const aKey=`${teamName}|${rowId}|${k}`;
                               const aAgentId=astreintes[aKey];
                               const aAgent=aAgentId?agents.find(a=>a.id===aAgentId):null;
