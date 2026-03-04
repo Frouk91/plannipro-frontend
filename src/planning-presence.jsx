@@ -379,7 +379,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{fontWeight:600,fontSize:13,color:"#1e293b"}}>{a.name}</span>
-                    <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":"#f1f5f9",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":"#64748b",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":"Agent"}</span>
+                    <span style={{background:a.role==="admin"?"#fef3c7":a.role==="manager"?"#ede9fe":a.role==="coordinator"?"#e0f2fe":"#f1f5f9",color:a.role==="admin"?"#92400e":a.role==="manager"?"#5b21b6":a.role==="coordinator"?"#0369a1":"#64748b",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>{a.role==="admin"?"Admin":a.role==="manager"?"Manager":a.role==="coordinator"?"Coordinateur":"Agent"}</span>
                     {a.role==="agent"&&a.can_book_presence_sites&&<span style={{background:"#dbeafe",color:"#0369a1",padding:"1px 7px",borderRadius:4,fontSize:10,fontWeight:600}}>🏢 Présences</span>}
                   </div>
                   <div style={{fontSize:11,color:"#94a3b8",marginTop:1}}>{a.email}{a.team&&<span style={{marginLeft:8,color:"#64748b"}}>· {a.team}</span>}</div>
@@ -486,7 +486,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
             </select></div>
           <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Rôle</label>
             <select value={newAgent.role} onChange={e=>setNewAgent(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
-              <option value="agent">Agent</option><option value="manager">Manager 👑</option>
+              <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
         </div>
         <ModalButtons onCancel={()=>setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading?"En cours...":"Ajouter"} disabled={loading}/>
@@ -504,7 +504,7 @@ function AdminPanel({agents,teams,leaveTypes,token,onAgentAdded,onAgentUpdated,o
             </select></div>
           <div><label style={{display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:5,textTransform:"uppercase",letterSpacing:"0.4px"}}>Rôle</label>
             <select value={editData.role||"agent"} onChange={e=>setEditData(p=>({...p,role:e.target.value}))} style={{width:"100%",padding:"10px",borderRadius:8,border:"1.5px solid #e5e7eb",fontSize:14,transition:"all 0.2s"}}>
-              <option value="agent">Agent</option><option value="manager">Manager 👑</option>
+              <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
         </div>
         <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v=>setEditData(p=>({...p,password:v}))} placeholder="••••••••" style={{marginBottom:12}}/>
@@ -1173,7 +1173,7 @@ function PlanningApp({currentUser,onLogout}){
             </div>
             <div style={{flex:1,overflow:"hidden"}}>
               <div style={{fontSize:13,fontWeight:700,color:"#f8fafc",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{currentUser.first_name} {currentUser.last_name}</div>
-              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#a78bfa":"#6ee7b7",fontWeight:500}}>{currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":"👤 Agent"}</div>
+              <div style={{fontSize:10,color:currentUser.role==="admin"?"#fbbf24":currentUser.role==="manager"?"#a78bfa":currentUser.role==="coordinator"?"#38bdf8":"#6ee7b7",fontWeight:500}}>{currentUser.role==="admin"?"👑 Admin":currentUser.role==="manager"?"👑 Manager":currentUser.role==="coordinator"?"📋 Coordinateur":"👤 Agent"}</div>
             </div>
           </div>
           <button onClick={onLogout} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.3)",color:"#cbd5e1",fontSize:11,cursor:"pointer",fontWeight:600,transition:"all 0.2s"}}>🚪 Déconnexion</button>
