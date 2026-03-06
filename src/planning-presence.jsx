@@ -569,6 +569,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [statsFilter, setStatsFilter] = useState("month");
   const [showStatsPicker, setShowStatsPicker] = useState(false);
+  const [pickerYear, setPickerYear] = useState(new Date().getFullYear());
   const [statsPastMonth, setStatsPastMonth] = useState(() => {
     const d = new Date(); d.setMonth(d.getMonth() - 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -2015,7 +2016,6 @@ function PlanningApp({ currentUser, onLogout }) {
                   const [pmYear, pmMonth] = statsPastMonth.split("-").map(Number);
                   const now2 = new Date();
                   const maxYear = now2.getFullYear(), maxMonth = now2.getMonth() + 1;
-                  const [pickerYear, setPickerYear] = React.useState(pmYear);
                   const isAtMax = pmYear === maxYear && pmMonth === maxMonth;
                   const goPrev = (e) => { e.stopPropagation(); let y = pmYear, m = pmMonth - 1; if (m < 1) { m = 12; y--; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
                   const goNext = (e) => { e.stopPropagation(); if (isAtMax) return; let y = pmYear, m = pmMonth + 1; if (m > 12) { m = 1; y++; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
