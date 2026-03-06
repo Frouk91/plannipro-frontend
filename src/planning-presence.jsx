@@ -568,6 +568,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [loadingYearStats, setLoadingYearStats] = useState(false);  // Indicateur de chargement année
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [statsFilter, setStatsFilter] = useState("month");
+  const [showStatsPicker, setShowStatsPicker] = useState(false);
   const [statsPastMonth, setStatsPastMonth] = useState(() => {
     const d = new Date(); d.setMonth(d.getMonth() - 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -1189,7 +1190,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (showStatsPicker) setShowStatsPicker(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -2014,29 +2015,58 @@ function PlanningApp({ currentUser, onLogout }) {
                   const [pmYear, pmMonth] = statsPastMonth.split("-").map(Number);
                   const now2 = new Date();
                   const maxYear = now2.getFullYear(), maxMonth = now2.getMonth() + 1;
+                  const [pickerYear, setPickerYear] = React.useState(pmYear);
                   const isAtMax = pmYear === maxYear && pmMonth === maxMonth;
-                  const goPrev = () => {
-                    let y = pmYear, m = pmMonth - 1;
-                    if (m < 1) { m = 12; y--; }
-                    setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`);
-                  };
-                  const goNext = () => {
-                    if (isAtMax) return;
-                    let y = pmYear, m = pmMonth + 1;
-                    if (m > 12) { m = 1; y++; }
-                    setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`);
-                  };
+                  const goPrev = (e) => { e.stopPropagation(); let y = pmYear, m = pmMonth - 1; if (m < 1) { m = 12; y--; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
+                  const goNext = (e) => { e.stopPropagation(); if (isAtMax) return; let y = pmYear, m = pmMonth + 1; if (m > 12) { m = 1; y++; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
                   return (
-                    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "#f1f5f9", borderRadius: 7, padding: 2 }}>
-                      <button onClick={goPrev} style={{ padding: "4px 8px", borderRadius: 5, border: "none", background: "none", cursor: "pointer", fontSize: 14, color: "#64748b", lineHeight: 1, transition: "all 0.15s" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#e2e8f0"}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
-                      <span style={{ padding: "4px 10px", fontSize: 12, fontWeight: 700, color: "#1e293b", minWidth: 110, textAlign: "center", background: "#fff", borderRadius: 5, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
-                        {MONTHS_FR[pmMonth - 1]} {pmYear}
-                      </span>
-                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "4px 8px", borderRadius: 5, border: "none", background: "none", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#cbd5e1" : "#64748b", lineHeight: 1, transition: "all 0.15s" }}
-                        onMouseEnter={e => { if (!isAtMax) e.currentTarget.style.background = "#e2e8f0"; }}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <button onClick={goPrev} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 14, color: "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
+                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}>‹</button>
+                      <div style={{ position: "relative" }}>
+                        <button onClick={e => { e.stopPropagation(); setPickerYear(pmYear); setShowStatsPicker(p => !p); }}
+                          style={{ padding: "5px 14px", borderRadius: 6, border: "1px solid #6366f1", background: showStatsPicker ? "#eef2ff" : "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#4338ca", minWidth: 130, textAlign: "center", transition: "all 0.15s", boxShadow: "0 1px 3px rgba(99,102,241,0.15)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+                          onMouseEnter={e => { if (!showStatsPicker) e.currentTarget.style.background = "#eef2ff"; }}
+                          onMouseLeave={e => { if (!showStatsPicker) e.currentTarget.style.background = "#fff"; }}>
+                          📅 {MONTHS_FR[pmMonth - 1]} {pmYear}
+                          <span style={{ fontSize: 9, color: "#6366f1", transform: showStatsPicker ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                        </button>
+                        {showStatsPicker && (
+                          <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, boxShadow: "0 12px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.08)", zIndex: 9999, padding: 16, width: 260, animation: "slideIn 0.15s ease" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f1f5f9" }}>
+                              <button onClick={() => setPickerYear(y => y - 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#94a3b8", padding: "2px 8px", borderRadius: 6, transition: "all 0.15s" }}
+                                onMouseEnter={e => { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#1e293b"; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94a3b8"; }}>‹</button>
+                              <span style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", letterSpacing: "-0.3px" }}>{pickerYear}</span>
+                              <button onClick={() => { if (pickerYear < maxYear) setPickerYear(y => y + 1); }} style={{ background: "none", border: "none", cursor: pickerYear >= maxYear ? "default" : "pointer", fontSize: 16, color: pickerYear >= maxYear ? "#e2e8f0" : "#94a3b8", padding: "2px 8px", borderRadius: 6, transition: "all 0.15s" }}
+                                onMouseEnter={e => { if (pickerYear < maxYear) { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#1e293b"; } }}
+                                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = pickerYear >= maxYear ? "#e2e8f0" : "#94a3b8"; }}>›</button>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4 }}>
+                              {MONTHS_FR.map((m_label, m_idx) => {
+                                const mNum = m_idx + 1;
+                                const isSelected = mNum === pmMonth && pickerYear === pmYear;
+                                const isFuture = pickerYear > maxYear || (pickerYear === maxYear && mNum > maxMonth);
+                                const isNow = mNum === maxMonth && pickerYear === maxYear;
+                                return (
+                                  <button key={m_idx} disabled={isFuture}
+                                    onClick={() => { if (isFuture) return; setStatsPastMonth(`${pickerYear}-${String(mNum).padStart(2, "0")}`); setShowStatsPicker(false); }}
+                                    style={{ padding: "7px 4px", borderRadius: 8, border: isSelected ? "2px solid #6366f1" : "2px solid transparent", background: isSelected ? "#6366f1" : isNow ? "#eef2ff" : "transparent", color: isFuture ? "#e2e8f0" : isSelected ? "#fff" : isNow ? "#4338ca" : "#475569", cursor: isFuture ? "default" : "pointer", fontSize: 11, fontWeight: isSelected || isNow ? 700 : 400, transition: "all 0.1s", position: "relative" }}
+                                    onMouseEnter={e => { if (!isSelected && !isFuture) e.currentTarget.style.background = "#f1f5f9"; }}
+                                    onMouseLeave={e => { if (!isSelected && !isFuture) e.currentTarget.style.background = isNow ? "#eef2ff" : "transparent"; }}>
+                                    {m_label.slice(0, 3)}
+                                    {isNow && !isSelected && <div style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "#6366f1" }} />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#cbd5e1" : "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                        onMouseEnter={e => { if (!isAtMax) e.currentTarget.style.background = "#f1f5f9"; }}
+                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}>›</button>
                     </div>
                   );
                 })()}
