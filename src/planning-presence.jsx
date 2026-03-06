@@ -120,6 +120,7 @@ function requestFromBackend(l) {
 }
 async function apiFetch(path, token, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) } });
+  if (res.status === 401) throw new Error("TOKEN_EXPIRED");
   return res.json();
 }
 
@@ -853,7 +854,7 @@ function PlanningApp({ currentUser, onLogout }) {
         }
       });
       setLeaves(leavesMap);
-    } catch (e) { console.error("Erreur congés:", e); }
+    } catch (e) { if (e.message === "TOKEN_EXPIRED") { onLogout(); return; } console.error("Erreur congés:", e); }
   }
 
   async function loadRequests(tok) {
@@ -862,7 +863,7 @@ function PlanningApp({ currentUser, onLogout }) {
       const pending = (pendingData.leaves || []).map(requestFromBackend);
       const others = (allData.leaves || []).filter(l => l.status !== "pending").map(requestFromBackend);
       setRequests([...pending, ...others]);
-    } catch (e) { console.error("Erreur demandes:", e); }
+    } catch (e) { if (e.message === "TOKEN_EXPIRED") { onLogout(); return; } console.error("Erreur demandes:", e); }
   }
 
   function showNotif(msg, type = "success") { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); }
