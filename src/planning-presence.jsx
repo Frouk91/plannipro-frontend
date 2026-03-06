@@ -576,6 +576,8 @@ function PlanningApp({ currentUser, onLogout }) {
   });
   const [pastMonthLeaves, setPastMonthLeaves] = useState({});
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
+  const [agentSearchQuery, setAgentSearchQuery] = useState("");
+  const [showAgentSearch, setShowAgentSearch] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreintes, setAstreintes] = useState(() => {
     try { return JSON.parse(localStorage.getItem("astreintes") || "{}"); }
@@ -1191,7 +1193,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (showStatsPicker) setShowStatsPicker(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (showStatsPicker) setShowStatsPicker(false); if (showAgentSearch) setShowAgentSearch(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -1994,12 +1996,74 @@ function PlanningApp({ currentUser, onLogout }) {
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Agent :</label>
-                <select value={selectedAgentForStats || ""} onChange={e => setSelectedAgentForStats(e.target.value || null)} style={{ flex: 1, maxWidth: 300, padding: "8px 12px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 12, color: "#1e293b", cursor: "pointer", background: "#fff", transition: "all 0.2s" }}>
-                  <option value="">Mon profil</option>
-                  {agents.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
+                <div style={{ position: "relative", flex: 1, maxWidth: 320 }} onClick={e => e.stopPropagation()}>
+                  <div onClick={() => { setShowAgentSearch(p => !p); setAgentSearchQuery(""); }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, border: `1px solid ${showAgentSearch ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", transition: "all 0.2s", boxShadow: showAgentSearch ? "0 0 0 3px rgba(99,102,241,0.1)" : "none" }}>
+                    {(() => {
+                      const sel = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
+                      return sel ? (
+                        <>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(sel.id)},55%,55%),hsl(${agentHue(sel.id)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{sel.avatar}</div>
+                          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{sel.name}</span>
+                          <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 6px", borderRadius: 4 }}>{sel.team}</span>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11 }}>👤</div>
+                          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#6366f1" }}>Mon profil</span>
+                        </>
+                      );
+                    })()}
+                    <span style={{ fontSize: 10, color: "#94a3b8", transform: showAgentSearch ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                  </div>
+                  {showAgentSearch && (
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.12)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                      <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
+                        <input autoFocus value={agentSearchQuery} onChange={e => setAgentSearchQuery(e.target.value)}
+                          placeholder="🔍 Rechercher un agent..."
+                          style={{ width: "100%", padding: "7px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box", transition: "all 0.2s" }}
+                          onFocus={e => e.target.style.borderColor = "#6366f1"}
+                          onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                      </div>
+                      <div style={{ maxHeight: 280, overflowY: "auto" }}>
+                        {!agentSearchQuery && (
+                          <button onClick={() => { setSelectedAgentForStats(null); setShowAgentSearch(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
+                            onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
+                            onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>👤</div>
+                            <span style={{ fontSize: 12, fontWeight: !selectedAgentForStats ? 700 : 500, color: !selectedAgentForStats ? "#4338ca" : "#1e293b" }}>Mon profil</span>
+                            {!selectedAgentForStats && <span style={{ marginLeft: "auto", color: "#6366f1", fontSize: 12 }}>✓</span>}
+                          </button>
+                        )}
+                        {(() => {
+                          const q = agentSearchQuery.toLowerCase();
+                          const filtered = agents.filter(a => a.role !== "admin" && (!q || a.name.toLowerCase().includes(q) || (a.team || "").toLowerCase().includes(q)));
+                          const grouped = {};
+                          filtered.forEach(a => { const t = a.team || "Sans équipe"; if (!grouped[t]) grouped[t] = []; grouped[t].push(a); });
+                          return Object.entries(grouped).map(([teamName, teamAgents]) => (
+                            <div key={teamName}>
+                              {!q && <div style={{ padding: "6px 14px 3px", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", background: "#f8fafc" }}>{teamName}</div>}
+                              {teamAgents.map(a => (
+                                <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setShowAgentSearch(false); }}
+                                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
+                                  onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                  onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                  <span style={{ flex: 1, fontSize: 12, fontWeight: selectedAgentForStats === a.id ? 700 : 500, color: selectedAgentForStats === a.id ? "#4338ca" : "#1e293b", textAlign: "left" }}>{a.name}</span>
+                                  {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 12 }}>✓</span>}
+                                </button>
+                              ))}
+                            </div>
+                          ));
+                        })()}
+                        {agents.filter(a => a.role !== "admin" && agentSearchQuery && (a.name.toLowerCase().includes(agentSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(agentSearchQuery.toLowerCase()))).length === 0 && agentSearchQuery && (
+                          <div style={{ padding: "20px 14px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>Aucun agent trouvé</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
