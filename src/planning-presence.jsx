@@ -568,6 +568,11 @@ function PlanningApp({ currentUser, onLogout }) {
   const [loadingYearStats, setLoadingYearStats] = useState(false);  // Indicateur de chargement année
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [statsFilter, setStatsFilter] = useState("month");
+  const [statsPastMonth, setStatsPastMonth] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+  const [pastMonthLeaves, setPastMonthLeaves] = useState({});
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreintes, setAstreintes] = useState(() => {
@@ -653,13 +658,18 @@ function PlanningApp({ currentUser, onLogout }) {
     const stats = { cp: 0, rtt: 0, pont: 0, absence: 0 };
     const agent = agents.find(a => a.id === agentId);
     if (!agent) return stats;
-    Object.entries(leaves[agentId] || {}).forEach(([dateKey, leave]) => {
+    const sourceLeaves = filterType === "pastMonth" ? pastMonthLeaves : leaves;
+    Object.entries(sourceLeaves[agentId] || {}).forEach(([dateKey, leave]) => {
       if (!leave) return;
-      const [y, m, d] = dateKey.split("-");
+      const [y, m] = dateKey.split("-");
       const leaveYear = parseInt(y);
       const leaveMonth = parseInt(m) - 1;
       if (filterType === "month") { if (leaveYear !== year || leaveMonth !== month) return; }
       else if (filterType === "year") { if (leaveYear !== year) return; }
+      else if (filterType === "pastMonth") {
+        const [py, pm] = statsPastMonth.split("-");
+        if (leaveYear !== parseInt(py) || leaveMonth !== parseInt(pm) - 1) return;
+      }
       const days = getDaysForLeaveType(leave);
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
@@ -785,6 +795,31 @@ function PlanningApp({ currentUser, onLogout }) {
       loadLeaves(leaveTypes, token, year, month);
     }
   }, [year, month, statsFilter, dataLoaded, leaveTypes.length]);
+
+  useEffect(() => {
+    if (statsFilter !== "pastMonth" || !dataLoaded || leaveTypes.length === 0) return;
+    const loadPastMonth = async () => {
+      try {
+        const data = await apiFetch(`/leaves?month=${statsPastMonth}`, token);
+        const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled" && l.status !== "rejected");
+        const leavesMap = {};
+        leavesData.forEach(l => {
+          if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
+          const lt = leaveFromBackend(l);
+          const leaveStart = l.start_date.split("T")[0], leaveEnd = l.end_date.split("T")[0];
+          const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
+          for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
+            const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
+            const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
+            if (isPresence) { leavesMap[l.agent_id][k + "__presence"] = entry; }
+            else { leavesMap[l.agent_id][k] = entry; }
+          }
+        });
+        setPastMonthLeaves(leavesMap);
+      } catch (e) { console.error("Erreur mois passé:", e); }
+    };
+    loadPastMonth();
+  }, [statsFilter, statsPastMonth, dataLoaded, leaveTypes.length]);
 
   async function loadLeaves(ltList, tok, y, m) {
     try {
@@ -1969,10 +2004,18 @@ function PlanningApp({ currentUser, onLogout }) {
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Période :</span>
-              <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
-                {[{ id: "month", label: `${MONTHS_FR[month]} ${year}` }, { id: "year", label: `Année ${year}` }].map(f => (
-                  <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
-                ))}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
+                  {[{ id: "month", label: `Mois en cours` }, { id: "pastMonth", label: `Mois passés` }, { id: "year", label: `Année ${year}` }].map(f => (
+                    <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
+                  ))}
+                </div>
+                {statsFilter === "pastMonth" && (
+                  <input type="month" value={statsPastMonth}
+                    max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
+                    onChange={e => setStatsPastMonth(e.target.value)}
+                    style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, color: "#1e293b" }} />
+                )}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
@@ -2015,7 +2058,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {s.days.toLocaleString('fr-FR', { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
                         </div>
                         <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.3px" }}>
-                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : `Année ${year}`}
+                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "pastMonth" ? `${MONTHS_FR[parseInt(statsPastMonth.split("-")[1]) - 1]} ${statsPastMonth.split("-")[0]}` : `Année ${year}`}
                         </div>
                       </div>
                     ))}
