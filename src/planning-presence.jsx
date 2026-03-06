@@ -2357,6 +2357,22 @@ function PlanningApp({ currentUser, onLogout }) {
                     onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
                 </div>
               </div>
+              {/* Weekend error */}
+              {(() => {
+                const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                const startWE = addLeaveForm.startDate && isWE(addLeaveForm.startDate);
+                const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
+                if (!startWE && !endWE) return null;
+                return (
+                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>⚠️</span>
+                    <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
+                      {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}
+                      {" "}Veuillez choisir des jours ouvrés.
+                    </span>
+                  </div>
+                );
+              })()}
               {/* Footer */}
               <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
                 <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 500 }}>Annuler</button>
@@ -2364,10 +2380,15 @@ function PlanningApp({ currentUser, onLogout }) {
                   const agentId = addLeaveForm.agentId || currentUser.id;
                   const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
                   if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
+                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                  if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
                   setAddLeaveModal(false);
                   await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
-                }} disabled={!addLeaveForm.startDate || !addLeaveForm.endDate || (!isManager ? false : !addLeaveForm.agentId)}
-                  className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId)) ? 0.5 : 1 }}>
+                }} disabled={(() => {
+                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                  return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
+                })()}
+                  className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (() => { const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; }; return (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) ? 0.5 : 1; })() }}>
                   ✅ Valider le congé
                 </button>
               </div>
