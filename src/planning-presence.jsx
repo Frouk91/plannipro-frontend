@@ -1362,7 +1362,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 </div>
                 <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 500, color: "#64748b" }}>Aujourd'hui</button>
 
-                {filterMode !== "astreinte" && (
+                {filterMode === "all" && (
                   <button onClick={() => {
                     const defaultAgent = isManager ? null : currentUser.id;
                     const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
@@ -1401,7 +1401,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 {filterMode === "presence" && (isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
                 )}
-                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
+                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Utilisez le bouton "+ Congé" pour poser un congé</span>}
                 <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
                   {[{ id: "all", label: "Tous" }, { id: "approved", label: "Approuvés" }, { id: "pending", label: "En attente" }].map(f => (
                     <button key={f.id} onClick={() => setFilterStatus(f.id)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterStatus === f.id ? 600 : 400, background: filterStatus === f.id ? "#1e293b" : "#fff", color: filterStatus === f.id ? "#fff" : "#64748b", borderColor: filterStatus === f.id ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
@@ -1777,7 +1777,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const isFridayCell = new Date(year, month, day).getDay() === 5;
                                   const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
                                   return <td key={i}
-                                    onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
+                                    onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else if (filterMode !== "all" && canInteract) handleCellClick(agent.id, day); }}
                                     onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
                                     onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                                     onMouseLeave={() => setHoveredDay(null)}
@@ -1921,7 +1921,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                   const canInteract = (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
                                   return <td key={i}
-                                    onClick={() => canInteract && handleWeekCellClick(agent.id, d)}
+                                    onClick={() => filterMode !== "all" && canInteract && handleWeekCellClick(agent.id, d)}
                                     onContextMenu={e => !wk && handleWeekCellRightClick(e, agent.id, d)}
                                     onMouseEnter={() => { if (weekSelAgent === agent.id) setWeekHovered(k); }}
                                     onMouseLeave={() => setWeekHovered(null)}
