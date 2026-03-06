@@ -2010,12 +2010,36 @@ function PlanningApp({ currentUser, onLogout }) {
                     <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
                   ))}
                 </div>
-                {statsFilter === "pastMonth" && (
-                  <input type="month" value={statsPastMonth}
-                    max={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}
-                    onChange={e => setStatsPastMonth(e.target.value)}
-                    style={{ padding: "5px 10px", borderRadius: 6, border: "1px solid #e2e8f0", fontSize: 12, color: "#1e293b" }} />
-                )}
+                {statsFilter === "pastMonth" && (() => {
+                  const [pmYear, pmMonth] = statsPastMonth.split("-").map(Number);
+                  const now2 = new Date();
+                  const maxYear = now2.getFullYear(), maxMonth = now2.getMonth() + 1;
+                  const isAtMax = pmYear === maxYear && pmMonth === maxMonth;
+                  const goPrev = () => {
+                    let y = pmYear, m = pmMonth - 1;
+                    if (m < 1) { m = 12; y--; }
+                    setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`);
+                  };
+                  const goNext = () => {
+                    if (isAtMax) return;
+                    let y = pmYear, m = pmMonth + 1;
+                    if (m > 12) { m = 1; y++; }
+                    setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`);
+                  };
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: 2, background: "#f1f5f9", borderRadius: 7, padding: 2 }}>
+                      <button onClick={goPrev} style={{ padding: "4px 8px", borderRadius: 5, border: "none", background: "none", cursor: "pointer", fontSize: 14, color: "#64748b", lineHeight: 1, transition: "all 0.15s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#e2e8f0"}
+                        onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
+                      <span style={{ padding: "4px 10px", fontSize: 12, fontWeight: 700, color: "#1e293b", minWidth: 110, textAlign: "center", background: "#fff", borderRadius: 5, boxShadow: "0 1px 3px rgba(0,0,0,0.08)" }}>
+                        {MONTHS_FR[pmMonth - 1]} {pmYear}
+                      </span>
+                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "4px 8px", borderRadius: 5, border: "none", background: "none", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#cbd5e1" : "#64748b", lineHeight: 1, transition: "all 0.15s" }}
+                        onMouseEnter={e => { if (!isAtMax) e.currentTarget.style.background = "#e2e8f0"; }}
+                        onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
