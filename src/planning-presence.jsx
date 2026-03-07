@@ -2048,6 +2048,7 @@ function PlanningApp({ currentUser, onLogout }) {
         {view === "validations" && (
           <ValidationsView
             isManager={isManager}
+            isAdmin={isAdmin}
             requests={requests}
             pendingRequests={pendingRequests}
             myRequests={myRequests}
@@ -2560,7 +2561,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
   );
 }
 
-function ValidationsView({ isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData }) {
+function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showHistory, setShowHistory] = useState(true);
   const sourceList = isManager ? requests : myRequests;
