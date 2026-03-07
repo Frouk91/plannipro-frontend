@@ -638,6 +638,12 @@ function PlanningApp({ currentUser, onLogout }) {
     if (label.includes("1/2") || label.includes("½")) return 0.5;
     return 1;
   }
+  function isHalfDay(leave) {
+    if (!leave) return false;
+    const label = (leave.label || "").toLowerCase();
+    const code = (leave.code || "").toLowerCase();
+    return label.includes("1/2") || label.includes("½") || code.startsWith("_");
+  }
 
   function getAvailableLeaveTypesForAgent(agentId) {
     if (isManager) {
@@ -1854,21 +1860,28 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : (
-                                        <div style={{
-                                          width: "calc(100% - 2px)", height: 20, margin: "0 1px",
-                                          background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
-                                          borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
-                                          border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
-                                          opacity: filterMode === "presence" ? 0.75 : 1,
-                                          boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
-                                        }}>
-                                          <span style={{
-                                            fontSize: 7, fontWeight: 700,
-                                            color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
+                                        isHalfDay(leave) ? (
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, position: "relative", overflow: "hidden", background: "#f8fafc", border: `1px solid ${leave.color}40` }}>
+                                            <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "20px 100% 0 0", borderColor: `${leave.color} transparent transparent transparent` }} />
+                                            <span style={{ position: "absolute", bottom: 1, right: 2, fontSize: 6, fontWeight: 800, color: leave.color, lineHeight: 1 }}>½</span>
+                                          </div>
+                                        ) : (
+                                          <div style={{
+                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px",
+                                            background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
+                                            borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
+                                            border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
+                                            opacity: filterMode === "presence" ? 0.75 : 1,
+                                            boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
                                           }}>
-                                            {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
-                                          </span>
-                                        </div>
+                                            <span style={{
+                                              fontSize: 7, fontWeight: 700,
+                                              color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
+                                            }}>
+                                              {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
+                                            </span>
+                                          </div>
+                                        )
                                       )
                                     )}
                                     {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
@@ -1984,21 +1997,28 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : (
-                                        <div style={{
-                                          width: "calc(100% - 4px)", height: 24, margin: "0 2px",
-                                          background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
-                                          borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
-                                          border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
-                                          opacity: filterMode === "presence" ? 0.75 : 1,
-                                          boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 3px ${leave.color}30` : "none"
-                                        }}>
-                                          <span style={{
-                                            fontSize: 7, fontWeight: 700,
-                                            color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
+                                        isHalfDay(leave) ? (
+                                          <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, position: "relative", overflow: "hidden", background: "#f8fafc", border: `1px solid ${leave.color}40` }}>
+                                            <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "24px 100% 0 0", borderColor: `${leave.color} transparent transparent transparent` }} />
+                                            <span style={{ position: "absolute", bottom: 1, right: 3, fontSize: 7, fontWeight: 800, color: leave.color, lineHeight: 1 }}>½</span>
+                                          </div>
+                                        ) : (
+                                          <div style={{
+                                            width: "calc(100% - 4px)", height: 24, margin: "0 2px",
+                                            background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
+                                            borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
+                                            border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
+                                            opacity: filterMode === "presence" ? 0.75 : 1,
+                                            boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 3px ${leave.color}30` : "none"
                                           }}>
-                                            {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
-                                          </span>
-                                        </div>
+                                            <span style={{
+                                              fontSize: 7, fontWeight: 700,
+                                              color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
+                                            }}>
+                                              {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
+                                            </span>
+                                          </div>
+                                        )
                                       )
                                     )}
                                     {inSel && !leave && !isFer && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
