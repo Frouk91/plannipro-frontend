@@ -664,7 +664,12 @@ function PlanningApp({ currentUser, onLogout }) {
   const handleAgentDragOver = (e, agentId) => { e.preventDefault(); setDragOverAgentId(agentId); };
   const handleAgentDrop = (agentId) => {
     if (!dragAgentId || dragAgentId === agentId) { setDragAgentId(null); setDragOverAgentId(null); return; }
-    const current = agentsOrder.length > 0 ? [...agentsOrder] : agents.map(a => a.id);
+    // Partir de la liste affichée, en ajoutant les nouveaux agents absents du localStorage
+    const base = agentsOrder.length > 0 ? [...agentsOrder] : agents.map(a => a.id);
+    const current = agents.map(a => a.id).reduce((acc, id) => {
+      if (!acc.includes(id)) acc.push(id);
+      return acc;
+    }, base);
     const fromIdx = current.indexOf(dragAgentId);
     const toIdx = current.indexOf(agentId);
     if (fromIdx < 0 || toIdx < 0) return;
@@ -714,29 +719,12 @@ function PlanningApp({ currentUser, onLogout }) {
     const sorted = sortedAgents;
     let filtered;
     if (filterTeam.startsWith("agent-")) {
-      // Filtre "Moi" - afficher seulement l'agent connecté
       const agentId = filterTeam.replace("agent-", "");
       filtered = sorted.filter(a => a.id === agentId);
     } else {
-      // Filtres normaux par équipe
       filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
     }
-    const grouped = [];
-    const teamMap = {};
-    filtered.forEach(agent => {
-      const teamName = agent.team || "Sans équipe";
-      if (!teamMap[teamName]) {
-        teamMap[teamName] = [];
-        grouped.push([teamName, teamMap[teamName]]);
-      }
-      teamMap[teamName].push(agent);
-    });
-    grouped.sort(([a], [b]) => {
-      if (a === "Sans équipe") return 1;
-      if (b === "Sans équipe") return -1;
-      return a.localeCompare(b);
-    });
-    return grouped;
+    return [["", filtered]];
   }
 
   useEffect(() => {
@@ -1771,7 +1759,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                          <tr style={{ display: teamName ? "table-row" : "none", background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
                             <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
@@ -1779,7 +1767,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             // Tri désactivé
                             const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
                             return (
-                              <tr key={agent.id} draggable={isAdmin} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isAdmin ? "grab" : "default" }}>
+                              <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
@@ -1788,7 +1776,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isAdmin && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
+                                  {isManager && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
                                 </td>
                                 {Array.from({ length: daysInMonth }, (_, i) => {
                                   const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
@@ -1920,7 +1908,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             // Tri désactivé
                             const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
                             return (
-                              <tr key={agent.id} draggable={isAdmin} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isAdmin ? "grab" : "default" }}>
+                              <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
                                 <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
@@ -1929,7 +1917,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isAdmin && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
+                                  {isManager && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
                                 </td>
                                 {weekDays.map((d, i) => {
                                   const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6;
