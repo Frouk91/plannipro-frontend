@@ -1805,7 +1805,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#f4f4f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1949,7 +1949,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#f4f4f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -2539,7 +2539,7 @@ function ValidationsView({ isManager, requests, pendingRequests, myRequests, onA
           {history.length > 0 && isManager && (
             <>
               <button onClick={() => { if (window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning.")) onClearHistory(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fecaca", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>Effacer l'historique</button>
-              <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>
+              {isAdmin && <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>}
             </>
           )}
           <button onClick={() => setShowHistory(h => !h)} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 11, fontWeight: 500, display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}>
