@@ -724,7 +724,22 @@ function PlanningApp({ currentUser, onLogout }) {
     } else {
       filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
     }
-    return [["", filtered]];
+    const grouped = [];
+    const teamMap = {};
+    filtered.forEach(agent => {
+      const teamName = agent.team || "Sans équipe";
+      if (!teamMap[teamName]) {
+        teamMap[teamName] = [];
+        grouped.push([teamName, teamMap[teamName]]);
+      }
+      teamMap[teamName].push(agent);
+    });
+    grouped.sort(([a], [b]) => {
+      if (a === "Sans équipe") return 1;
+      if (b === "Sans équipe") return -1;
+      return a.localeCompare(b);
+    });
+    return grouped;
   }
 
   useEffect(() => {
@@ -1759,7 +1774,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ display: teamName ? "table-row" : "none", background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
                             <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
