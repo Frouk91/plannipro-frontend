@@ -1861,9 +1861,10 @@ function PlanningApp({ currentUser, onLogout }) {
                                         </div>
                                       ) : (
                                         isHalfDay(leave) ? (
-                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, position: "relative", overflow: "hidden", background: "#f8fafc", border: `1px solid ${leave.color}40` }}>
-                                            <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "20px 100% 0 0", borderColor: `${leave.color} transparent transparent transparent` }} />
-                                            <span style={{ position: "absolute", bottom: 1, right: 2, fontSize: 6, fontWeight: 800, color: leave.color, lineHeight: 1 }}>½</span>
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, overflow: "hidden", background: "#fff", border: `1px solid ${leave.color}` }}>
+                                            <div style={{ height: "50%", background: leave.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                              <span style={{ fontSize: 6, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
+                                            </div>
                                           </div>
                                         ) : (
                                           <div style={{
@@ -1998,9 +1999,10 @@ function PlanningApp({ currentUser, onLogout }) {
                                         </div>
                                       ) : (
                                         isHalfDay(leave) ? (
-                                          <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, position: "relative", overflow: "hidden", background: "#f8fafc", border: `1px solid ${leave.color}40` }}>
-                                            <div style={{ position: "absolute", top: 0, left: 0, width: 0, height: 0, borderStyle: "solid", borderWidth: "24px 100% 0 0", borderColor: `${leave.color} transparent transparent transparent` }} />
-                                            <span style={{ position: "absolute", bottom: 1, right: 3, fontSize: 7, fontWeight: 800, color: leave.color, lineHeight: 1 }}>½</span>
+                                          <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, overflow: "hidden", background: "#fff", border: `1px solid ${leave.color}` }}>
+                                            <div style={{ height: "50%", background: leave.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                              <span style={{ fontSize: 7, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
+                                            </div>
                                           </div>
                                         ) : (
                                           <div style={{
