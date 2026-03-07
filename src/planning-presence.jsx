@@ -1866,7 +1866,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                               <span style={{ fontSize: 6, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
                                             </div>
                                             <div style={{ height: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                              <span style={{ fontSize: 6, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label)}</span>
+                                              <span style={{ fontSize: 6, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label).replace('½','').trim()}</span>
                                             </div>
                                           </div>
                                         ) : (
@@ -2007,7 +2007,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                               <span style={{ fontSize: 7, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
                                             </div>
                                             <div style={{ height: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                              <span style={{ fontSize: 7, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label)}</span>
+                                              <span style={{ fontSize: 7, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label).replace('½','').trim()}</span>
                                             </div>
                                           </div>
                                         ) : (
