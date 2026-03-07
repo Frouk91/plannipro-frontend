@@ -1437,9 +1437,8 @@ function PlanningApp({ currentUser, onLogout }) {
             {planView === "month" && filterMode === "astreinte" && (
               <React.Fragment>
                 <div style={{
-                  background: "#fff", borderRadius: 14,
+                  background: "#fff", borderRadius: 14, overflow: "hidden",
                   border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
-                  overflow: "auto",
                   boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
                 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
@@ -1729,7 +1728,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
             {planView === "month" && filterMode !== "astreinte" && (
               <div style={{
-                background: "#fff", borderRadius: 14,
+                background: "#fff", borderRadius: 14, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -1872,7 +1871,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* VUE SEMAINE */}
             {planView === "week" && (
               <div style={{
-                background: "#fff", borderRadius: 14,
+                background: "#fff", borderRadius: 14, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
