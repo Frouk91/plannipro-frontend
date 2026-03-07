@@ -1865,6 +1865,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                             <div style={{ height: "50%", background: leave.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
                                               <span style={{ fontSize: 6, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
                                             </div>
+                                            <div style={{ height: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                              <span style={{ fontSize: 6, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label)}</span>
+                                            </div>
                                           </div>
                                         ) : (
                                           <div style={{
@@ -2002,6 +2005,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                           <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, overflow: "hidden", background: "#fff", border: `1px solid ${leave.color}` }}>
                                             <div style={{ height: "50%", background: leave.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
                                               <span style={{ fontSize: 7, fontWeight: 800, color: "#fff", lineHeight: 1 }}>½</span>
+                                            </div>
+                                            <div style={{ height: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                              <span style={{ fontSize: 7, fontWeight: 800, color: leave.color, lineHeight: 1 }}>{leaveAbbr(leave.label)}</span>
                                             </div>
                                           </div>
                                         ) : (
