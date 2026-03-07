@@ -94,7 +94,11 @@ function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || ""
 // Palette de teintes harmonieuses pour les équipes (espacées de ~40° sur le cercle chromatique)
 const TEAM_HUES = [210, 160, 280, 30, 340, 80, 190, 250, 130, 0, 300, 60];
 function strHash(s) { return Math.abs((s || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)); }
-function teamHue(teamName) { return TEAM_HUES[strHash(teamName || "Sans équipe") % TEAM_HUES.length]; }
+const TEAM_COLOR_OVERRIDES = { "Css Digital": 217 };
+function teamHue(teamName) {
+  if (TEAM_COLOR_OVERRIDES[teamName] !== undefined) return TEAM_COLOR_OVERRIDES[teamName];
+  return TEAM_HUES[strHash(teamName || "Sans équipe") % TEAM_HUES.length];
+}
 function agentHue(id, teamName) {
   if (teamName !== undefined) {
     // Légère variation par agent au sein de l'équipe (+/- 10°)
