@@ -1778,7 +1778,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
                           {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6366f1", margin: "1px auto 0" }} />}
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ fontSize: 8, color: "#fff", background: "#94a3b8", borderRadius: 4, padding: "0 3px", margin: "1px auto 0", display: "inline-block", fontWeight: 700 }}>{absent}</div>}
+                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ fontSize: 8, color: "#fff", background: absent >= 5 ? "#ef4444" : absent >= 3 ? "#f97316" : "#6366f1", borderRadius: 4, padding: "1px 4px", margin: "2px auto 0", display: "inline-block", fontWeight: 800, boxShadow: "0 1px 3px rgba(0,0,0,0.2)", minWidth: 14, textAlign: "center" }}>{absent}</div>}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
                             const nParis = countPresence(k, "paris");
@@ -1931,7 +1931,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
                           {isFer && <div style={{ fontSize: 9, color: "#d97706", marginTop: 2 }} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ marginTop: 4, fontSize: 9, color: "#fff", background: "#94a3b8", borderRadius: 6, padding: "1px 5px", display: "inline-block", fontWeight: 700 }}>{absent} absent{absent > 1 ? "s" : ""}</div>}
+                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ marginTop: 4, fontSize: 10, color: "#fff", background: absent >= 5 ? "#ef4444" : absent >= 3 ? "#f97316" : "#6366f1", borderRadius: 6, padding: "2px 7px", display: "inline-block", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent} absent{absent > 1 ? "s" : ""}</div>}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
                             const nParis = countPresence(k, "paris");
