@@ -99,6 +99,14 @@ function teamHue(teamName) {
   if (TEAM_COLOR_OVERRIDES[teamName] !== undefined) return TEAM_COLOR_OVERRIDES[teamName];
   return TEAM_HUES[strHash(teamName || "Sans équipe") % TEAM_HUES.length];
 }
+function teamBg(teamName, alpha = 0.06) {
+  const h = teamHue(teamName);
+  return `hsla(${h}, 70%, 55%, ${alpha})`;
+}
+function teamBorder(teamName) {
+  const h = teamHue(teamName);
+  return `hsl(${h}, 60%, 70%)`;
+}
 function agentHue(id, teamName) {
   if (teamName !== undefined) {
     // Légère variation par agent au sein de l'équipe (+/- 10°)
@@ -1796,13 +1804,13 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: teamBg(teamName, 0.12), borderBottom: `2px solid ${teamBorder(teamName)}` }}>
+                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: `hsl(${teamHue(teamName)}, 45%, 35%)`, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
+                            const rowBg = teamBg(teamName, 0.05);
                             return (
                               <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
@@ -1948,13 +1956,13 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: teamBg(teamName, 0.12), borderBottom: `2px solid ${teamBorder(teamName)}` }}>
+                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: `hsl(${teamHue(teamName)}, 45%, 35%)`, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
+                            const rowBg = teamBg(teamName, 0.05);
                             return (
                               <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
                                 <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
