@@ -2510,6 +2510,7 @@ function isHalfDay(leave) {
                   if (isHalfDay({label: t.label, code: t.code})) {
                     setHalfDayPendingType(t);
                     setHalfDayPeriod(null);
+                    setRequestModal(null);
                   } else {
                     const reason = document.getElementById("leave-reason-input")?.value || "";
                     submitRequest(t, reason);
