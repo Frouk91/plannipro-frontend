@@ -634,6 +634,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [statsFilter, setStatsFilter] = useState("month");
   const [statsCustomMonth, setStatsCustomMonth] = useState(null); // { year, month } quand filter="custom"
   const [statsPickerOpen, setStatsPickerOpen] = useState(false);
+  const [statsAgentDropOpen, setStatsAgentDropOpen] = useState(false);
+  const [statsAgentSearch, setStatsAgentSearch] = useState("");
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreintes, setAstreintes] = useState(() => {
@@ -1222,7 +1224,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -2042,19 +2044,113 @@ function PlanningApp({ currentUser, onLogout }) {
 
         {view === "stats" && (
           <div style={{ padding: 24, animation: "fadeIn 0.3s ease" }}>
-            {isManager && (
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Agent :</label>
-                <select value={selectedAgentForStats || ""} onChange={e => setSelectedAgentForStats(e.target.value || null)} style={{ flex: 1, maxWidth: 300, padding: "8px 12px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 12, color: "#1e293b", cursor: "pointer", background: "#fff", transition: "all 0.2s" }}>
-                  <option value="">Mon profil</option>
-                  {agents.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            {isManager && (() => {
+              const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
+              // Grouper par équipe
+              const teamMap = {};
+              agents.filter(a => a.role !== "admin").forEach(a => {
+                const t = a.team || "Sans équipe";
+                if (!teamMap[t]) teamMap[t] = [];
+                teamMap[t].push(a);
+              });
+              const filteredAgents = statsAgentSearch
+                ? agents.filter(a => a.role !== "admin" && (a.name.toLowerCase().includes(statsAgentSearch.toLowerCase()) || (a.team||"").toLowerCase().includes(statsAgentSearch.toLowerCase())))
+                : null;
+              return (
+                <div style={{ marginBottom: 16, position: "relative" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Agent</div>
+                  {/* Trigger */}
+                  <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, border: "2px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.12)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.15s", userSelect: "none" }}>
+                    {selAgent ? (
+                      <>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                          <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
+                        </div>
+                      </>
+                    )}
+                    <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
+                  </div>
+                  {/* Dropdown */}
+                  {statsAgentDropOpen && (
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                      {/* Search */}
+                      <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
+                          <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
+                          <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher par nom ou équipe..." style={{ flex: 1, border: "none", background: "none", fontSize: 12, color: "#1e293b", outline: "none" }} />
+                          {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
+                        </div>
+                      </div>
+                      <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                        {/* Option "Mon profil" */}
+                        {(!statsAgentSearch) && (
+                          <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", borderBottom: "1px solid #f8fafc" }}
+                            onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
+                            onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
+                            <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                            <div style={{ flex: 1, textAlign: "left" }}>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                              <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
+                            </div>
+                            {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                          </button>
+                        )}
+                        {/* Avec recherche : liste plate */}
+                        {filteredAgents ? filteredAgents.map(a => (
+                          <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                            onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                            onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                            <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                            <div style={{ flex: 1, textAlign: "left" }}>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                              <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</div>
+                            </div>
+                            {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                          </button>
+                        )) : (
+                          /* Sans recherche : groupé par équipe */
+                          Object.entries(teamMap).sort(([a],[b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
+                            const tp = teamPalette(teamName);
+                            return (
+                              <div key={teamName}>
+                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>
+                                  {teamName}
+                                </div>
+                                {teamAgents.map(a => (
+                                  <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                    onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                    onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                    <div style={{ flex: 1, textAlign: "left" }}>
+                                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                                    </div>
+                                    {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {(() => {
               // Calculer les mois avec congés pour cet agent
               const displayAgentIdForPicker = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
