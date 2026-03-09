@@ -92,6 +92,15 @@ function isWeekend(y, m, d) { const w = new Date(y, m, d).getDay(); return w ===
 function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-"); return `${p[2]}/${p[1]}/${p[0]}`; }
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
+function teamGradient(team) {
+  const map = {
+    "Css Digital":      "linear-gradient(135deg,#3b82f6,#60a5fa)",
+    "Mailing Solution": "linear-gradient(135deg,#7c3aed,#a78bfa)",
+  };
+  if (map[team]) return map[team];
+  const hue = Math.abs((team || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360;
+  return "linear-gradient(135deg,hsl(" + hue + ",55%,50%),hsl(" + (hue + 30) + ",65%,62%))";
+}
 function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 function getHalfDayPeriod(leave) {
@@ -424,7 +433,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               <div key={a.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < agents.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{a.name}</span>
@@ -464,7 +473,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: i < teamAgents.length - 1 ? "1px solid #f8fafc" : "none" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <span style={{ fontSize: 12, fontWeight: 500, color: "#1e293b", flex: 1 }}>{a.name}</span>
                     <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "2px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", fontSize: 10, color: "#94a3b8" }}>Retirer</button>
                   </div>
@@ -1222,7 +1231,7 @@ function PlanningApp({ currentUser, onLogout }) {
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{ position: "relative" }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id) + 40},65%,60%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
                 {currentUser.avatar_initials || getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`)}
               </div>
               <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, borderRadius: "50%", background: "#10b981", border: "2px solid #0f172a" }} />
@@ -1549,7 +1558,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   }}>
                                   {eligible && (aAgent ? (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-                                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>{aAgent.avatar}</div>
+                                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(aAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>{aAgent.avatar}</div>
                                       <span style={{ fontSize: 7, color: textColor, fontWeight: 700 }}>{aAgent.name.split(" ")[0]}</span>
                                     </div>
                                   ) : (
@@ -1673,7 +1682,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                               onMouseEnter={e => { e.currentTarget.style.background = "#fafafa"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "#fafafa"; }); }}
                                               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "transparent"; }); }}>
                                               <td style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8, background: "transparent" }}>
-                                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
+                                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
                                                 <span style={{ fontWeight: 600, color: "#1e293b" }}>{agent.name}</span>
                                               </td>
                                               {rows.map(r => {
@@ -1776,7 +1785,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
-                                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
+                                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
@@ -1922,7 +1931,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
-                                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
+                                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
@@ -2140,7 +2149,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   setAstreinteDropdown(null);
                 }
               }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: astreintes[aKey] === a.id ? "#fef3c7" : "none", cursor: "pointer", fontSize: 12, color: "#1e293b", fontWeight: astreintes[aKey] === a.id ? 700 : 400, transition: "background 0.1s" }}>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                 <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
                 {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
                 {onAgentPicked && <span style={{ fontSize: 10, color: "#94a3b8" }}>→ puis glisser</span>}
@@ -2224,7 +2233,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowAgentDrop ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer" }}>
                         {selectedAlAgent ? (
                           <>
-                            <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)},55%,55%),hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
+                            <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(selectedAlAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
                             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{selectedAlAgent.name}</span>
                             <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
                           </>
@@ -2244,7 +2253,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
                                 onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
                                 onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
-                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                 <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#1e293b", textAlign: "left" }}>{a.name}</span>
                                 <span style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</span>
                                 {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
@@ -2395,7 +2404,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
     <div style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", alignItems: "center", gap: 14, padding: "12px 16px", borderBottom: "1px solid #e5e7eb", transition: "all 0.2s" }}
       onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-      <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId) + 30},60%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
+      <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(req.agentTeam), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
       <div style={{ minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
