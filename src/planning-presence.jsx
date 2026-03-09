@@ -2473,8 +2473,14 @@ function isHalfDay(leave) {
                   if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
                   const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
                   if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
-                  setAddLeaveModal(false);
-                  await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
+                  if (isHalfDay(lt)) {
+                    setAddLeaveModal(false);
+                    setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
+                    setHalfDayPeriod(null);
+                  } else {
+                    setAddLeaveModal(false);
+                    await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
+                  }
                 }} disabled={(() => {
                   const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
                   return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
@@ -2560,12 +2566,15 @@ function isHalfDay(leave) {
           <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
             <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
             <button disabled={!halfDayPeriod} onClick={() => {
-              const reason = document.getElementById("leave-reason-halfday")?.value || "";
+              const reason = document.getElementById("leave-reason-halfday")?.value || halfDayPendingType._reason || "";
               const period = halfDayPeriod;
-              const finalReason = `[${period}]${reason ? " " + reason : ""}`;
+              const finalReason = "[" + period + "]" + (reason ? " " + reason : "");
+              const overrideModal = halfDayPendingType._overrideModal || null;
+              const lt = { ...halfDayPendingType };
+              delete lt._overrideModal; delete lt._reason;
               setHalfDayPeriod(null);
               setHalfDayPendingType(null);
-              submitRequest(halfDayPendingType, finalReason);
+              submitRequest(lt, finalReason, overrideModal);
             }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
           </div>
         </div>
