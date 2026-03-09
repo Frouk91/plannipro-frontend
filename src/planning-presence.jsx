@@ -593,6 +593,10 @@ function PlanningApp({ currentUser, onLogout }) {
   const [requestModal, setRequestModal] = useState(null);
   const [halfDayPeriod, setHalfDayPeriod] = useState(null);
   const [halfDayPendingType, setHalfDayPendingType] = useState(null);
+  const [addLeaveModal, setAddLeaveModal] = useState(false);
+  const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "" });
+  const [alSearchQuery, setAlSearchQuery] = useState("");
+  const [alShowAgentDrop, setAlShowAgentDrop] = useState(false);
   const [requestReason, setRequestReason] = useState("");
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
@@ -1075,9 +1079,10 @@ function PlanningApp({ currentUser, onLogout }) {
     } catch (e) { console.error(e); showNotif("Erreur", "error"); }
   }
 
-  async function submitRequest(leaveType, reason) {
-    if (!requestModal || !leaveType) return;
-    const { agentId, start, end } = requestModal; const agent = agents.find(a => a.id === agentId);
+  async function submitRequest(leaveType, reason, overrideModal) {
+    const modal = overrideModal || requestModal;
+    if (!modal || !leaveType) return;
+    const { agentId, start, end } = modal; const agent = agents.find(a => a.id === agentId);
     try {
       const data = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: leaveType.code, start_date: start, end_date: end, reason: reason || null, agent_id: agentId }) });
       if (data.leave) {
@@ -1187,7 +1192,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -1350,6 +1355,18 @@ function PlanningApp({ currentUser, onLogout }) {
                   )}
                 </div>
                 <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 500, color: "#64748b" }}>Aujourd'hui</button>
+
+                {filterMode === "all" && (
+                  <button onClick={() => {
+                    const defaultAgent = isManager ? null : currentUser.id;
+                    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+                    const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
+                    setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
+                    setAddLeaveModal(true);
+                  }} className="btn-primary" style={{ padding: "5px 14px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(99,102,241,0.35)" }}>
+                    <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> Congé
+                  </button>
+                )}
 
                 {/* Filtres équipe - masqués en mode astreinte */}
                 {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
@@ -2159,6 +2176,141 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
         );
       })()}
+      {addLeaveModal && (() => {
+        const availLTs = isManager
+          ? leaveTypes.filter(t => !isPresenceType(t))
+          : leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
+        const selectedAlAgent = addLeaveForm.agentId ? agents.find(a => a.id === addLeaveForm.agentId) : null;
+        return (
+          <>
+            <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 99998, backdropFilter: "blur(4px)" }} />
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+              <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
+                    <div style={{ fontSize: 11, opacity: 0.8 }}>Remplissez les informations ci-dessous</div>
+                  </div>
+                  <button onClick={() => setAddLeaveModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 16, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                </div>
+              </div>
+              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                {isManager && (
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
+                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                      <div onClick={() => { setAlShowAgentDrop(p => !p); setAlSearchQuery(""); }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowAgentDrop ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer" }}>
+                        {selectedAlAgent ? (
+                          <>
+                            <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)},55%,55%),hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
+                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{selectedAlAgent.name}</span>
+                            <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
+                          </>
+                        ) : (
+                          <span style={{ flex: 1, fontSize: 13, color: "#94a3b8" }}>Choisir un agent...</span>
+                        )}
+                        <span style={{ fontSize: 10, color: "#94a3b8" }}>▾</span>
+                      </div>
+                      {alShowAgentDrop && (
+                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                          <div style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>
+                            <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                          </div>
+                          <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                            {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
+                              <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
+                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#1e293b", textAlign: "left" }}>{a.name}</span>
+                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</span>
+                                {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
+                    <input type="date" value={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, startDate: e.target.value, endDate: f.endDate < e.target.value ? e.target.value : f.endDate }))}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
+                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
+                    <input type="date" value={addLeaveForm.endDate} min={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, endDate: e.target.value }))}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
+                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {sortLeaveTypes(availLTs).map(t => (
+                      <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id }))}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${addLeaveForm.leaveTypeId === t.id ? t.color : "#e2e8f0"}`, background: addLeaveForm.leaveTypeId === t.id ? hexToLight(t.color) : "#fff", cursor: "pointer", fontSize: 12, fontWeight: addLeaveForm.leaveTypeId === t.id ? 700 : 500, color: addLeaveForm.leaveTypeId === t.id ? t.color : "#475569", transition: "all 0.15s" }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#94a3b8", textTransform: "none" }}>(optionnel)</span></label>
+                  <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
+                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                </div>
+              </div>
+              {(() => {
+                const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                const startWE = addLeaveForm.startDate && isWE(addLeaveForm.startDate);
+                const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
+                if (!startWE && !endWE) return null;
+                return (
+                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>⚠️</span>
+                    <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
+                      {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}{" "}Veuillez choisir des jours ouvrés.
+                    </span>
+                  </div>
+                );
+              })()}
+              <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
+                <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 500 }}>Annuler</button>
+                <button onClick={async () => {
+                  const agentId = addLeaveForm.agentId || currentUser.id;
+                  const lt = sortLeaveTypes(availLTs).find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
+                  if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
+                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                  if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
+                  if (isHalfDay(lt)) {
+                    setAddLeaveModal(false);
+                    setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
+                    setHalfDayPeriod(null);
+                  } else {
+                    setAddLeaveModal(false);
+                    await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
+                  }
+                }} disabled={(() => {
+                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                  return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
+                })()}
+                  className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (() => { const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; }; return (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) ? 0.5 : 1; })() }}>
+                  ✅ Valider le congé
+                </button>
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
       {halfDayPendingType && (
         <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
           <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
@@ -2187,11 +2339,12 @@ function PlanningApp({ currentUser, onLogout }) {
             <button disabled={!halfDayPeriod} onClick={() => {
               const reason = document.getElementById("leave-reason-halfday")?.value || "";
               const finalReason = "[" + halfDayPeriod + "]" + (reason ? " " + reason : "");
+              const overrideModal = halfDayPendingType._overrideModal || null;
               const lt = { ...halfDayPendingType };
-              const period = halfDayPeriod;
+              delete lt._overrideModal; delete lt._reason;
               setHalfDayPeriod(null);
               setHalfDayPendingType(null);
-              submitRequest(lt, finalReason);
+              submitRequest(lt, finalReason, overrideModal);
             }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
           </div>
         </div>
