@@ -10,7 +10,7 @@ const COLORS = [
   "#ef4444", "#dc2626", "#ec4899", "#f43f5e",
   "#64748b", "#475569", "#1e293b", "#78716c", "#92400e",
 ];
-const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail", "pont"];
+const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
 const PRESENCE_CODES = ["rueil", "paris"];
 function isPresenceType(t) { return PRESENCE_CODES.includes((t.code || "").toLowerCase()) || ["rueil", "paris"].includes((t.label || "").toLowerCase()); }
 function isPresenceCode(code, label) { return PRESENCE_CODES.includes((code || "").toLowerCase()) || ["rueil", "paris"].includes((label || "").toLowerCase()); }
@@ -91,32 +91,7 @@ function dateKey(y, m, d) { return `${y}-${String(m + 1).padStart(2, "0")}-${Str
 function isWeekend(y, m, d) { const w = new Date(y, m, d).getDay(); return w === 0 || w === 6; }
 function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-"); return `${p[2]}/${p[1]}/${p[0]}`; }
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
-// Palette de teintes harmonieuses pour les équipes (espacées de ~40° sur le cercle chromatique)
-const TEAM_HUES = [210, 160, 280, 30, 340, 80, 190, 250, 130, 0, 300, 60];
-function strHash(s) { return Math.abs((s || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)); }
-const TEAM_COLOR_OVERRIDES = { "Css Digital": 217 };
-function teamHue(teamName) {
-  if (TEAM_COLOR_OVERRIDES[teamName] !== undefined) return TEAM_COLOR_OVERRIDES[teamName];
-  return TEAM_HUES[strHash(teamName || "Sans équipe") % TEAM_HUES.length];
-}
-function teamBg(teamName, alpha = 0.06) {
-  const h = teamHue(teamName);
-  return `hsla(${h}, 70%, 55%, ${alpha})`;
-}
-function teamBorder(teamName) {
-  const h = teamHue(teamName);
-  return `hsl(${h}, 60%, 70%)`;
-}
-function agentHue(id, teamName) {
-  if (teamName !== undefined) {
-    // Légère variation par agent au sein de l'équipe (+/- 10°)
-    const base = teamHue(teamName);
-    const variation = (strHash(id) % 5) * 4 - 8; // -8 à +8
-    return base + variation;
-  }
-  // Fallback sans équipe
-  return strHash(id) % 360;
-}
+function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
 function leaveAbbr(label) {
@@ -145,7 +120,6 @@ function requestFromBackend(l) {
 }
 async function apiFetch(path, token, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) } });
-  if (res.status === 401) throw new Error("TOKEN_EXPIRED");
   return res.json();
 }
 
@@ -181,7 +155,7 @@ function LoginPage({ onLogin }) {
         {/* En-tête */}
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <h1 style={{ color: "#f8fafc", fontSize: "52px", fontWeight: "900", margin: "0 0 12px", letterSpacing: "-2px", animation: "slideInUp 0.8s ease 0.1s both", fontFamily: "'Poppins', 'Outfit', sans-serif", background: "linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
-          <p style={{ color: "#f4f4f5", fontSize: "14px", margin: "0", animation: "slideInUp 0.8s ease 0.2s both", fontWeight: "500", letterSpacing: "0.5px" }}>Gestion des présences & congés</p>
+          <p style={{ color: "#cbd5e1", fontSize: "14px", margin: "0", animation: "slideInUp 0.8s ease 0.2s both", fontWeight: "500", letterSpacing: "0.5px" }}>Gestion des présences & congés</p>
         </div>
 
         {/* Formulaire */}
@@ -404,7 +378,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               <div key={a.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < agents.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{a.name}</span>
@@ -444,7 +418,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: i < teamAgents.length - 1 ? "1px solid #f8fafc" : "none" }}
                     onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <span style={{ fontSize: 12, fontWeight: 500, color: "#1e293b", flex: 1 }}>{a.name}</span>
                     <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "2px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", fontSize: 10, color: "#94a3b8" }}>Retirer</button>
                   </div>
@@ -570,8 +544,6 @@ function PlanningApp({ currentUser, onLogout }) {
   const [month, setMonth] = useState(now.getMonth());
   const [agents, setAgents] = useState([]);
   const [agentsOrder, setAgentsOrder] = useState([]);  // Ordre personnalisé des agents
-  const [dragAgentId, setDragAgentId] = useState(null);
-  const [dragOverAgentId, setDragOverAgentId] = useState(null);
   const [teams, setTeams] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaves, setLeaves] = useState({});
@@ -588,12 +560,6 @@ function PlanningApp({ currentUser, onLogout }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [requestModal, setRequestModal] = useState(null);
-  const [halfDayPeriod, setHalfDayPeriod] = useState(null); // 'matin' | 'apres-midi' | null
-  const [halfDayPendingType, setHalfDayPendingType] = useState(null);
-  const [addLeaveModal, setAddLeaveModal] = useState(false);
-  const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "" });
-  const [alSearchQuery, setAlSearchQuery] = useState("");
-  const [alShowAgentDrop, setAlShowAgentDrop] = useState(false);
   const [requestReason, setRequestReason] = useState("");
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
@@ -602,16 +568,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [loadingYearStats, setLoadingYearStats] = useState(false);  // Indicateur de chargement année
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [statsFilter, setStatsFilter] = useState("month");
-  const [showStatsPicker, setShowStatsPicker] = useState(false);
-  const [pickerYear, setPickerYear] = useState(new Date().getFullYear());
-  const [statsPastMonth, setStatsPastMonth] = useState(() => {
-    const d = new Date(); d.setMonth(d.getMonth() - 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  });
-  const [pastMonthLeaves, setPastMonthLeaves] = useState({});
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
-  const [agentSearchQuery, setAgentSearchQuery] = useState("");
-  const [showAgentSearch, setShowAgentSearch] = useState(false);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreintes, setAstreintes] = useState(() => {
     try { return JSON.parse(localStorage.getItem("astreintes") || "{}"); }
@@ -647,39 +604,6 @@ function PlanningApp({ currentUser, onLogout }) {
     const label = (leave.label || "").toLowerCase();
     if (label.includes("1/2") || label.includes("½")) return 0.5;
     return 1;
-  }
-  function getHalfDayPeriod(leave) {
-  const r = (leave?.reason || "");
-  if (r.startsWith("[matin]")) return "matin";
-  if (r.startsWith("[apres-midi]")) return "apres-midi";
-  return "matin"; // default top colored
-}
-function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
-  const w = "calc(100% - " + (pad * 2) + "px)";
-  const r = size === 24 ? 4 : 3;
-  const m = "0 " + pad + "px";
-  const topBg = isMatin ? color : "#fff";
-  const botBg = isMatin ? "#fff" : color;
-  const topColor = isMatin ? "#fff" : color;
-  const botColor = isMatin ? color : "#fff";
-  const topText = isMatin ? "½" : label;
-  const botText = isMatin ? label : "½";
-  return (
-    <div style={{ width: w, height: size, margin: m, borderRadius: r, overflow: "hidden", background: "#fff", border: "1px solid " + color }}>
-      <div style={{ height: "50%", background: topBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: fontSize, fontWeight: 800, color: topColor, lineHeight: 1 }}>½</span>
-      </div>
-      <div style={{ height: "50%", background: botBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: fontSize, fontWeight: 800, color: botColor, lineHeight: 1 }}>{label}</span>
-      </div>
-    </div>
-  );
-}
-function isHalfDay(leave) {
-    if (!leave) return false;
-    const label = (leave.label || "").toLowerCase();
-    const code = (leave.code || "").toLowerCase();
-    return label.includes("1/2") || label.includes("½") || code.startsWith("_");
   }
 
   function getAvailableLeaveTypesForAgent(agentId) {
@@ -720,28 +644,6 @@ function isHalfDay(leave) {
     setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
   };
 
-  const handleAgentDragStart = (agentId) => { setDragAgentId(agentId); };
-  const handleAgentDragOver = (e, agentId) => { e.preventDefault(); setDragOverAgentId(agentId); };
-  const handleAgentDrop = (agentId) => {
-    if (!dragAgentId || dragAgentId === agentId) { setDragAgentId(null); setDragOverAgentId(null); return; }
-    // Partir de la liste affichée, en ajoutant les nouveaux agents absents du localStorage
-    const base = agentsOrder.length > 0 ? [...agentsOrder] : agents.map(a => a.id);
-    const current = agents.map(a => a.id).reduce((acc, id) => {
-      if (!acc.includes(id)) acc.push(id);
-      return acc;
-    }, base);
-    const fromIdx = current.indexOf(dragAgentId);
-    const toIdx = current.indexOf(agentId);
-    if (fromIdx < 0 || toIdx < 0) return;
-    current.splice(fromIdx, 1);
-    current.splice(toIdx, 0, dragAgentId);
-    setAgentsOrder(current);
-    localStorage.setItem("agentsOrder", JSON.stringify(current));
-    setDragAgentId(null);
-    setDragOverAgentId(null);
-  };
-  const handleAgentDragEnd = () => { setDragAgentId(null); setDragOverAgentId(null); };
-
   const sortedAgents = useMemo(() => {
     if (agentsOrder.length === 0) return agents;
     return agents.slice().sort((a, b) => agentsOrder.indexOf(a.id) - agentsOrder.indexOf(b.id));
@@ -751,18 +653,13 @@ function isHalfDay(leave) {
     const stats = { cp: 0, rtt: 0, pont: 0, absence: 0 };
     const agent = agents.find(a => a.id === agentId);
     if (!agent) return stats;
-    const sourceLeaves = filterType === "pastMonth" ? pastMonthLeaves : leaves;
-    Object.entries(sourceLeaves[agentId] || {}).forEach(([dateKey, leave]) => {
+    Object.entries(leaves[agentId] || {}).forEach(([dateKey, leave]) => {
       if (!leave) return;
-      const [y, m] = dateKey.split("-");
+      const [y, m, d] = dateKey.split("-");
       const leaveYear = parseInt(y);
       const leaveMonth = parseInt(m) - 1;
       if (filterType === "month") { if (leaveYear !== year || leaveMonth !== month) return; }
       else if (filterType === "year") { if (leaveYear !== year) return; }
-      else if (filterType === "pastMonth") {
-        const [py, pm] = statsPastMonth.split("-");
-        if (leaveYear !== parseInt(py) || leaveMonth !== parseInt(pm) - 1) return;
-      }
       const days = getDaysForLeaveType(leave);
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
@@ -779,9 +676,11 @@ function isHalfDay(leave) {
     const sorted = sortedAgents;
     let filtered;
     if (filterTeam.startsWith("agent-")) {
+      // Filtre "Moi" - afficher seulement l'agent connecté
       const agentId = filterTeam.replace("agent-", "");
       filtered = sorted.filter(a => a.id === agentId);
     } else {
+      // Filtres normaux par équipe
       filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
     }
     const grouped = [];
@@ -863,7 +762,7 @@ function isHalfDay(leave) {
               const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
               for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
                 const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
-                const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
+                const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
                 if (isPresence) {
                   allLeavesMap[l.agent_id][k + "__presence"] = entry;
                 } else {
@@ -887,31 +786,6 @@ function isHalfDay(leave) {
     }
   }, [year, month, statsFilter, dataLoaded, leaveTypes.length]);
 
-  useEffect(() => {
-    if (statsFilter !== "pastMonth" || !dataLoaded || leaveTypes.length === 0) return;
-    const loadPastMonth = async () => {
-      try {
-        const data = await apiFetch(`/leaves?month=${statsPastMonth}`, token);
-        const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled" && l.status !== "rejected");
-        const leavesMap = {};
-        leavesData.forEach(l => {
-          if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
-          const lt = leaveFromBackend(l);
-          const leaveStart = l.start_date.split("T")[0], leaveEnd = l.end_date.split("T")[0];
-          const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
-          for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
-            const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
-            const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
-            if (isPresence) { leavesMap[l.agent_id][k + "__presence"] = entry; }
-            else { leavesMap[l.agent_id][k] = entry; }
-          }
-        });
-        setPastMonthLeaves(leavesMap);
-      } catch (e) { console.error("Erreur mois passé:", e); }
-    };
-    loadPastMonth();
-  }, [statsFilter, statsPastMonth, dataLoaded, leaveTypes.length]);
-
   async function loadLeaves(ltList, tok, y, m) {
     try {
       const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`;
@@ -925,7 +799,7 @@ function isHalfDay(leave) {
         const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
         for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
           const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
-          const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
+          const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
           if (isPresence) {
             // Stocker les présences avec clé dédiée __presence pour ne pas écraser CP/RTT
             leavesMap[l.agent_id][k + "__presence"] = entry;
@@ -936,7 +810,7 @@ function isHalfDay(leave) {
         }
       });
       setLeaves(leavesMap);
-    } catch (e) { if (e.message === "TOKEN_EXPIRED") { onLogout(); return; } console.error("Erreur congés:", e); }
+    } catch (e) { console.error("Erreur congés:", e); }
   }
 
   async function loadRequests(tok) {
@@ -945,7 +819,7 @@ function isHalfDay(leave) {
       const pending = (pendingData.leaves || []).map(requestFromBackend);
       const others = (allData.leaves || []).filter(l => l.status !== "pending").map(requestFromBackend);
       setRequests([...pending, ...others]);
-    } catch (e) { if (e.message === "TOKEN_EXPIRED") { onLogout(); return; } console.error("Erreur demandes:", e); }
+    } catch (e) { console.error("Erreur demandes:", e); }
   }
 
   function showNotif(msg, type = "success") { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); }
@@ -1168,10 +1042,9 @@ function isHalfDay(leave) {
     } catch (e) { console.error(e); showNotif("Erreur", "error"); }
   }
 
-  async function submitRequest(leaveType, reason, overrideModal = null) {
-    const modal = overrideModal || requestModal;
-    if (!modal || !leaveType) return;
-    const { agentId, start, end } = modal; const agent = agents.find(a => a.id === agentId);
+  async function submitRequest(leaveType, reason) {
+    if (!requestModal || !leaveType) return;
+    const { agentId, start, end } = requestModal; const agent = agents.find(a => a.id === agentId);
     try {
       const data = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: leaveType.code, start_date: start, end_date: end, reason: reason || null, agent_id: agentId }) });
       if (data.leave) {
@@ -1218,7 +1091,7 @@ function isHalfDay(leave) {
   }
 
   const navItems = [
-    { id: "planning", icon: "📆", label: "Planning" },
+    { id: "planning", icon: "🗓", label: "Planning" },
     { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
     { id: "stats", icon: "📊", label: "Statistiques" },
     ...(isManager ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
@@ -1274,14 +1147,14 @@ function isHalfDay(leave) {
         </div>
 
         {/* Sous-texte */}
-        <div style={{ color: "#f4f4f5", fontSize: "12px", marginTop: "16px", fontWeight: "400" }}>Veuillez patienter...</div>
+        <div style={{ color: "#cbd5e1", fontSize: "12px", marginTop: "16px", fontWeight: "400" }}>Veuillez patienter...</div>
       </div>
     </div>
   );
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (showStatsPicker) setShowStatsPicker(false); if (showAgentSearch) setShowAgentSearch(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -1296,7 +1169,7 @@ function isHalfDay(leave) {
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{ position: "relative" }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(currentUser.id, currentUser.team)},55%,50%),hsl(${agentHue(currentUser.id, currentUser.team) + 40},65%,60%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(currentUser.id)},55%,50%),hsl(${agentHue(currentUser.id) + 40},65%,60%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
                 {currentUser.avatar_initials || getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`)}
               </div>
               <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, borderRadius: "50%", background: "#10b981", border: "2px solid #0f172a" }} />
@@ -1306,7 +1179,7 @@ function isHalfDay(leave) {
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", color: "#f4f4f5", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", color: "#cbd5e1", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}>🚪 Déconnexion</button>
         </div>
         <nav style={{ padding: "12px", flex: 1 }}>
           {navItems.map(item => (
@@ -1327,7 +1200,7 @@ function isHalfDay(leave) {
           <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
           {leaveTypes.filter(t => !isPresenceType(t)).map(t => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>{t.label}</span>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
             </div>
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
@@ -1335,18 +1208,18 @@ function isHalfDay(leave) {
               <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>{t.label}</span>
+                  <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
                 </div>
               ))}
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>Jour férié</span>
+            <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>Jour férié</span>
           </div>
           {isManager && (
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
               <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🔔 Astreintes vendredi</div>
-              <div style={{ fontSize: 11, color: "#f4f4f5" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
+              <div style={{ fontSize: 11, color: "#cbd5e1" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
             </div>
           )}
         </div>
@@ -1379,7 +1252,7 @@ function isHalfDay(leave) {
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                 {[
-                  { mode: "all", label: "📆 Planning", color: "#6366f1", bg: "#eef2ff" },
+                  { mode: "all", label: "🗓 Planning", color: "#6366f1", bg: "#eef2ff" },
                   { mode: "presence", label: "🏢 Présences sur site", color: "#0d9488", bg: "#f0fdfa" },
                   { mode: "astreinte", label: "🔔 Astreintes", color: "#f59e0b", bg: "#fffbeb", managerOnly: false },
                 ].map(tab => (
@@ -1445,18 +1318,6 @@ function isHalfDay(leave) {
                 </div>
                 <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 500, color: "#64748b" }}>Aujourd'hui</button>
 
-                {filterMode === "all" && (
-                  <button onClick={() => {
-                    const defaultAgent = isManager ? null : currentUser.id;
-                    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-                    const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
-                    setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
-                    setAddLeaveModal(true);
-                  }} className="btn-primary" style={{ padding: "5px 14px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(99,102,241,0.35)" }}>
-                    <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> Congé
-                  </button>
-                )}
-
                 {/* Filtres équipe - masqués en mode astreinte */}
                 {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
                   {allTeams.map(t => (
@@ -1484,7 +1345,7 @@ function isHalfDay(leave) {
                 {filterMode === "presence" && (isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
                 )}
-                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Utilisez le bouton "+ Congé" pour poser un congé</span>}
+                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
                 <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
                   {[{ id: "all", label: "Tous" }, { id: "approved", label: "Approuvés" }, { id: "pending", label: "En attente" }].map(f => (
                     <button key={f.id} onClick={() => setFilterStatus(f.id)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterStatus === f.id ? 600 : 400, background: filterStatus === f.id ? "#1e293b" : "#fff", color: filterStatus === f.id ? "#fff" : "#64748b", borderColor: filterStatus === f.id ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
@@ -1497,8 +1358,9 @@ function isHalfDay(leave) {
             {planView === "month" && filterMode === "astreinte" && (
               <React.Fragment>
                 <div style={{
-                  background: "#fff", borderRadius: 14, overflow: "hidden",
+                  background: "#fff", borderRadius: 14,
                   border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
+                  overflow: "auto",
                   boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
                 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
@@ -1622,7 +1484,7 @@ function isHalfDay(leave) {
                                   }}>
                                   {eligible && (aAgent ? (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-                                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(aAgent.id, aAgent.team)},55%,55%),hsl(${agentHue(aAgent.id, aAgent.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>{aAgent.avatar}</div>
+                                      <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(aAgent.id)},55%,55%),hsl(${agentHue(aAgent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>{aAgent.avatar}</div>
                                       <span style={{ fontSize: 7, color: textColor, fontWeight: 700 }}>{aAgent.name.split(" ")[0]}</span>
                                     </div>
                                   ) : (
@@ -1746,7 +1608,7 @@ function isHalfDay(leave) {
                                               onMouseEnter={e => { e.currentTarget.style.background = "#fafafa"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "#fafafa"; }); }}
                                               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "transparent"; }); }}>
                                               <td style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8, background: "transparent" }}>
-                                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id, agent.team)},55%,55%),hsl(${agentHue(agent.id, agent.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
+                                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
                                                 <span style={{ fontWeight: 600, color: "#1e293b" }}>{agent.name}</span>
                                               </td>
                                               {rows.map(r => {
@@ -1788,7 +1650,7 @@ function isHalfDay(leave) {
             )}
             {planView === "month" && filterMode !== "astreinte" && (
               <div style={{
-                background: "#fff", borderRadius: 14, overflow: "hidden",
+                background: "#fff", borderRadius: 14,
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -1807,7 +1669,7 @@ function isHalfDay(leave) {
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
                           {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6366f1", margin: "1px auto 0" }} />}
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ fontSize: 8, color: "#fff", background: absent >= 5 ? "#ef4444" : absent >= 3 ? "#f97316" : "#6366f1", borderRadius: 4, padding: "1px 4px", margin: "2px auto 0", display: "inline-block", fontWeight: 800, boxShadow: "0 1px 3px rgba(0,0,0,0.2)", minWidth: 14, textAlign: "center" }}>{absent}</div>}
+                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ fontSize: 8, color: "#fff", background: "#94a3b8", borderRadius: 4, padding: "0 3px", margin: "1px auto 0", display: "inline-block", fontWeight: 700 }}>{absent}</div>}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
                             const nParis = countPresence(k, "paris");
@@ -1833,24 +1695,24 @@ function isHalfDay(leave) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: teamBg(teamName, 0.12), borderBottom: `2px solid ${teamBorder(teamName)}` }}>
-                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: `hsl(${teamHue(teamName)}, 45%, 35%)`, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = teamBg(teamName, 0.05);
+                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
                             return (
-                              <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
-                                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id, agent.team)},55%,55%),hsl(${agentHue(agent.id, agent.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
+                                  <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isManager && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
+                                  {isAdmin && <div data-sort-buttons style={{ display: "flex", gap: 2, opacity: 0, transition: "opacity 0.2s" }}><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "up"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? "none" : "auto" }}>▲</button><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "down"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? "none" : "auto" }}>▼</button></div>}
                                 </td>
                                 {Array.from({ length: daysInMonth }, (_, i) => {
                                   const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
@@ -1859,13 +1721,13 @@ function isHalfDay(leave) {
                                   const isFridayCell = new Date(year, month, day).getDay() === 5;
                                   const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
                                   return <td key={i}
-                                    onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else if (filterMode !== "all" && canInteract) handleCellClick(agent.id, day); }}
+                                    onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
                                     onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
                                     onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#fafafa" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1897,25 +1759,21 @@ function isHalfDay(leave) {
                                           </div>
                                         </div>
                                       ) : (
-                                        isHalfDay(leave) ? (
-                                          <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
-                                        ) : (
-                                          <div style={{
-                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px",
-                                            background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
-                                            borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
-                                            border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
-                                            opacity: filterMode === "presence" ? 0.75 : 1,
-                                            boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
+                                        <div style={{
+                                          width: "calc(100% - 2px)", height: 20, margin: "0 1px",
+                                          background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
+                                          borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
+                                          border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
+                                          opacity: filterMode === "presence" ? 0.75 : 1,
+                                          boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
+                                        }}>
+                                          <span style={{
+                                            fontSize: 7, fontWeight: 700,
+                                            color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
                                           }}>
-                                            <span style={{
-                                              fontSize: 7, fontWeight: 700,
-                                              color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
-                                            }}>
-                                              {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
-                                            </span>
-                                          </div>
-                                        )
+                                            {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
+                                          </span>
+                                        </div>
                                       )
                                     )}
                                     {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
@@ -1935,7 +1793,7 @@ function isHalfDay(leave) {
             {/* VUE SEMAINE */}
             {planView === "week" && (
               <div style={{
-                background: "#fff", borderRadius: 14, overflow: "hidden",
+                background: "#fff", borderRadius: 14,
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -1953,7 +1811,7 @@ function isHalfDay(leave) {
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
                           {isFer && <div style={{ fontSize: 9, color: "#d97706", marginTop: 2 }} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ marginTop: 4, fontSize: 10, color: "#fff", background: absent >= 5 ? "#ef4444" : absent >= 3 ? "#f97316" : "#6366f1", borderRadius: 6, padding: "2px 7px", display: "inline-block", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent} absent{absent > 1 ? "s" : ""}</div>}
+                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && <div style={{ marginTop: 4, fontSize: 9, color: "#fff", background: "#94a3b8", borderRadius: 6, padding: "1px 5px", display: "inline-block", fontWeight: 700 }}>{absent} absent{absent > 1 ? "s" : ""}</div>}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
                             const nParis = countPresence(k, "paris");
@@ -1978,24 +1836,24 @@ function isHalfDay(leave) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: teamBg(teamName, 0.12), borderBottom: `2px solid ${teamBorder(teamName)}` }}>
-                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: `hsl(${teamHue(teamName)}, 45%, 35%)`, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = teamBg(teamName, 0.05);
+                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
                             return (
-                              <tr key={agent.id} draggable={isManager} onDragStart={() => handleAgentDragStart(agent.id)} onDragOver={e => handleAgentDragOver(e, agent.id)} onDrop={() => handleAgentDrop(agent.id)} onDragEnd={handleAgentDragEnd} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: dragOverAgentId === agent.id ? "#eef2ff" : rowBg, transition: "all 0.2s", opacity: dragAgentId === agent.id ? 0.4 : (selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1), border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent", cursor: isManager ? "grab" : "default" }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
                                 <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
-                                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id, agent.team)},55%,55%),hsl(${agentHue(agent.id, agent.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
+                                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(agent.id)},55%,55%),hsl(${agentHue(agent.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isManager && <div style={{ color: "#94a3b8", fontSize: 12, cursor: "grab", userSelect: "none", paddingLeft: 2 }}>⠿</div>}
+                                  {isAdmin && <div data-sort-buttons style={{ display: "flex", gap: 2, opacity: 0, transition: "opacity 0.2s" }}><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "up"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? "none" : "auto" }}>▲</button><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "down"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? "none" : "auto" }}>▼</button></div>}
                                 </td>
                                 {weekDays.map((d, i) => {
                                   const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6;
@@ -2007,13 +1865,13 @@ function isHalfDay(leave) {
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                   const canInteract = (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
                                   return <td key={i}
-                                    onClick={() => filterMode !== "all" && canInteract && handleWeekCellClick(agent.id, d)}
+                                    onClick={() => canInteract && handleWeekCellClick(agent.id, d)}
                                     onContextMenu={e => !wk && handleWeekCellRightClick(e, agent.id, d)}
                                     onMouseEnter={() => { if (weekSelAgent === agent.id) setWeekHovered(k); }}
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#fafafa" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -2031,25 +1889,21 @@ function isHalfDay(leave) {
                                           </div>
                                         </div>
                                       ) : (
-                                        isHalfDay(leave) ? (
-                                          <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
-                                        ) : (
-                                          <div style={{
-                                            width: "calc(100% - 4px)", height: 24, margin: "0 2px",
-                                            background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
-                                            borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
-                                            border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
-                                            opacity: filterMode === "presence" ? 0.75 : 1,
-                                            boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 3px ${leave.color}30` : "none"
+                                        <div style={{
+                                          width: "calc(100% - 4px)", height: 24, margin: "0 2px",
+                                          background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
+                                          borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center",
+                                          border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
+                                          opacity: filterMode === "presence" ? 0.75 : 1,
+                                          boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 3px ${leave.color}30` : "none"
+                                        }}>
+                                          <span style={{
+                                            fontSize: 7, fontWeight: 700,
+                                            color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
                                           }}>
-                                            <span style={{
-                                              fontSize: 7, fontWeight: 700,
-                                              color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
-                                            }}>
-                                              {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
-                                            </span>
-                                          </div>
-                                        )
+                                            {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
+                                          </span>
+                                        </div>
                                       )
                                     )}
                                     {inSel && !leave && !isFer && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
@@ -2071,7 +1925,6 @@ function isHalfDay(leave) {
         {view === "validations" && (
           <ValidationsView
             isManager={isManager}
-            isAdmin={isAdmin}
             requests={requests}
             pendingRequests={pendingRequests}
             myRequests={myRequests}
@@ -2104,144 +1957,22 @@ function isHalfDay(leave) {
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
                 onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Agent :</label>
-                <div style={{ position: "relative", flex: 1, maxWidth: 320 }} onClick={e => e.stopPropagation()}>
-                  <div onClick={() => { setShowAgentSearch(p => !p); setAgentSearchQuery(""); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 8, border: `1px solid ${showAgentSearch ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", transition: "all 0.2s", boxShadow: showAgentSearch ? "0 0 0 3px rgba(99,102,241,0.1)" : "none" }}>
-                    {(() => {
-                      const sel = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
-                      return sel ? (
-                        <>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(sel.id, sel.team)},55%,55%),hsl(${agentHue(sel.id, sel.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{sel.avatar}</div>
-                          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{sel.name}</span>
-                          <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 6px", borderRadius: 4 }}>{sel.team}</span>
-                        </>
-                      ) : (
-                        <>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11 }}>👤</div>
-                          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#6366f1" }}>Mon profil</span>
-                        </>
-                      );
-                    })()}
-                    <span style={{ fontSize: 10, color: "#94a3b8", transform: showAgentSearch ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-                  </div>
-                  {showAgentSearch && (
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.12)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                      <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9" }}>
-                        <input autoFocus value={agentSearchQuery} onChange={e => setAgentSearchQuery(e.target.value)}
-                          placeholder="🔍 Rechercher un agent..."
-                          style={{ width: "100%", padding: "7px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box", transition: "all 0.2s" }}
-                          onFocus={e => e.target.style.borderColor = "#6366f1"}
-                          onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-                      </div>
-                      <div style={{ maxHeight: 280, overflowY: "auto" }}>
-                        {!agentSearchQuery && (
-                          <button onClick={() => { setSelectedAgentForStats(null); setShowAgentSearch(false); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
-                            onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
-                            onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
-                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>👤</div>
-                            <span style={{ fontSize: 12, fontWeight: !selectedAgentForStats ? 700 : 500, color: !selectedAgentForStats ? "#4338ca" : "#1e293b" }}>Mon profil</span>
-                            {!selectedAgentForStats && <span style={{ marginLeft: "auto", color: "#6366f1", fontSize: 12 }}>✓</span>}
-                          </button>
-                        )}
-                        {(() => {
-                          const q = agentSearchQuery.toLowerCase();
-                          const filtered = agents.filter(a => a.role !== "admin" && (!q || a.name.toLowerCase().includes(q) || (a.team || "").toLowerCase().includes(q)));
-                          const grouped = {};
-                          filtered.forEach(a => { const t = a.team || "Sans équipe"; if (!grouped[t]) grouped[t] = []; grouped[t].push(a); });
-                          return Object.entries(grouped).map(([teamName, teamAgents]) => (
-                            <div key={teamName}>
-                              {!q && <div style={{ padding: "6px 14px 3px", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", background: "#f8fafc" }}>{teamName}</div>}
-                              {teamAgents.map(a => (
-                                <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setShowAgentSearch(false); }}
-                                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
-                                  onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                                  onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
-                                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                  <span style={{ flex: 1, fontSize: 12, fontWeight: selectedAgentForStats === a.id ? 700 : 500, color: selectedAgentForStats === a.id ? "#4338ca" : "#1e293b", textAlign: "left" }}>{a.name}</span>
-                                  {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 12 }}>✓</span>}
-                                </button>
-                              ))}
-                            </div>
-                          ));
-                        })()}
-                        {agents.filter(a => a.role !== "admin" && agentSearchQuery && (a.name.toLowerCase().includes(agentSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(agentSearchQuery.toLowerCase()))).length === 0 && agentSearchQuery && (
-                          <div style={{ padding: "20px 14px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>Aucun agent trouvé</div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <select value={selectedAgentForStats || ""} onChange={e => setSelectedAgentForStats(e.target.value || null)} style={{ flex: 1, maxWidth: 300, padding: "8px 12px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 12, color: "#1e293b", cursor: "pointer", background: "#fff", transition: "all 0.2s" }}>
+                  <option value="">Mon profil</option>
+                  {agents.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
               </div>
             )}
             <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Période :</span>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
-                  {[{ id: "month", label: `Mois en cours` }, { id: "pastMonth", label: `Mois passés` }, { id: "year", label: `Année ${year}` }].map(f => (
-                    <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
-                  ))}
-                </div>
-                {statsFilter === "pastMonth" && (() => {
-                  const [pmYear, pmMonth] = statsPastMonth.split("-").map(Number);
-                  const now2 = new Date();
-                  const maxYear = now2.getFullYear(), maxMonth = now2.getMonth() + 1;
-                  const isAtMax = pmYear === maxYear && pmMonth === maxMonth;
-                  const goPrev = (e) => { e.stopPropagation(); let y = pmYear, m = pmMonth - 1; if (m < 1) { m = 12; y--; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
-                  const goNext = (e) => { e.stopPropagation(); if (isAtMax) return; let y = pmYear, m = pmMonth + 1; if (m > 12) { m = 1; y++; } setStatsPastMonth(`${y}-${String(m).padStart(2, "0")}`); };
-                  return (
-                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <button onClick={goPrev} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 14, color: "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#f1f5f9"}
-                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}>‹</button>
-                      <div style={{ position: "relative" }}>
-                        <button onClick={e => { e.stopPropagation(); setPickerYear(pmYear); setShowStatsPicker(p => !p); }}
-                          style={{ padding: "5px 14px", borderRadius: 6, border: "1px solid #6366f1", background: showStatsPicker ? "#eef2ff" : "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#4338ca", minWidth: 130, textAlign: "center", transition: "all 0.15s", boxShadow: "0 1px 3px rgba(99,102,241,0.15)", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
-                          onMouseEnter={e => { if (!showStatsPicker) e.currentTarget.style.background = "#eef2ff"; }}
-                          onMouseLeave={e => { if (!showStatsPicker) e.currentTarget.style.background = "#fff"; }}>
-                          📅 {MONTHS_FR[pmMonth - 1]} {pmYear}
-                          <span style={{ fontSize: 9, color: "#6366f1", transform: showStatsPicker ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-                        </button>
-                        {showStatsPicker && (
-                          <div onClick={e => e.stopPropagation()} style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 14, boxShadow: "0 12px 32px rgba(99,102,241,0.15), 0 2px 8px rgba(0,0,0,0.08)", zIndex: 9999, padding: 16, width: 260, animation: "slideIn 0.15s ease" }}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid #f1f5f9" }}>
-                              <button onClick={() => setPickerYear(y => y - 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#94a3b8", padding: "2px 8px", borderRadius: 6, transition: "all 0.15s" }}
-                                onMouseEnter={e => { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#1e293b"; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#94a3b8"; }}>‹</button>
-                              <span style={{ fontWeight: 800, fontSize: 14, color: "#1e293b", letterSpacing: "-0.3px" }}>{pickerYear}</span>
-                              <button onClick={() => { if (pickerYear < maxYear) setPickerYear(y => y + 1); }} style={{ background: "none", border: "none", cursor: pickerYear >= maxYear ? "default" : "pointer", fontSize: 16, color: pickerYear >= maxYear ? "#e2e8f0" : "#94a3b8", padding: "2px 8px", borderRadius: 6, transition: "all 0.15s" }}
-                                onMouseEnter={e => { if (pickerYear < maxYear) { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#1e293b"; } }}
-                                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = pickerYear >= maxYear ? "#e2e8f0" : "#94a3b8"; }}>›</button>
-                            </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4 }}>
-                              {MONTHS_FR.map((m_label, m_idx) => {
-                                const mNum = m_idx + 1;
-                                const isSelected = mNum === pmMonth && pickerYear === pmYear;
-                                const isFuture = pickerYear > maxYear || (pickerYear === maxYear && mNum > maxMonth);
-                                const isNow = mNum === maxMonth && pickerYear === maxYear;
-                                return (
-                                  <button key={m_idx} disabled={isFuture}
-                                    onClick={() => { if (isFuture) return; setStatsPastMonth(`${pickerYear}-${String(mNum).padStart(2, "0")}`); setShowStatsPicker(false); }}
-                                    style={{ padding: "7px 4px", borderRadius: 8, border: isSelected ? "2px solid #6366f1" : "2px solid transparent", background: isSelected ? "#6366f1" : isNow ? "#eef2ff" : "transparent", color: isFuture ? "#e2e8f0" : isSelected ? "#fff" : isNow ? "#4338ca" : "#475569", cursor: isFuture ? "default" : "pointer", fontSize: 11, fontWeight: isSelected || isNow ? 700 : 400, transition: "all 0.1s", position: "relative" }}
-                                    onMouseEnter={e => { if (!isSelected && !isFuture) e.currentTarget.style.background = "#f1f5f9"; }}
-                                    onMouseLeave={e => { if (!isSelected && !isFuture) e.currentTarget.style.background = isNow ? "#eef2ff" : "transparent"; }}>
-                                    {m_label.slice(0, 3)}
-                                    {isNow && !isSelected && <div style={{ position: "absolute", bottom: 2, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "#6366f1" }} />}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#f4f4f5" : "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
-                        onMouseEnter={e => { if (!isAtMax) e.currentTarget.style.background = "#f1f5f9"; }}
-                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}>›</button>
-                    </div>
-                  );
-                })()}
+              <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
+                {[{ id: "month", label: `${MONTHS_FR[month]} ${year}` }, { id: "year", label: `Année ${year}` }].map(f => (
+                  <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
+                ))}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
@@ -2284,7 +2015,7 @@ function isHalfDay(leave) {
                           {s.days.toLocaleString('fr-FR', { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
                         </div>
                         <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.3px" }}>
-                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "pastMonth" ? `${MONTHS_FR[parseInt(statsPastMonth.split("-")[1]) - 1]} ${statsPastMonth.split("-")[0]}` : `Année ${year}`}
+                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : `Année ${year}`}
                         </div>
                       </div>
                     ))}
@@ -2334,7 +2065,7 @@ function isHalfDay(leave) {
                   setAstreinteDropdown(null);
                 }
               }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: astreintes[aKey] === a.id ? "#fef3c7" : "none", cursor: "pointer", fontSize: 12, color: "#1e293b", fontWeight: astreintes[aKey] === a.id ? 700 : 400, transition: "background 0.1s" }}>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id)},55%,55%),hsl(${agentHue(a.id) + 30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                 <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
                 {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
                 {onAgentPicked && <span style={{ fontSize: 10, color: "#94a3b8" }}>→ puis glisser</span>}
@@ -2342,155 +2073,6 @@ function isHalfDay(leave) {
             ))}
             <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8" }}>✕ Annuler</button>
           </div>
-        );
-      })()}
-
-      {addLeaveModal && (() => {
-        const availLTs = isManager
-          ? leaveTypes.filter(t => filterMode === "presence" ? isPresenceType(t) : !isPresenceType(t))
-          : leaveTypes.filter(t => {
-              const agent = agents.find(a => a.id === (addLeaveForm.agentId || currentUser.id));
-              const isAllowed = AGENT_ALLOWED_CODES.includes(t.code);
-              const isPresence = isPresenceType(t);
-              return isPresence ? false : isAllowed;
-            });
-        const selectedLT = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
-        const selectedAlAgent = addLeaveForm.agentId ? agents.find(a => a.id === addLeaveForm.agentId) : null;
-        return (
-          <>
-            <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 99998, backdropFilter: "blur(4px)" }} />
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", overflow: "hidden", animation: "slideIn 0.2s ease" }}>
-              {/* Header */}
-              <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
-                    <div style={{ fontSize: 11, opacity: 0.8 }}>Remplissez les informations ci-dessous</div>
-                  </div>
-                  <button onClick={() => setAddLeaveModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 16, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-                </div>
-              </div>
-              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                {/* Agent selector (manager only) */}
-                {isManager && (
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
-                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                      <div onClick={() => { setAlShowAgentDrop(p => !p); setAlSearchQuery(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowAgentDrop ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", transition: "all 0.2s", boxShadow: alShowAgentDrop ? "0 0 0 3px rgba(99,102,241,0.1)" : "none" }}>
-                        {selectedAlAgent ? (
-                          <>
-                            <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)},55%,55%),hsl(${agentHue(selectedAlAgent.id, selectedAlAgent.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
-                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{selectedAlAgent.name}</span>
-                            <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
-                          </>
-                        ) : (
-                          <span style={{ flex: 1, fontSize: 13, color: "#94a3b8" }}>Choisir un agent...</span>
-                        )}
-                        <span style={{ fontSize: 10, color: "#94a3b8", transform: alShowAgentDrop ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
-                      </div>
-                      {alShowAgentDrop && (
-                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                          <div style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>
-                            <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-                          </div>
-                          <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                            {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
-                              <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                                onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
-                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(a.id, a.team)},55%,55%),hsl(${agentHue(a.id, a.team)+30},65%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#1e293b", textAlign: "left" }}>{a.name}</span>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</span>
-                                {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                {/* Dates */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
-                    <input type="date" value={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, startDate: e.target.value, endDate: f.endDate < e.target.value ? e.target.value : f.endDate }))}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "all 0.2s" }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-                  </div>
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
-                    <input type="date" value={addLeaveForm.endDate} min={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, endDate: e.target.value }))}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "all 0.2s" }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-                  </div>
-                </div>
-                {/* Leave types */}
-                <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {sortLeaveTypes(availLTs).map(t => (
-                      <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id }))}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${addLeaveForm.leaveTypeId === t.id ? t.color : "#e2e8f0"}`, background: addLeaveForm.leaveTypeId === t.id ? hexToLight(t.color) : "#fff", cursor: "pointer", fontSize: 12, fontWeight: addLeaveForm.leaveTypeId === t.id ? 700 : 500, color: addLeaveForm.leaveTypeId === t.id ? t.color : "#475569", transition: "all 0.15s" }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Reason */}
-                <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#94a3b8", textTransform: "none" }}>(optionnel)</span></label>
-                  <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "all 0.2s" }}
-                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-                </div>
-              </div>
-              {/* Weekend error */}
-              {(() => {
-                const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                const startWE = addLeaveForm.startDate && isWE(addLeaveForm.startDate);
-                const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
-                if (!startWE && !endWE) return null;
-                return (
-                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 16 }}>⚠️</span>
-                    <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
-                      {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}
-                      {" "}Veuillez choisir des jours ouvrés.
-                    </span>
-                  </div>
-                );
-              })()}
-              {/* Footer */}
-              <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
-                <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 500 }}>Annuler</button>
-                <button onClick={async () => {
-                  const agentId = addLeaveForm.agentId || currentUser.id;
-                  const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
-                  if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
-                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                  if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
-                  if (isHalfDay(lt)) {
-                    setAddLeaveModal(false);
-                    setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
-                    setHalfDayPeriod(null);
-                  } else {
-                    setAddLeaveModal(false);
-                    await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
-                  }
-                }} disabled={(() => {
-                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                  return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
-                })()}
-                  className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (() => { const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; }; return (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) ? 0.5 : 1; })() }}>
-                  ✅ Valider le congé
-                </button>
-              </div>
-            </div>
-          </>
         );
       })()}
 
@@ -2513,14 +2095,8 @@ function isHalfDay(leave) {
             <div style={{ padding: "6px 0" }}>
               {availTypes.map(t => (
                 <button key={t.id} onClick={() => {
-                  if (isHalfDay({label: t.label, code: t.code})) {
-                    setHalfDayPendingType(t);
-                    setHalfDayPeriod(null);
-                    setRequestModal(null);
-                  } else {
-                    const reason = document.getElementById("leave-reason-input")?.value || "";
-                    submitRequest(t, reason);
-                  }
+                  const reason = document.getElementById("leave-reason-input")?.value || "";
+                  submitRequest(t, reason);
                 }} style={{
                   display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
                   border: "none", background: "none", cursor: "pointer", textAlign: "left", transition: "background 0.1s"
@@ -2540,46 +2116,6 @@ function isHalfDay(leave) {
           </div>
         );
       })()}
-      {halfDayPendingType && (
-        <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
-          <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{halfDayPendingType.label} — quelle période ?</div>
-          </div>
-          <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {["matin", "apres-midi"].map(period => (
-              <button key={period} onClick={() => setHalfDayPeriod(period)}
-                style={{ padding: "12px 16px", borderRadius: 10, border: `2px solid ${halfDayPeriod === period ? halfDayPendingType.color : "#e2e8f0"}`, background: halfDayPeriod === period ? hexToLight(halfDayPendingType.color) : "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
-                <div style={{ width: 32, height: 32, borderRadius: 6, overflow: "hidden", border: `1px solid ${halfDayPendingType.color}40`, flexShrink: 0 }}>
-                  {period === "matin"
-                    ? <><div style={{ height: "50%", background: halfDayPendingType.color }} /><div style={{ height: "50%", background: "#fff" }} /></>
-                    : <><div style={{ height: "50%", background: "#fff" }} /><div style={{ height: "50%", background: halfDayPendingType.color }} /></>
-                  }
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "🌅 Matin" : "🌆 Après-midi"}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ padding: "0 16px 12px" }}>
-            <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
-            <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
-            <button disabled={!halfDayPeriod} onClick={() => {
-              const reason = document.getElementById("leave-reason-halfday")?.value || halfDayPendingType._reason || "";
-              const period = halfDayPeriod;
-              const finalReason = "[" + period + "]" + (reason ? " " + reason : "");
-              const overrideModal = halfDayPendingType._overrideModal || null;
-              const lt = { ...halfDayPendingType };
-              delete lt._overrideModal; delete lt._reason;
-              setHalfDayPeriod(null);
-              setHalfDayPendingType(null);
-              submitRequest(lt, finalReason, overrideModal);
-            }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
-          </div>
-        </div>
-      )}
-      {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99999 }} />}
       {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99998 }} />}
 
       {rejectModal && <Modal title="❌ Refuser la demande">
@@ -2604,7 +2140,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
     <div style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", alignItems: "center", gap: 14, padding: "12px 16px", borderBottom: "1px solid #e5e7eb", transition: "all 0.2s" }}
       onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-      <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(req.agentId, req.agentTeam)},50%,55%),hsl(${agentHue(req.agentId, req.agentTeam) + 30},60%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
+      <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,hsl(${agentHue(req.agentId)},50%,55%),hsl(${agentHue(req.agentId) + 30},60%,65%))`, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
       <div style={{ minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
@@ -2616,9 +2152,9 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>{period}</span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#f4f4f5", display: "inline-block" }} />
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} />
           <span style={{ fontSize: 12, color: req.leaveType?.color || "#6366f1", fontWeight: 600 }}>{req.leaveType?.label}</span>
-          {req.reason && <><span style={{ width: 3, height: 3, borderRadius: "50%", background: "#f4f4f5", display: "inline-block" }} /><span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{req.reason}</span></>}
+          {req.reason && <><span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} /><span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{req.reason}</span></>}
           {req.comment && <span style={{ fontSize: 11, color: "#ef4444", fontStyle: "italic" }}>↳ {req.comment}</span>}
         </div>
       </div>
@@ -2636,7 +2172,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
   );
 }
 
-function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData }) {
+function ValidationsView({ isManager, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showHistory, setShowHistory] = useState(true);
   const sourceList = isManager ? requests : myRequests;
@@ -2660,7 +2196,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
           {history.length > 0 && isManager && (
             <>
               <button onClick={() => { if (window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning.")) onClearHistory(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fecaca", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>Effacer l'historique</button>
-              {isAdmin && <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>}
+              <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>
             </>
           )}
           <button onClick={() => setShowHistory(h => !h)} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 11, fontWeight: 500, display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}>
