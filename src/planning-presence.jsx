@@ -94,6 +94,37 @@ function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || ""
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+function getHalfDayPeriod(leave) {
+  var r = (leave && leave.reason) ? leave.reason : "";
+  if (r.startsWith("[matin]")) return "matin";
+  if (r.startsWith("[apres-midi]")) return "apres-midi";
+  return "matin";
+}
+function isHalfDay(leave) {
+  if (!leave) return false;
+  var label = (leave.label || "").toLowerCase();
+  var code = (leave.code || "").toLowerCase();
+  return label.includes("1/2") || label.includes("½") || code.startsWith("_");
+}
+function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
+  var w = "calc(100% - " + (pad * 2) + "px)";
+  var r = size === 24 ? 4 : 3;
+  var m = "0 " + pad + "px";
+  var topBg = isMatin ? color : "#fff";
+  var botBg = isMatin ? "#fff" : color;
+  var topColor = isMatin ? "#fff" : color;
+  var botColor = isMatin ? color : "#fff";
+  return (
+    <div style={{ width: w, height: size, margin: m, borderRadius: r, overflow: "hidden", background: "#fff", border: "1px solid " + color }}>
+      <div style={{ height: "50%", background: topBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: fontSize, fontWeight: 800, color: topColor, lineHeight: 1 }}>½</span>
+      </div>
+      <div style={{ height: "50%", background: botBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: fontSize, fontWeight: 800, color: botColor, lineHeight: 1 }}>{label}</span>
+      </div>
+    </div>
+  );
+}
 function leaveAbbr(label) {
   if (!label) return "???";
   const map = { "½ CP": "½CP", "½ RTT": "½RTT", "Congé payé": "CP", "CP": "CP", "RTT": "RTT", "Pont": "Pt", "Formation": "FOR", "Absence": "ABS", "Rueil": "R", "Paris": "P" };
@@ -560,6 +591,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [requestModal, setRequestModal] = useState(null);
+  const [halfDayPeriod, setHalfDayPeriod] = useState(null);
+  const [halfDayPendingType, setHalfDayPendingType] = useState(null);
   const [requestReason, setRequestReason] = useState("");
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
@@ -762,7 +795,7 @@ function PlanningApp({ currentUser, onLogout }) {
               const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
               for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
                 const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
-                const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
+                const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
                 if (isPresence) {
                   allLeavesMap[l.agent_id][k + "__presence"] = entry;
                 } else {
@@ -799,7 +832,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
         for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
           const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "00")}-${String(d.getDate()).padStart(2, "0")}`;
-          const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id };
+          const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
           if (isPresence) {
             // Stocker les présences avec clé dédiée __presence pour ne pas écraser CP/RTT
             leavesMap[l.agent_id][k + "__presence"] = entry;
@@ -1758,6 +1791,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                             </span>
                                           </div>
                                         </div>
+                                      ) : isHalfDay(leave) ? (
+                                        <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
                                       ) : (
                                         <div style={{
                                           width: "calc(100% - 2px)", height: 20, margin: "0 1px",
@@ -1888,6 +1923,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                             </span>
                                           </div>
                                         </div>
+                                      ) : isHalfDay(leave) ? (
+                                        <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
                                       ) : (
                                         <div style={{
                                           width: "calc(100% - 4px)", height: 24, margin: "0 2px",
@@ -2095,8 +2132,14 @@ function PlanningApp({ currentUser, onLogout }) {
             <div style={{ padding: "6px 0" }}>
               {availTypes.map(t => (
                 <button key={t.id} onClick={() => {
-                  const reason = document.getElementById("leave-reason-input")?.value || "";
-                  submitRequest(t, reason);
+                  if (isHalfDay({label: t.label, code: t.code})) {
+                    setRequestModal(null);
+                    setHalfDayPendingType(t);
+                    setHalfDayPeriod(null);
+                  } else {
+                    const reason = document.getElementById("leave-reason-input")?.value || "";
+                    submitRequest(t, reason);
+                  }
                 }} style={{
                   display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
                   border: "none", background: "none", cursor: "pointer", textAlign: "left", transition: "background 0.1s"
@@ -2116,6 +2159,44 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
         );
       })()}
+      {halfDayPendingType && (
+        <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+          <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{halfDayPendingType.label} — quelle période ?</div>
+          </div>
+          <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {["matin", "apres-midi"].map(period => (
+              <button key={period} onClick={() => setHalfDayPeriod(period)}
+                style={{ padding: "12px 16px", borderRadius: 10, border: "2px solid " + (halfDayPeriod === period ? halfDayPendingType.color : "#e2e8f0"), background: halfDayPeriod === period ? hexToLight(halfDayPendingType.color) : "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
+                <div style={{ width: 32, height: 32, borderRadius: 6, overflow: "hidden", border: "1px solid " + halfDayPendingType.color + "40", flexShrink: 0 }}>
+                  {period === "matin"
+                    ? <><div style={{ height: "50%", background: halfDayPendingType.color }} /><div style={{ height: "50%", background: "#fff" }} /></>
+                    : <><div style={{ height: "50%", background: "#fff" }} /><div style={{ height: "50%", background: halfDayPendingType.color }} /></>
+                  }
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "🌅 Matin" : "🌆 Après-midi"}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ padding: "0 16px 12px" }}>
+            <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
+            <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
+            <button disabled={!halfDayPeriod} onClick={() => {
+              const reason = document.getElementById("leave-reason-halfday")?.value || "";
+              const finalReason = "[" + halfDayPeriod + "]" + (reason ? " " + reason : "");
+              const lt = { ...halfDayPendingType };
+              const period = halfDayPeriod;
+              setHalfDayPeriod(null);
+              setHalfDayPendingType(null);
+              submitRequest(lt, finalReason);
+            }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
+          </div>
+        </div>
+      )}
+      {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99999 }} />}
       {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99998 }} />}
 
       {rejectModal && <Modal title="❌ Refuser la demande">
