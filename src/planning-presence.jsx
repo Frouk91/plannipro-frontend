@@ -1511,7 +1511,7 @@ function isHalfDay(leave) {
                           const isFriday = new Date(year, month, day).getDay() === 5;
                           return <th key={i} style={{
                             padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600,
-                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#eef2ff" : wk ? "#fafafa" : "#f8fafc",
+                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#eef2ff" : wk ? "#cbd5e1" : "#f8fafc",
                             color: isFriday && !wk ? "#d97706" : isToday ? "#6366f1" : wk ? "#d1d5db" : "#94a3b8",
                             borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#6366f1" : "#f1f5f9"}`,
                             borderLeft: "1px solid #f8fafc", minWidth: 26
@@ -1616,7 +1616,7 @@ function isHalfDay(leave) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff",
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#cbd5e1" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff",
                                     borderLeft: "1px solid #f8fafc", height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px"
                                   }}>
@@ -1802,7 +1802,7 @@ function isHalfDay(leave) {
                         const absent = countAbsents(k);
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
-                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
+                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#cbd5e1" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
                           <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
@@ -1865,7 +1865,7 @@ function isHalfDay(leave) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#f4f4f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#cbd5e1" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1948,7 +1948,7 @@ function isHalfDay(leave) {
                         const feriesDay = getFeries(d.getFullYear());
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
-                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
+                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#cbd5e1" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
@@ -2013,7 +2013,7 @@ function isHalfDay(leave) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#f4f4f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#cbd5e1" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
