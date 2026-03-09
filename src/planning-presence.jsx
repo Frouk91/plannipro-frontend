@@ -667,10 +667,10 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   return (
     <div style={{ width: w, height: size, margin: m, borderRadius: r, overflow: "hidden", background: "#fff", border: "1px solid " + color }}>
       <div style={{ height: "50%", background: topBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: fontSize, fontWeight: 800, color: topColor, lineHeight: 1 }}>{topBg === "#fff" ? label : "½"}</span>
+        <span style={{ fontSize: fontSize, fontWeight: 800, color: topColor, lineHeight: 1 }}>½</span>
       </div>
       <div style={{ height: "50%", background: botBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: fontSize, fontWeight: 800, color: botColor, lineHeight: 1 }}>{botBg === "#fff" ? label : "½"}</span>
+        <span style={{ fontSize: fontSize, fontWeight: 800, color: botColor, lineHeight: 1 }}>{label}</span>
       </div>
     </div>
   );
