@@ -1773,11 +1773,8 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "3px solid " + tp.border }}>
-                            <td colSpan={daysInMonth + 1} style={{ padding: "7px 12px 7px 16px", fontSize: 11, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ display: "inline-block", width: 4, height: 14, borderRadius: 2, background: tp.border, flexShrink: 0 }} />
-                              {teamName}
-                            </td>
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           ); })()}
                           {teamAgents.map((agent, i) => {
@@ -1922,11 +1919,8 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "3px solid " + tp.border }}>
-                            <td colSpan={8} style={{ padding: "7px 12px 7px 16px", fontSize: 11, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ display: "inline-block", width: 4, height: 14, borderRadius: 2, background: tp.border, flexShrink: 0 }} />
-                              {teamName}
-                            </td>
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                            <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           ); })()}
                           {teamAgents.map((agent, i) => {
