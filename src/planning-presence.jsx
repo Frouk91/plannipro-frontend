@@ -135,15 +135,16 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   );
 }
 function teamPalette(teamName) {
+  // row: fond de ligne, wk: week-end, header: en-tête groupe, border: accent, text: couleur texte header, accent: barre gauche
   const palettes = {
-    "Css Digital":      { row: "#eff6ff", row2: "#e8f1fd", header: "#dbeafe", border: "#93c5fd", text: "#1d4ed8" },
-    "Mailing Solution": { row: "#f5f3ff", row2: "#ede9fc", header: "#ede9fe", border: "#c4b5fd", text: "#6d28d9" },
+    "Css Digital":      { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
+    "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
   };
   const defaults = [
-    { row: "#f0fdf4", row2: "#e8faf0", header: "#dcfce7", border: "#86efac", text: "#15803d" },
-    { row: "#fff7ed", row2: "#fef2e4", header: "#ffedd5", border: "#fdba74", text: "#c2410c" },
-    { row: "#fdf2f8", row2: "#f9e8f4", header: "#fce7f3", border: "#f9a8d4", text: "#be185d" },
-    { row: "#f0f9ff", row2: "#e3f3fc", header: "#e0f2fe", border: "#7dd3fc", text: "#0369a1" },
+    { row: "#edfdf4", wk: "#cef0dc", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
+    { row: "#fff4e6", wk: "#fde4c0", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
+    { row: "#fef0f8", wk: "#f9d5ec", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
+    { row: "#e8fafa", wk: "#c4eaec", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
   ];
   if (palettes[teamName]) return palettes[teamName];
   const idx = Math.abs((teamName||"").split("").reduce((a,c) => a + c.charCodeAt(0), 0)) % defaults.length;
@@ -1770,18 +1771,21 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: tp.header, borderBottom: "3px solid " + tp.border }}>
+                            <td colSpan={daysInMonth + 1} style={{ padding: "7px 12px 7px 16px", fontSize: 11, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ display: "inline-block", width: 4, height: 14, borderRadius: 2, background: tp.border, flexShrink: 0 }} />
+                              {teamName}
+                            </td>
                           </tr>
                           ); })()}
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
                             const tp = teamPalette(teamName);
-                            const rowBg = (agentIndex + i) % 2 === 0 ? tp.row : tp.row2;
+                            const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "60", height: 36, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
-                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer", borderLeft: "3px solid " + tp.accent }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
@@ -1804,7 +1808,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f0f0f0" : "#ebebeb" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid " + teamPalette(teamName).border + "30", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1916,18 +1920,21 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          <tr style={{ background: tp.header, borderBottom: "3px solid " + tp.border }}>
+                            <td colSpan={8} style={{ padding: "7px 12px 7px 16px", fontSize: 11, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 8 }}>
+                              <span style={{ display: "inline-block", width: 4, height: 14, borderRadius: 2, background: tp.border, flexShrink: 0 }} />
+                              {teamName}
+                            </td>
                           </tr>
                           ); })()}
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
                             const tp = teamPalette(teamName);
-                            const rowBg = (agentIndex + i) % 2 === 0 ? tp.row : tp.row2;
+                            const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "60", height: 38, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
-                                <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                                <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer", borderLeft: "3px solid " + tp.accent }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
@@ -1953,7 +1960,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f0f0f0" : "#ebebeb" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid " + teamPalette(teamName).border + "30", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
