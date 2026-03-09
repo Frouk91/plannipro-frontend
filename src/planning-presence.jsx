@@ -181,7 +181,7 @@ function LoginPage({ onLogin }) {
         {/* En-tête */}
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <h1 style={{ color: "#f8fafc", fontSize: "52px", fontWeight: "900", margin: "0 0 12px", letterSpacing: "-2px", animation: "slideInUp 0.8s ease 0.1s both", fontFamily: "'Poppins', 'Outfit', sans-serif", background: "linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
-          <p style={{ color: "#cbd5e1", fontSize: "14px", margin: "0", animation: "slideInUp 0.8s ease 0.2s both", fontWeight: "500", letterSpacing: "0.5px" }}>Gestion des présences & congés</p>
+          <p style={{ color: "#f4f4f5", fontSize: "14px", margin: "0", animation: "slideInUp 0.8s ease 0.2s both", fontWeight: "500", letterSpacing: "0.5px" }}>Gestion des présences & congés</p>
         </div>
 
         {/* Formulaire */}
@@ -1274,7 +1274,7 @@ function isHalfDay(leave) {
         </div>
 
         {/* Sous-texte */}
-        <div style={{ color: "#cbd5e1", fontSize: "12px", marginTop: "16px", fontWeight: "400" }}>Veuillez patienter...</div>
+        <div style={{ color: "#f4f4f5", fontSize: "12px", marginTop: "16px", fontWeight: "400" }}>Veuillez patienter...</div>
       </div>
     </div>
   );
@@ -1306,7 +1306,7 @@ function isHalfDay(leave) {
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", color: "#cbd5e1", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", color: "#f4f4f5", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}>🚪 Déconnexion</button>
         </div>
         <nav style={{ padding: "12px", flex: 1 }}>
           {navItems.map(item => (
@@ -1327,7 +1327,7 @@ function isHalfDay(leave) {
           <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
           {leaveTypes.filter(t => !isPresenceType(t)).map(t => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
+              <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>{t.label}</span>
             </div>
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
@@ -1335,18 +1335,18 @@ function isHalfDay(leave) {
               <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
+                  <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>{t.label}</span>
                 </div>
               ))}
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>Jour férié</span>
+            <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#f4f4f5" }}>Jour férié</span>
           </div>
           {isManager && (
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
               <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🔔 Astreintes vendredi</div>
-              <div style={{ fontSize: 11, color: "#cbd5e1" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
+              <div style={{ fontSize: 11, color: "#f4f4f5" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
             </div>
           )}
         </div>
@@ -1511,7 +1511,7 @@ function isHalfDay(leave) {
                           const isFriday = new Date(year, month, day).getDay() === 5;
                           return <th key={i} style={{
                             padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600,
-                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#eef2ff" : wk ? "#cbd5e1" : "#f8fafc",
+                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#eef2ff" : wk ? "#fafafa" : "#f8fafc",
                             color: isFriday && !wk ? "#d97706" : isToday ? "#6366f1" : wk ? "#d1d5db" : "#94a3b8",
                             borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#6366f1" : "#f1f5f9"}`,
                             borderLeft: "1px solid #f8fafc", minWidth: 26
@@ -1616,7 +1616,7 @@ function isHalfDay(leave) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#cbd5e1" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff",
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff",
                                     borderLeft: "1px solid #f8fafc", height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px"
                                   }}>
@@ -1802,7 +1802,7 @@ function isHalfDay(leave) {
                         const absent = countAbsents(k);
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
-                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#cbd5e1" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
+                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
                           <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
@@ -1865,7 +1865,7 @@ function isHalfDay(leave) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#cbd5e1" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#fafafa" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1948,7 +1948,7 @@ function isHalfDay(leave) {
                         const feriesDay = getFeries(d.getFullYear());
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
-                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#cbd5e1" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
+                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
@@ -2013,7 +2013,7 @@ function isHalfDay(leave) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#cbd5e1" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? "#fafafa" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -2236,7 +2236,7 @@ function isHalfDay(leave) {
                           </div>
                         )}
                       </div>
-                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#cbd5e1" : "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                      <button onClick={goNext} disabled={isAtMax} style={{ padding: "5px 8px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: isAtMax ? "default" : "pointer", fontSize: 14, color: isAtMax ? "#f4f4f5" : "#64748b", lineHeight: 1, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
                         onMouseEnter={e => { if (!isAtMax) e.currentTarget.style.background = "#f1f5f9"; }}
                         onMouseLeave={e => e.currentTarget.style.background = "#fff"}>›</button>
                     </div>
@@ -2616,9 +2616,9 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>{period}</span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} />
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#f4f4f5", display: "inline-block" }} />
           <span style={{ fontSize: 12, color: req.leaveType?.color || "#6366f1", fontWeight: 600 }}>{req.leaveType?.label}</span>
-          {req.reason && <><span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} /><span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{req.reason}</span></>}
+          {req.reason && <><span style={{ width: 3, height: 3, borderRadius: "50%", background: "#f4f4f5", display: "inline-block" }} /><span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{req.reason}</span></>}
           {req.comment && <span style={{ fontSize: 11, color: "#ef4444", fontStyle: "italic" }}>↳ {req.comment}</span>}
         </div>
       </div>
