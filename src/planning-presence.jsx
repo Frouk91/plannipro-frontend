@@ -96,6 +96,7 @@ function teamGradient(team) {
   const map = {
     "Css Digital":      "linear-gradient(135deg,#3b82f6,#60a5fa)",
     "Mailing Solution": "linear-gradient(135deg,#7c3aed,#a78bfa)",
+    "MANAGER":            "linear-gradient(135deg,#059669,#34d399)",
   };
   if (map[team]) return map[team];
   const hue = Math.abs((team || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360;
@@ -139,6 +140,7 @@ function teamPalette(teamName) {
   const palettes = {
     "Css Digital":      { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
     "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
+    "MANAGER":            { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
   };
   const defaults = [
     { row: "#edfdf4", wk: "#cef0dc", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
