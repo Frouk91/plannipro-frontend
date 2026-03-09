@@ -632,6 +632,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [loadingYearStats, setLoadingYearStats] = useState(false);  // Indicateur de chargement année
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [statsFilter, setStatsFilter] = useState("month");
+  const [statsCustomMonth, setStatsCustomMonth] = useState(null); // { year, month } quand filter="custom"
+  const [statsPickerOpen, setStatsPickerOpen] = useState(false);
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreintes, setAstreintes] = useState(() => {
@@ -724,6 +726,7 @@ function PlanningApp({ currentUser, onLogout }) {
       const leaveMonth = parseInt(m) - 1;
       if (filterType === "month") { if (leaveYear !== year || leaveMonth !== month) return; }
       else if (filterType === "year") { if (leaveYear !== year) return; }
+      else if (filterType === "custom" && statsCustomMonth) { if (leaveYear !== statsCustomMonth.year || leaveMonth !== statsCustomMonth.month) return; }
       const days = getDaysForLeaveType(leave);
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
@@ -795,7 +798,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   useEffect(() => {
     if (!dataLoaded || leaveTypes.length === 0) return;
-    if (statsFilter === "year") {
+    if (statsFilter === "year" || statsFilter === "custom") {
       // Vérifier si on a déjà les données de cette année en cache
       const cacheKey = `yearLeaves_${year}`;
       const cached = sessionStorage.getItem(cacheKey);
@@ -1219,7 +1222,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
@@ -2052,18 +2055,70 @@ function PlanningApp({ currentUser, onLogout }) {
                 </select>
               </div>
             )}
-            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Période :</span>
-              <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
-                {[{ id: "month", label: `${MONTHS_FR[month]} ${year}` }, { id: "year", label: `Année ${year}` }].map(f => (
-                  <button key={f.id} onClick={() => setStatsFilter(f.id)} style={{ padding: "6px 14px", borderRadius: 5, border: "none", background: statsFilter === f.id ? "#fff" : "transparent", color: statsFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === f.id ? 600 : 400, boxShadow: statsFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f.label}</button>
-                ))}
-              </div>
-            </div>
+            {(() => {
+              // Calculer les mois avec congés pour cet agent
+              const displayAgentIdForPicker = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
+              const agentLeaves = leaves[displayAgentIdForPicker] || {};
+              const monthsWithLeaves = {};
+              Object.entries(agentLeaves).forEach(([dateKey]) => {
+                if (dateKey.endsWith("__presence")) return;
+                const [y, m] = dateKey.split("-");
+                const key = `${y}-${m}`;
+                if (!monthsWithLeaves[key]) monthsWithLeaves[key] = { year: parseInt(y), month: parseInt(m) - 1 };
+              });
+              const sortedMonths = Object.values(monthsWithLeaves).sort((a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month);
+              const activeCustom = statsFilter === "custom" && statsCustomMonth;
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
+                  {/* Bouton mois en cours */}
+                  <button onClick={() => { setStatsFilter("month"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (statsFilter === "month" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "month" ? "#eef2ff" : "#fff", color: statsFilter === "month" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: statsFilter === "month" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "month" ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
+                    <span style={{ fontSize: 15 }}>📅</span>
+                    {MONTHS_FR[month]} {year}
+                  </button>
+                  {/* Bouton années */}
+                  <button onClick={() => { setStatsFilter("year"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (statsFilter === "year" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "year" ? "#eef2ff" : "#fff", color: statsFilter === "year" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: statsFilter === "year" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "year" ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
+                    <span style={{ fontSize: 15 }}>📆</span>
+                    Année {year}
+                  </button>
+                  {/* Bouton mois avec congés */}
+                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                    <button onClick={() => setStatsPickerOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (activeCustom || statsPickerOpen ? "#6366f1" : "#e2e8f0"), background: activeCustom ? "#eef2ff" : statsPickerOpen ? "#f5f3ff" : "#fff", color: activeCustom ? "#4338ca" : statsPickerOpen ? "#6366f1" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: activeCustom ? 700 : 500, transition: "all 0.15s", boxShadow: (activeCustom || statsPickerOpen) ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
+                      <span style={{ fontSize: 15 }}>🗓️</span>
+                      {activeCustom ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : "Autre mois"}
+                      <span style={{ fontSize: 10, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: statsPickerOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+                      {sortedMonths.length > 0 && <span style={{ background: "#6366f1", color: "#fff", borderRadius: 99, fontSize: 10, fontWeight: 700, padding: "1px 6px", marginLeft: 2 }}>{sortedMonths.length}</span>}
+                    </button>
+                    {statsPickerOpen && (
+                      <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, minWidth: 240, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                        <div style={{ padding: "12px 16px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mois avec congés</div>
+                        </div>
+                        {sortedMonths.length === 0 ? (
+                          <div style={{ padding: "20px 16px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>Aucun congé trouvé</div>
+                        ) : (
+                          <div style={{ maxHeight: 280, overflowY: "auto" }}>
+                            {sortedMonths.map(({ year: y, month: m }) => {
+                              const isActive = activeCustom && statsCustomMonth.year === y && statsCustomMonth.month === m;
+                              return (
+                                <button key={`${y}-${m}`} onClick={() => { setStatsFilter("custom"); setStatsCustomMonth({ year: y, month: m }); setStatsPickerOpen(false); }}
+                                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "10px 16px", border: "none", background: isActive ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
+                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#f8fafc"; }}
+                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "none"; }}>
+                                  <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? "#4338ca" : "#1e293b" }}>{MONTHS_FR[m]} {y}</span>
+                                  {isActive && <span style={{ fontSize: 12, color: "#6366f1" }}>✓</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
-              {loadingYearStats && statsFilter === "year" && (
+              {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
                 <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
                     <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
@@ -2102,7 +2157,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {s.days.toLocaleString('fr-FR', { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
                         </div>
                         <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.3px" }}>
-                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : `Année ${year}`}
+                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`}
                         </div>
                       </div>
                     ))}
