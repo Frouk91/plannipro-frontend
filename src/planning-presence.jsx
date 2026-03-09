@@ -125,6 +125,21 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
     </div>
   );
 }
+function teamPalette(teamName) {
+  const palettes = {
+    "Css Digital":      { row: "#eff6ff", row2: "#e8f1fd", header: "#dbeafe", border: "#93c5fd", text: "#1d4ed8" },
+    "Mailing Solution": { row: "#f5f3ff", row2: "#ede9fc", header: "#ede9fe", border: "#c4b5fd", text: "#6d28d9" },
+  };
+  const defaults = [
+    { row: "#f0fdf4", row2: "#e8faf0", header: "#dcfce7", border: "#86efac", text: "#15803d" },
+    { row: "#fff7ed", row2: "#fef2e4", header: "#ffedd5", border: "#fdba74", text: "#c2410c" },
+    { row: "#fdf2f8", row2: "#f9e8f4", header: "#fce7f3", border: "#f9a8d4", text: "#be185d" },
+    { row: "#f0f9ff", row2: "#e3f3fc", header: "#e0f2fe", border: "#7dd3fc", text: "#0369a1" },
+  ];
+  if (palettes[teamName]) return palettes[teamName];
+  const idx = Math.abs((teamName||"").split("").reduce((a,c) => a + c.charCodeAt(0), 0)) % defaults.length;
+  return defaults[idx];
+}
 function leaveAbbr(label) {
   if (!label) return "???";
   const map = { "½ CP": "½CP", "½ RTT": "½RTT", "Congé payé": "CP", "CP": "CP", "RTT": "RTT", "Pont": "Pt", "Formation": "FOR", "Absence": "ABS", "Rueil": "R", "Paris": "P" };
@@ -1745,15 +1760,18 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          {(() => { const tp = teamPalette(teamName); return (
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                            <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
+                          ); })()}
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
+                            const tp = teamPalette(teamName);
+                            const rowBg = (agentIndex + i) % 2 === 0 ? tp.row : tp.row2;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid #f1f5f9", height: 36, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "60", height: 36, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
@@ -1777,7 +1795,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f0f0f0" : "#ebebeb" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid " + teamPalette(teamName).border + "30", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -1888,15 +1906,18 @@ function PlanningApp({ currentUser, onLogout }) {
                       }
                       return (
                         <React.Fragment key={teamName}>
-                          <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                          {(() => { const tp = teamPalette(teamName); return (
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                            <td colSpan={8} style={{ padding: "5px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
+                          ); })()}
                           {teamAgents.map((agent, i) => {
                             // Calculer l'index DIRECTEMENT depuis sortedAgents (plus fiable)
                             // Tri désactivé
-                            const rowBg = (agentIndex + i) % 2 === 0 ? "#fff" : "#fafbfc";
+                            const tp = teamPalette(teamName);
+                            const rowBg = (agentIndex + i) % 2 === 0 ? tp.row : tp.row2;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid #f1f5f9", height: 38, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "60", height: 38, background: rowBg, transition: "all 0.2s", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.4 : 1, border: selectedAgentRow === agent.id ? "2px solid #3b82f6" : "2px solid transparent" }}>
                                 <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
@@ -1923,7 +1944,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f5f5f5" : "#f0f2f5" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid #f8fafc", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? "#f0f1ff" : wk ? (agentIndex + i) % 2 === 0 ? "#f0f0f0" : "#ebebeb" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "#f5f3ff" : rowBg, borderLeft: "1px solid " + teamPalette(teamName).border + "30", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
