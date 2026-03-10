@@ -2240,28 +2240,50 @@ function PlanningApp({ currentUser, onLogout }) {
                   { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
                   { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
                 ];
+                const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
+                const totalDays = stats.reduce((s, x) => s + x.days, 0);
                 return (
                   <>
+                    {/* Bandeau agent si manager */}
                     {isManager && selectedAgentForStats && (
-                      <div style={{ gridColumn: "1 / -1", padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#4338ca" }}>📊 Statistiques de {displayAgent.name}</span>
+                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
+                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{displayAgent.team} · {periodLabel}</div>
+                        </div>
+                        <div style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#64748b" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })} j total</div>
                       </div>
                     )}
                     {stats.map(s => (
-                      <div key={s.key} className="card" style={{ background: "#fff", borderRadius: 14, border: `2px solid ${s.color}20`, padding: 24, boxShadow: "0 4px 16px rgba(0,0,0,0.08)", position: "relative", overflow: "hidden", transition: "all 0.3s", cursor: "default" }}
-                        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                        <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: `${s.color}15` }} />
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                          <span style={{ fontSize: 24 }}>{s.icon}</span>
-                          <span style={{ fontSize: 13, color: "#64748b", fontWeight: 600, letterSpacing: "0.3px" }}>{s.label}</span>
+                      <div key={s.key} style={{ background: "#fff", borderRadius: 14, border: "1px solid #f1f5f9", padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default" }}
+                        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                        {/* Barre couleur en haut */}
+                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: s.color, borderRadius: "14px 14px 0 0" }} />
+                        {/* Label + valeur */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 4 }}>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 8 }}>{s.label}</div>
+                            <div style={{ fontSize: 36, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                              {s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
+                              <span style={{ fontSize: 14, fontWeight: 500, color: "#94a3b8", marginLeft: 5 }}>j</span>
+                            </div>
+                          </div>
+                          {/* Indicateur couleur */}
+                          <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <div style={{ width: 12, height: 12, borderRadius: "50%", background: s.color }} />
+                          </div>
                         </div>
-                        <div style={{ fontSize: 48, fontWeight: 800, color: s.color, letterSpacing: "-1px", marginBottom: 8 }}>
-                          {s.days.toLocaleString('fr-FR', { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
-                        </div>
-                        <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.3px" }}>
-                          {statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`}
-                        </div>
+                        {/* Barre de progression relative au total */}
+                        {totalDays > 0 && (
+                          <div style={{ marginTop: 16 }}>
+                            <div style={{ height: 4, background: "#f1f5f9", borderRadius: 2, overflow: "hidden" }}>
+                              <div style={{ height: "100%", width: Math.round((s.days / totalDays) * 100) + "%", background: s.color, borderRadius: 2, transition: "width 0.6s ease" }} />
+                            </div>
+                            <div style={{ fontSize: 10, color: "#cbd5e1", marginTop: 5, textAlign: "right" }}>{periodLabel}</div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </>
