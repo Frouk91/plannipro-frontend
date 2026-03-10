@@ -165,7 +165,13 @@ function getWeekDays(year, month, day) {
 }
 function dKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 
-function leaveFromBackend(l) { return { id: l.leave_type_code, code: l.leave_type_code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) }; }
+function leaveFromBackend(l) {
+  // Fallback si code NULL (type créé avant le fix backend)
+  const code = l.leave_type_code || (l.leave_type_label || "").toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+  return { id: code, code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
+}
 function requestFromBackend(l) {
   return {
     id: l.id, agentId: l.agent_id, agentName: `${l.first_name || ""} ${l.last_name || ""}`.trim(),
@@ -886,7 +892,13 @@ function PlanningApp({ currentUser, onLogout }) {
         const [teamsData, ltData, agentsData] = await Promise.all([apiFetch("/teams", token), apiFetch("/leave-types", token), apiFetch("/agents", token)]);
         const teamsResult = Array.isArray(teamsData) ? teamsData : []; setTeams(teamsResult);
         const ltResult = Array.isArray(ltData) ? ltData : [];
-        const ltFormatted = ltResult.map(lt => ({ ...lt, bg: hexToLight(lt.color) })); setLeaveTypes(ltFormatted);
+        const ltFormatted = ltResult.map(lt => ({
+          ...lt,
+          code: lt.code || (lt.label || "").toLowerCase()
+            .normalize("NFD").replace(/[̀-ͯ]/g, "")
+            .replace(/[^a-z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, ""),
+          bg: hexToLight(lt.color)
+        })); setLeaveTypes(ltFormatted);
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
