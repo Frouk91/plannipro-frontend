@@ -1858,7 +1858,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const rowBg = tp.row;
                             return (
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer", borderLeft: "3px solid " + tp.accent }}
+                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
@@ -2006,7 +2006,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const rowBg = tp.row;
                             return (
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer", borderLeft: "3px solid " + tp.accent }}
+                                <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
                                   onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
