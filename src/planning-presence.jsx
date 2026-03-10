@@ -2652,7 +2652,7 @@ function ValidationsView({ isManager, requests, pendingRequests, myRequests, onA
           {history.length > 0 && isManager && (
             <>
               <button onClick={() => { if (window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning.")) onClearHistory(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fecaca", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>Effacer l'historique</button>
-              <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>
+              {isAdmin && <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>}
             </>
           )}
           <button onClick={() => setShowHistory(h => !h)} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 11, fontWeight: 500, display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}>
