@@ -1941,7 +1941,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
                                   style={{ display: "flex", alignItems: "center", opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 11, color: "#cbd5e1", flexShrink: 0, cursor: "grab", userSelect: "none" }}>⠿</span>}
+                                  {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
@@ -2096,7 +2096,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
                                   style={{ display: "flex", alignItems: "center", opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 11, color: "#cbd5e1", flexShrink: 0, cursor: "grab", userSelect: "none" }}>⠿</span>}
+                                  {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
