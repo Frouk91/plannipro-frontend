@@ -334,9 +334,13 @@ function Field({ label, value, onChange, placeholder, style = {} }) {
 
 function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   const isMultiDay = leave.leaveStart !== leave.leaveEnd;
+  const menuW = 240;
+  const menuH = isMultiDay ? 140 : 100;
+  const safeX = Math.min(x, window.innerWidth - menuW - 8);
+  const safeY = Math.min(y, window.innerHeight - menuH - 8);
   return (
     <div onClick={e => e.stopPropagation()}
-      style={{ position: "fixed", top: y, left: x, background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: 230, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+      style={{ position: "fixed", top: safeY, left: safeX, background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
       <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#64748b", fontWeight: 600, background: "#f8fafc" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
