@@ -177,7 +177,9 @@ function requestFromBackend(l) {
 }
 async function apiFetch(path, token, options = {}) {
   const res = await fetch(`${API}${path}`, { ...options, headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) } });
-  return res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || data?.message || `Erreur ${res.status}`);
+  return data;
 }
 
 // ─── LOGIN ───
