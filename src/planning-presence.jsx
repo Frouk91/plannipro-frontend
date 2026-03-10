@@ -2164,49 +2164,56 @@ function PlanningApp({ currentUser, onLogout }) {
               });
               const sortedMonths = Object.values(monthsWithLeaves).sort((a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month);
               const activeCustom = statsFilter === "custom" && statsCustomMonth;
+              // Calculer les années disponibles (pour le calendrier)
+              const yearsAvailable = [...new Set(Object.values(monthsWithLeaves).map(x => x.year))].sort((a,b) => b-a);
+              if (!yearsAvailable.includes(year)) yearsAvailable.push(year);
+              yearsAvailable.sort((a,b) => b-a);
+              const pickerYear = (statsFilter === "custom" && statsCustomMonth) ? statsCustomMonth.year : year;
               return (
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-                  {/* Bouton mois en cours */}
-                  <button onClick={() => { setStatsFilter("month"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (statsFilter === "month" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "month" ? "#eef2ff" : "#fff", color: statsFilter === "month" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: statsFilter === "month" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "month" ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
-                    <span style={{ fontSize: 15 }}>📅</span>
-                    {MONTHS_FR[month]} {year}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+                  {/* Mois en cours */}
+                  <button onClick={() => { setStatsFilter("month"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, border: "1.5px solid " + (statsFilter === "month" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "month" ? "#eef2ff" : "#fff", color: statsFilter === "month" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === "month" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "month" ? "0 1px 6px rgba(99,102,241,0.18)" : "none" }}>
+                    <span style={{ fontSize: 13 }}>📅</span> Mois en cours
                   </button>
-                  {/* Bouton années */}
-                  <button onClick={() => { setStatsFilter("year"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (statsFilter === "year" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "year" ? "#eef2ff" : "#fff", color: statsFilter === "year" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: statsFilter === "year" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "year" ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
-                    <span style={{ fontSize: 15 }}>📆</span>
-                    Année {year}
+                  {/* Année */}
+                  <button onClick={() => { setStatsFilter("year"); setStatsPickerOpen(false); }} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, border: "1.5px solid " + (statsFilter === "year" ? "#6366f1" : "#e2e8f0"), background: statsFilter === "year" ? "#eef2ff" : "#fff", color: statsFilter === "year" ? "#4338ca" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: statsFilter === "year" ? 700 : 500, transition: "all 0.15s", boxShadow: statsFilter === "year" ? "0 1px 6px rgba(99,102,241,0.18)" : "none" }}>
+                    <span style={{ fontSize: 13 }}>📆</span> Année {year}
                   </button>
-                  {/* Bouton mois avec congés */}
+                  {/* Calendrier mois */}
                   <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                    <button onClick={() => setStatsPickerOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 10, border: "2px solid " + (activeCustom || statsPickerOpen ? "#6366f1" : "#e2e8f0"), background: activeCustom ? "#eef2ff" : statsPickerOpen ? "#f5f3ff" : "#fff", color: activeCustom ? "#4338ca" : statsPickerOpen ? "#6366f1" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: activeCustom ? 700 : 500, transition: "all 0.15s", boxShadow: (activeCustom || statsPickerOpen) ? "0 2px 8px rgba(99,102,241,0.18)" : "none" }}>
-                      <span style={{ fontSize: 15 }}>🗓️</span>
+                    <button onClick={() => setStatsPickerOpen(p => !p)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 8, border: "1.5px solid " + (activeCustom || statsPickerOpen ? "#6366f1" : "#e2e8f0"), background: activeCustom ? "#eef2ff" : statsPickerOpen ? "#f5f3ff" : "#fff", color: activeCustom ? "#4338ca" : statsPickerOpen ? "#6366f1" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: activeCustom ? 700 : 500, transition: "all 0.15s", boxShadow: (activeCustom || statsPickerOpen) ? "0 1px 6px rgba(99,102,241,0.18)" : "none" }}>
+                      <span style={{ fontSize: 13 }}>🗓️</span>
                       {activeCustom ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : "Autre mois"}
-                      <span style={{ fontSize: 10, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: statsPickerOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
-                      {sortedMonths.length > 0 && <span style={{ background: "#6366f1", color: "#fff", borderRadius: 99, fontSize: 10, fontWeight: 700, padding: "1px 6px", marginLeft: 2 }}>{sortedMonths.length}</span>}
+                      <span style={{ fontSize: 9, marginLeft: 1, display: "inline-block", transform: statsPickerOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▾</span>
                     </button>
                     {statsPickerOpen && (
-                      <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, minWidth: 240, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                        <div style={{ padding: "12px 16px 8px", borderBottom: "1px solid #f1f5f9" }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mois avec congés</div>
-                        </div>
-                        {sortedMonths.length === 0 ? (
-                          <div style={{ padding: "20px 16px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>Aucun congé trouvé</div>
-                        ) : (
-                          <div style={{ maxHeight: 280, overflowY: "auto" }}>
-                            {sortedMonths.map(({ year: y, month: m }) => {
-                              const isActive = activeCustom && statsCustomMonth.year === y && statsCustomMonth.month === m;
-                              return (
-                                <button key={`${y}-${m}`} onClick={() => { setStatsFilter("custom"); setStatsCustomMonth({ year: y, month: m }); setStatsPickerOpen(false); }}
-                                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "10px 16px", border: "none", background: isActive ? "#eef2ff" : "none", cursor: "pointer", transition: "background 0.1s" }}
-                                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "#f8fafc"; }}
-                                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "none"; }}>
-                                  <span style={{ fontSize: 13, fontWeight: isActive ? 700 : 500, color: isActive ? "#4338ca" : "#1e293b" }}>{MONTHS_FR[m]} {y}</span>
-                                  {isActive && <span style={{ fontSize: 12, color: "#6366f1" }}>✓</span>}
-                                </button>
-                              );
-                            })}
+                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, background: "#fff", borderRadius: 16, boxShadow: "0 16px 48px rgba(0,0,0,0.16)", border: "1px solid #e2e8f0", zIndex: 9999, width: 280, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                        {/* Header année avec navigation */}
+                        {yearsAvailable.map(yr => (
+                          <div key={yr}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 8px", borderBottom: "1px solid #f1f5f9" }}>
+                              <span style={{ fontSize: 13, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
+                              <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 500 }}>
+                                {Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés
+                              </span>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
+                              {Array.from({ length: 12 }, (_, mi) => {
+                                const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi+1).padStart(2,"0")}`];
+                                const isActive = activeCustom && statsCustomMonth.year === yr && statsCustomMonth.month === mi;
+                                const isCurrentMonth = yr === year && mi === month;
+                                return (
+                                  <button key={mi} onClick={() => { if (!hasLeave) return; setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); setStatsPickerOpen(false); }}
+                                    style={{ padding: "7px 4px", borderRadius: 8, border: isActive ? "2px solid #6366f1" : isCurrentMonth && !isActive ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isActive ? "#6366f1" : hasLeave ? "#f1f5f9" : "none", color: isActive ? "#fff" : hasLeave ? "#1e293b" : "#d1d5db", cursor: hasLeave ? "pointer" : "default", fontSize: 11, fontWeight: isActive ? 700 : hasLeave ? 600 : 400, transition: "all 0.1s", textAlign: "center", opacity: hasLeave ? 1 : 0.5 }}
+                                    onMouseEnter={e => { if (hasLeave && !isActive) e.currentTarget.style.background = "#e0e7ff"; }}
+                                    onMouseLeave={e => { if (hasLeave && !isActive) e.currentTarget.style.background = "#f1f5f9"; }}>
+                                    {MONTHS_FR[mi].slice(0,3)}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        )}
+                        ))}
                       </div>
                     )}
                   </div>
