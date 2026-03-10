@@ -136,17 +136,16 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   );
 }
 function teamPalette(teamName) {
-  // row: fond de ligne, wk: week-end, header: en-tête groupe, border: accent, text: couleur texte header, accent: barre gauche
   const palettes = {
-    "Css Digital":      { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
-    "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
-    "MANAGER":            { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
+    "Css Digital":      { row: "rgba(59,130,246,0.06)",  wk: "rgba(59,130,246,0.03)",  header: "rgba(59,130,246,0.2)", border: "#3b82f6", text: "#93c5fd", accent: "#3b82f6" },
+    "Mailing Solution": { row: "rgba(124,58,237,0.06)",  wk: "rgba(124,58,237,0.03)",  header: "rgba(124,58,237,0.2)", border: "#7c3aed", text: "#c4b5fd", accent: "#7c3aed" },
+    "MANAGER":          { row: "rgba(5,150,105,0.06)",   wk: "rgba(5,150,105,0.03)",   header: "rgba(5,150,105,0.2)",  border: "#059669", text: "#6ee7b7", accent: "#059669" },
   };
   const defaults = [
-    { row: "#edfdf4", wk: "#cef0dc", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
-    { row: "#fff4e6", wk: "#fde4c0", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
-    { row: "#fef0f8", wk: "#f9d5ec", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
-    { row: "#e8fafa", wk: "#c4eaec", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
+    { row: "rgba(34,197,94,0.06)",  wk: "rgba(34,197,94,0.03)",  header: "rgba(34,197,94,0.2)",  border: "#22c55e", text: "#86efac", accent: "#22c55e" },
+    { row: "rgba(249,115,22,0.06)", wk: "rgba(249,115,22,0.03)", header: "rgba(249,115,22,0.2)", border: "#f97316", text: "#fdba74", accent: "#f97316" },
+    { row: "rgba(236,72,153,0.06)", wk: "rgba(236,72,153,0.03)", header: "rgba(236,72,153,0.2)", border: "#ec4899", text: "#f9a8d4", accent: "#ec4899" },
+    { row: "rgba(6,182,212,0.06)",  wk: "rgba(6,182,212,0.03)",  header: "rgba(6,182,212,0.2)",  border: "#06b6d4", text: "#67e8f9", accent: "#06b6d4" },
   ];
   if (palettes[teamName]) return palettes[teamName];
   const idx = Math.abs((teamName||"").split("").reduce((a,c) => a + c.charCodeAt(0), 0)) % defaults.length;
@@ -1464,7 +1463,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "10px 14px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", backdropFilter: "blur(12px)" }}>
+            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "10px 14px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", backdropFilter: "blur(16px)" }}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                 {[
@@ -1479,7 +1478,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     padding: "8px 18px", border: `2px solid ${filterMode === tab.mode ? tab.color : "#e2e8f0"}`,
                     borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: filterMode === tab.mode ? 700 : 500,
                     color: filterMode === tab.mode ? tab.color : "#94a3b8",
-                    background: filterMode === tab.mode ? tab.bg : "#fff",
+                    background: filterMode === tab.mode ? tab.bg : "rgba(255,255,255,0.06)",
                     boxShadow: filterMode === tab.mode ? `0 2px 8px ${tab.color}30` : "none",
                     transition: "all 0.15s"
                   }}>
@@ -1938,7 +1937,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -1967,7 +1966,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "rgba(251,191,36,0.08)" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.15)" : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -2093,7 +2092,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -2125,7 +2124,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "rgba(251,191,36,0.08)" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.15)" : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -2291,7 +2290,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             return (
                               <div key={teamName}>
-                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>
+                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                                   {teamName}
                                 </div>
                                 {teamAgents.map(a => (
