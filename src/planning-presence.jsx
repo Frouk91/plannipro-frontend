@@ -2469,7 +2469,7 @@ function PlanningApp({ currentUser, onLogout }) {
         return (
           <>
             <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 99998, backdropFilter: "blur(4px)" }} />
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "slideIn 0.2s ease" }}>
               <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
