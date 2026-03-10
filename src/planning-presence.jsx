@@ -1761,8 +1761,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
                             return (
                               <div style={{ display: "flex", flexDirection: "column", gap: 1, marginTop: 2, alignItems: "center" }}>
-                                {nRueil > 0 && <div style={{ fontSize: 7, fontWeight: 700, color: "#fff", background: rueilColor, borderRadius: 3, padding: "0 3px", lineHeight: "14px", minWidth: 14, textAlign: "center" }}>R{nRueil}</div>}
-                                {nParis > 0 && <div style={{ fontSize: 7, fontWeight: 700, color: "#fff", background: parisColor, borderRadius: 3, padding: "0 3px", lineHeight: "14px", minWidth: 14, textAlign: "center" }}>P{nParis}</div>}
+                                {nRueil > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nRueil}</div>}
+                                {nParis > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nParis}</div>}
                               </div>
                             );
                           })()}
@@ -1910,8 +1910,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
                             return (
                               <div style={{ display: "flex", gap: 4, justifyContent: "center", marginTop: 4, flexWrap: "wrap" }}>
-                                {nRueil > 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: rueilColor, borderRadius: 5, padding: "2px 7px" }}>🏢 Rueil {nRueil}</div>}
-                                {nParis > 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: parisColor, borderRadius: 5, padding: "2px 7px" }}>🏢 Paris {nParis}</div>}
+                                {nRueil > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nRueil}</div>}
+                                {nParis > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nParis}</div>}
                               </div>
                             );
                           })()}
