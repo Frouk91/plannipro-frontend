@@ -1278,56 +1278,85 @@ function PlanningApp({ currentUser, onLogout }) {
   ];
 
   if (!dataLoaded) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", fontFamily: "'Outfit',sans-serif", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#060818", fontFamily: "'Outfit',sans-serif", position: "relative", overflow: "hidden" }}>
       <style>{GLOBAL_STYLE}</style>
-
-      {/* Éléments de fond animés */}
-      <div style={{ position: "absolute", top: "-50%", left: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", borderRadius: "50%", animation: "float 20s infinite ease-in-out" }} />
-      <div style={{ position: "absolute", bottom: "-30%", right: "-5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)", borderRadius: "50%", animation: "float 25s infinite ease-in-out reverse" }} />
-
       <style>{`
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes gearCW  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+        @keyframes gearCCW { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+        @keyframes gearMD  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+        @keyframes fadeUp  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes loadBar { 0%{width:0%} 100%{width:100%} }
+        @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+        @keyframes auroraL { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
+        @keyframes auroraR { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-40px,30px) scale(1.15);} }
       `}</style>
 
-      <div style={{ textAlign: "center", position: "relative", zIndex: 10, animation: "slideInUp 0.8s ease" }}>
-        {/* Spinner circulaire */}
-        <div style={{ width: "100px", height: "100px", marginBottom: "32px", position: "relative", display: "inline-block" }}>
-          {/* Cercle extérieur animé */}
-          <svg width="100" height="100" style={{ position: "absolute", inset: 0, animation: "spin 3s linear infinite" }}>
-            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#grad1)" strokeWidth="3" strokeLinecap="round" strokeDasharray="180,280" />
+      {/* Auroras */}
+      <div style={{position:"absolute",top:"-20%",left:"-15%",width:"60vw",height:"60vw",background:"radial-gradient(ellipse,rgba(99,102,241,0.3) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(60px)",animation:"auroraL 16s ease-in-out infinite"}} />
+      <div style={{position:"absolute",bottom:"-20%",right:"-15%",width:"55vw",height:"55vw",background:"radial-gradient(ellipse,rgba(6,182,212,0.22) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(70px)",animation:"auroraR 20s ease-in-out infinite"}} />
+      {/* Grille */}
+      <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",backgroundSize:"48px 48px"}} />
+
+      <div style={{ textAlign: "center", position: "relative", zIndex: 10, animation: "fadeUp 0.7s ease both" }}>
+
+        {/* Engrenages SVG */}
+        <div style={{ position: "relative", width: 180, height: 160, margin: "0 auto 36px" }}>
+
+          {/* Grand engrenage gauche */}
+          <svg width="110" height="110" style={{ position: "absolute", top: 25, left: 0, animation: "gearCW 4s linear infinite", filter: "drop-shadow(0 0 12px rgba(99,102,241,0.5))" }} viewBox="0 0 100 100">
             <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: "#3b82f6", stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: "#06b6d4", stopOpacity: 1 }} />
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="100%" stopColor="#818cf8" />
               </linearGradient>
             </defs>
+            <path fill="url(#g1)" d="M43 5h14l2 10a33 33 0 0 1 8 3l9-5 10 10-5 9a33 33 0 0 1 3 8l10 2v14l-10 2a33 33 0 0 1-3 8l5 9-10 10-9-5a33 33 0 0 1-8 3l-2 10H43l-2-10a33 33 0 0 1-8-3l-9 5-10-10 5-9a33 33 0 0 1-3-8L6 57V43l10-2a33 33 0 0 1 3-8l-5-9 10-10 9 5a33 33 0 0 1 8-3z" opacity="0.95"/>
+            <circle cx="50" cy="50" r="16" fill="#0f172a" />
+            <circle cx="50" cy="50" r="5" fill="url(#g1)" opacity="0.7"/>
           </svg>
 
-          {/* Cercle intérieur (contour) */}
-          <svg width="100" height="100" style={{ position: "absolute", inset: 0, animation: "spin 2s linear infinite reverse" }}>
-            <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(59,130,246,0.2)" strokeWidth="2" />
+          {/* Petit engrenage droite-haut */}
+          <svg width="72" height="72" style={{ position: "absolute", top: 0, right: 8, animation: "gearCCW 2.67s linear infinite", filter: "drop-shadow(0 0 8px rgba(6,182,212,0.5))" }} viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#67e8f9" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#g2)" d="M43 5h14l2 10a33 33 0 0 1 8 3l9-5 10 10-5 9a33 33 0 0 1 3 8l10 2v14l-10 2a33 33 0 0 1-3 8l5 9-10 10-9-5a33 33 0 0 1-8 3l-2 10H43l-2-10a33 33 0 0 1-8-3l-9 5-10-10 5-9a33 33 0 0 1-3-8L6 57V43l10-2a33 33 0 0 1 3-8l-5-9 10-10 9 5a33 33 0 0 1 8-3z" opacity="0.9"/>
+            <circle cx="50" cy="50" r="16" fill="#0f172a" />
+            <circle cx="50" cy="50" r="5" fill="url(#g2)" opacity="0.7"/>
           </svg>
 
-          {/* Centre avec logo */}
-          <div style={{ position: "absolute", inset: "50%", transform: "translate(-50%,-50%)", width: "60px", height: "60px", background: "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)", borderRadius: "14px", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)" }}>
-            <span style={{ fontSize: "28px" }}>📅</span>
-          </div>
+          {/* Engrenage mini droite-bas */}
+          <svg width="52" height="52" style={{ position: "absolute", bottom: 0, right: 24, animation: "gearCW 1.78s linear infinite", filter: "drop-shadow(0 0 6px rgba(139,92,246,0.5))" }} viewBox="0 0 100 100">
+            <defs>
+              <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#c4b5fd" />
+              </linearGradient>
+            </defs>
+            <path fill="url(#g3)" d="M43 5h14l2 10a33 33 0 0 1 8 3l9-5 10 10-5 9a33 33 0 0 1 3 8l10 2v14l-10 2a33 33 0 0 1-3 8l5 9-10 10-9-5a33 33 0 0 1-8 3l-2 10H43l-2-10a33 33 0 0 1-8-3l-9 5-10-10 5-9a33 33 0 0 1-3-8L6 57V43l10-2a33 33 0 0 1 3-8l-5-9 10-10 9 5a33 33 0 0 1 8-3z" opacity="0.85"/>
+            <circle cx="50" cy="50" r="16" fill="#0f172a" />
+            <circle cx="50" cy="50" r="5" fill="url(#g3)" opacity="0.7"/>
+          </svg>
         </div>
 
-        {/* Texte de chargement */}
-        <div style={{ color: "#f8fafc", fontSize: "18px", fontWeight: "600", marginBottom: "12px", animation: "slideInUp 0.8s ease 0.2s both" }}>Chargement en cours</div>
+        {/* Titre */}
+        <div style={{ color: "#f8fafc", fontSize: "20px", fontWeight: "700", marginBottom: 6, letterSpacing: "-0.3px", animation: "fadeUp 0.7s ease 0.15s both" }}>Chargement en cours</div>
+        <div style={{ color: "rgba(148,163,184,0.7)", fontSize: "12px", marginBottom: 28, animation: "fadeUp 0.7s ease 0.25s both" }}>Veuillez patienter…</div>
 
-        {/* Points animés */}
-        <div style={{ display: "flex", justifyContent: "center", gap: "6px", height: "20px" }}>
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3b82f6", animation: "pulse 1.4s ease-in-out infinite" }} />
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#06b6d4", animation: "pulse 1.4s ease-in-out infinite 0.2s" }} />
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3b82f6", animation: "pulse 1.4s ease-in-out infinite 0.4s" }} />
+        {/* Barre de progression */}
+        <div style={{ width: 200, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 99, margin: "0 auto 20px", overflow: "hidden", animation: "fadeUp 0.7s ease 0.35s both" }}>
+          <div style={{ height: "100%", background: "linear-gradient(90deg,#6366f1,#06b6d4)", borderRadius: 99, animation: "loadBar 2.5s cubic-bezier(0.4,0,0.2,1) infinite" }} />
         </div>
 
-        {/* Sous-texte */}
-        <div style={{ color: "#cbd5e1", fontSize: "12px", marginTop: "16px", fontWeight: "400" }}>Veuillez patienter...</div>
+        {/* Points */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, animation: "fadeUp 0.7s ease 0.4s both" }}>
+          {[0,1,2].map(i => (
+            <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i===1?"#06b6d4":"#6366f1", animation: `dotBounce 1.2s ease-in-out infinite`, animationDelay: `${i*0.2}s` }} />
+          ))}
+        </div>
       </div>
     </div>
   );
