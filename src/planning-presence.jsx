@@ -137,15 +137,15 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
 }
 function teamPalette(teamName) {
   const palettes = {
-    "Css Digital":      { row: "rgba(59,130,246,0.06)",  wk: "rgba(59,130,246,0.03)",  header: "rgba(59,130,246,0.2)", border: "#3b82f6", text: "#93c5fd", accent: "#3b82f6" },
-    "Mailing Solution": { row: "rgba(124,58,237,0.06)",  wk: "rgba(124,58,237,0.03)",  header: "rgba(124,58,237,0.2)", border: "#7c3aed", text: "#c4b5fd", accent: "#7c3aed" },
-    "MANAGER":          { row: "rgba(5,150,105,0.06)",   wk: "rgba(5,150,105,0.03)",   header: "rgba(5,150,105,0.2)",  border: "#059669", text: "#6ee7b7", accent: "#059669" },
+    "Css Digital":      { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
+    "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
+    "MANAGER":          { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
   };
   const defaults = [
-    { row: "rgba(34,197,94,0.06)",  wk: "rgba(34,197,94,0.03)",  header: "rgba(34,197,94,0.2)",  border: "#22c55e", text: "#86efac", accent: "#22c55e" },
-    { row: "rgba(249,115,22,0.06)", wk: "rgba(249,115,22,0.03)", header: "rgba(249,115,22,0.2)", border: "#f97316", text: "#fdba74", accent: "#f97316" },
-    { row: "rgba(236,72,153,0.06)", wk: "rgba(236,72,153,0.03)", header: "rgba(236,72,153,0.2)", border: "#ec4899", text: "#f9a8d4", accent: "#ec4899" },
-    { row: "rgba(6,182,212,0.06)",  wk: "rgba(6,182,212,0.03)",  header: "rgba(6,182,212,0.2)",  border: "#06b6d4", text: "#67e8f9", accent: "#06b6d4" },
+    { row: "#edfdf4", wk: "#cef0dc", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
+    { row: "#fff4e6", wk: "#fde4c0", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
+    { row: "#fef0f8", wk: "#f9d5ec", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
+    { row: "#e8fafa", wk: "#c4eaec", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
   ];
   if (palettes[teamName]) return palettes[teamName];
   const idx = Math.abs((teamName||"").split("").reduce((a,c) => a + c.charCodeAt(0), 0)) % defaults.length;
@@ -368,7 +368,7 @@ function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   return (
     <div onClick={e => e.stopPropagation()}
       style={{ position: "fixed", top: safeY, left: safeX, background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-      <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#64748b", fontWeight: 600, background: "rgba(255,255,255,0.02)" }}>
+      <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#64748b", fontWeight: 600, background: "#f8fafc" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
       <button onClick={e => { e.stopPropagation(); onDeleteDay(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>✂️ Supprimer ce jour seulement</button>
@@ -398,7 +398,7 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
   const [label, setLabel] = useState(lt.label);
   const [color, setColor] = useState(lt.color);
   return (
-    <div style={{ padding: "12px 16px", background: "rgba(255,255,255,0.02)" }}>
+    <div style={{ padding: "12px 16px", background: "#f8fafc" }}>
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
         <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
         <input
@@ -458,8 +458,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       </div>
       {tab === "agents" && (
         <div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.3)", backdropFilter: "blur(8px)" }}>
-            <div style={{ padding: "10px 16px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+            <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{agents.length} agent{agents.length > 1 ? "s" : ""}</span>
               <button onClick={() => setAddModal(true)} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: "#1e293b", color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>+ Ajouter</button>
             </div>
@@ -496,7 +496,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
             const unassigned = agents.filter(a => !a.team || a.team !== team.name);
             return (
               <div key={team.id || team.name} style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", marginBottom: 10, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "10px 16px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{team.name}</span>
                     <span style={{ fontSize: 11, color: "#94a3b8" }}>{teamAgents.length} agent{teamAgents.length > 1 ? "s" : ""}</span>
@@ -509,7 +509,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <span style={{ fontSize: 12, fontWeight: 500, color: "#1e293b", flex: 1 }}>{a.name}</span>
-                    <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "2px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "rgba(255,255,255,0.02)", cursor: "pointer", fontSize: 10, color: "#94a3b8" }}>Retirer</button>
+                    <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "2px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", fontSize: 10, color: "#94a3b8" }}>Retirer</button>
                   </div>
                 ))}
                 {unassigned.filter(a => a.role !== "admin").length > 0 && (
@@ -537,7 +537,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               <ColorPicker selected={newLT.color} onChange={c => setNewLT(p => ({ ...p, color: c }))} />
             </div>
           </div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.3)", backdropFilter: "blur(8px)" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
             {sortLeaveTypes(leaveTypes).map((lt, i) => (
               <div key={lt.id} style={{ borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none" }}>
                 {editLT === lt.id ? (
@@ -1463,7 +1463,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "10px 14px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", backdropFilter: "blur(16px)" }}>
+            <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "10px 14px", marginBottom: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                 {[
@@ -1810,7 +1810,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                       {rows.map(r => <col key={`col-${r}`} style={{ width: `${20 / rows.length}%` }} />)}
                                       {rows.length > 1 && <col style={{ width: "20%" }} />}
                                     </colgroup>
-                                    <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(10,14,36,0.92)", backdropFilter: "blur(12px)" }}>
+                                    <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                                       <tr style={{ background: "#fafafa" }}>
                                         <th style={{ padding: "8px 16px", textAlign: "left", fontWeight: 600, color: "#64748b", fontSize: 11, borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap", position: "sticky", left: 0, zIndex: 21, background: "#fafafa" }}>Agent</th>
                                         {rows.map(r => (
@@ -1883,15 +1883,15 @@ function PlanningApp({ currentUser, onLogout }) {
               }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                   <colgroup><col style={{ width: 160 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
-                  <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(6,8,24,0.85)", backdropFilter: "blur(12px)" }}>
+                  <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(10,14,36,0.9)", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
                       {Array.from({ length: daysInMonth }, (_, i) => {
                         const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day, isFer = !!feries[k];
                         const absent = countAbsents(k);
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
-                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "rgba(245,158,11,0.15)" : isToday ? "rgba(99,102,241,0.2)" : isFer ? "rgba(251,191,36,0.1)" : wk ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.03)", color: isAstrDay ? "#fbbf24" : isToday ? "#a5b4fc" : isFer ? "#fbbf24" : wk ? "#475569" : "#64748b", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "rgba(251,191,36,0.4)" : "rgba(255,255,255,0.06)"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
+                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
                           <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
                             {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
@@ -1910,9 +1910,9 @@ function PlanningApp({ currentUser, onLogout }) {
                             })()}
                           </div>
                           <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#a5b4fc" : isFer ? "#fbbf24" : wk ? "#334155" : "#94a3b8", marginTop: 1 }}>{day}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
-                          {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#a5b4fc", margin: "1px auto 0" }} />}
+                          {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6366f1", margin: "1px auto 0" }} />}
                         </th>;
                       })}
                     </tr>
@@ -1927,7 +1927,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
                             <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           ); })()}
@@ -1937,7 +1937,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -1950,7 +1950,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#a5b4fc" : selectedAgentRow === agent.id ? "#60a5fa" : "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
                                 </td>
                                 {Array.from({ length: daysInMonth }, (_, i) => {
@@ -1966,7 +1966,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feries[k]}` : ""}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "rgba(251,191,36,0.08)" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.15)" : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 36, position: "relative", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
                                       const aAgentId = astreintes[aKey];
@@ -2039,15 +2039,15 @@ function PlanningApp({ currentUser, onLogout }) {
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "rgba(6,8,24,0.85)", backdropFilter: "blur(12px)" }}>
+                  <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(10,14,36,0.9)", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
                       {weekDays.map((d, i) => {
                         const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now);
                         const feriesDay = getFeries(d.getFullYear());
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
-                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "rgba(99,102,241,0.2)" : isFer ? "rgba(251,191,36,0.1)" : wk ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.03)", color: isToday ? "#a5b4fc" : isFer ? "#fbbf24" : wk ? "#475569" : "#64748b", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "rgba(251,191,36,0.4)" : "rgba(255,255,255,0.06)"}`, borderLeft: "1px solid #f8fafc" }}>
+                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
                           <div style={{ height: 24, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
                             {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
@@ -2066,7 +2066,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             })()}
                           </div>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
-                          <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#a5b4fc" : isFer ? "#fbbf24" : wk ? "#334155" : "#e2e8f0", marginTop: 2 }}>{d.getDate()}</div>
+                          <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
                           {isFer && <div style={{ fontSize: 9, color: "#d97706", marginTop: 2 }} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
                         </th>;
@@ -2082,7 +2082,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <React.Fragment key={teamName}>
                           {(() => { const tp = teamPalette(teamName); return (
-                          <tr style={{ background: tp.header, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                          <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
                             <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
                           </tr>
                           ); })()}
@@ -2092,7 +2092,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -2105,7 +2105,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#a5b4fc" : selectedAgentRow === agent.id ? "#60a5fa" : "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
                                 </td>
                                 {weekDays.map((d, i) => {
@@ -2124,7 +2124,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : ""}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? "rgba(255,255,255,0.01)" : isFer ? "rgba(251,191,36,0.08)" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.15)" : rowBg, borderLeft: "1px solid rgba(255,255,255,0.04)", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -2250,7 +2250,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
                       {/* Search */}
                       <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
                           <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
                           <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher par nom ou équipe..." style={{ flex: 1, border: "none", background: "none", fontSize: 12, color: "#1e293b", outline: "none" }} />
                           {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
@@ -2290,7 +2290,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             return (
                               <div key={teamName}>
-                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>
                                   {teamName}
                                 </div>
                                 {teamAgents.map(a => (
@@ -2410,7 +2410,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <>
                     {/* Bandeau agent si manager */}
                     {isManager && selectedAgentForStats && (
-                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
+                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
                         <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
                         <div>
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
@@ -2807,7 +2807,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
     <div style={{ padding: 24, maxWidth: 820, animation: "fadeIn 0.3s ease" }}>
-      <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
+      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
         onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
         onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
         <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
@@ -2859,7 +2859,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-              <div style={{ padding: "10px 16px", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>Historique</span>
                 <span style={{ fontSize: 11, color: "#94a3b8" }}>{history.filter(r => statusFilter === "all" || r.status === statusFilter).length} demande{history.length > 1 ? "s" : ""}</span>
               </div>
