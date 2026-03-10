@@ -845,10 +845,17 @@ function PlanningApp({ currentUser, onLogout }) {
       if (filterType === "month") { if (leaveYear !== year || leaveMonth !== month) return; }
       else if (filterType === "year") { if (leaveYear !== year) return; }
       else if (filterType === "custom" && statsCustomMonth) { if (leaveYear !== statsCustomMonth.year || leaveMonth !== statsCustomMonth.month) return; }
+      // Exclure week-ends du comptage (sauf demi-journées qui ont leur propre poids)
+      const dow = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getDay();
+      if (dow === 0 || dow === 6) return; // dimanche = 0, samedi = 6
+      // Exclure les congés en attente des stats
+      if (leave.status === "pending") return;
       const days = getDaysForLeaveType(leave);
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
-      if (code.includes("cp") || lbl.includes("congé payé") || lbl.includes("cp")) { stats.cp += days; }
+      // Ordre important : veille_de_cp avant cp pour éviter faux-positif
+      if (code === "veille_de_cp" || code === "veille_de_ferie") { /* ne pas compter dans CP */ }
+      else if (code.includes("cp") || lbl.includes("congé payé") || lbl === "cp") { stats.cp += days; }
       else if (code.includes("rtt") || lbl.includes("rtt")) { stats.rtt += days; }
       else if (code.includes("pont") || lbl.includes("pont")) { stats.pont += days; }
       else if (code.includes("absence") || lbl.includes("absence")) { stats.absence += days; }
