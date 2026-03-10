@@ -1123,7 +1123,8 @@ function PlanningApp({ currentUser, onLogout }) {
       const data = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: leaveType.code, start_date: start, end_date: end, reason: reason || null, agent_id: agentId }) });
       if (data.leave) {
         const agentCanPresence = agents.find(a => a.id === agentId)?.can_book_presence_sites;
-        const autoApprove = isManager || (filterMode === "presence" && agentCanPresence && isPresenceType(leaveType));
+        const isPont = (leaveType.code || "").toLowerCase().includes("pont") || (leaveType.label || "").toLowerCase().includes("pont");
+        const autoApprove = (isManager && !isPont) || (filterMode === "presence" && agentCanPresence && isPresenceType(leaveType));
         if (autoApprove) {
           await apiFetch(`/leaves/${data.leave.id}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
           showNotif(filterMode === "presence" ? "Présence enregistrée ✅" : "Congé sauvegardé ✅");
