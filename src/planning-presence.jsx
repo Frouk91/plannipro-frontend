@@ -1497,7 +1497,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 {/* Navigation date */}
                 <div style={{ display: "flex", alignItems: "center", gap: 2, position: "relative" }}>
                   <button onClick={() => { if (planView === "month") { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() - 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 16, color: "#94a3b8", lineHeight: 1 }}>‹</button>
-                  <button onClick={() => setShowMonthPicker(p => !p)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 13, fontWeight: 700, color: "#1e293b", minWidth: planView === "month" ? 130 : 180, textAlign: "center", borderRadius: 6, transition: "background 0.15s" }}
+                  <button onClick={() => setShowMonthPicker(p => !p)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 12, fontWeight: 600, color: "#1e293b", minWidth: planView === "month" ? 130 : 180, textAlign: "center", borderRadius: 6, transition: "background 0.15s" }}
                     onMouseEnter={e => e.target.style.background = "#f1f5f9"} onMouseLeave={e => e.target.style.background = "none"}>
                     {planView === "month" ? `${MONTHS_FR[month]} ${year}` : weekLabel()} <span style={{ fontSize: 9, color: "#94a3b8" }}>▾</span>
                   </button>
@@ -2225,20 +2225,20 @@ function PlanningApp({ currentUser, onLogout }) {
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Agent</div>
                   {/* Trigger */}
                   <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, border: "2px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.12)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.15s", userSelect: "none" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 9, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none" }}>
                     {selAgent ? (
                       <>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
                           <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                         </div>
                       </>
                     ) : (
                       <>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
                           <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
                         </div>
                       </>
@@ -2429,7 +2429,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 4 }}>
                           <div>
                             <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 8 }}>{s.label}</div>
-                            <div style={{ fontSize: 36, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.5px", lineHeight: 1 }}>
+                            <div style={{ fontSize: 32, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>
                               {s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
                               <span style={{ fontSize: 14, fontWeight: 500, color: "#94a3b8", marginLeft: 5 }}>j</span>
                             </div>
