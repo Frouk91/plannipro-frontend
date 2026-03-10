@@ -10,7 +10,7 @@ const COLORS = [
   "#ef4444", "#dc2626", "#ec4899", "#f43f5e",
   "#64748b", "#475569", "#1e293b", "#78716c", "#92400e",
 ];
-const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail"];
+const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail", "pont"];
 const PRESENCE_CODES = ["rueil", "paris"];
 function isPresenceType(t) { return PRESENCE_CODES.includes((t.code || "").toLowerCase()) || ["rueil", "paris"].includes((t.label || "").toLowerCase()); }
 function isPresenceCode(code, label) { return PRESENCE_CODES.includes((code || "").toLowerCase()) || ["rueil", "paris"].includes((label || "").toLowerCase()); }
