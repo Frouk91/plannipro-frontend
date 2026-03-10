@@ -1814,21 +1814,23 @@ function PlanningApp({ currentUser, onLogout }) {
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
                         return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
-                            <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, margin: "0 auto 2px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
-                          )}
-                          {filterMode === "presence" && !wk && (() => {
-                            const nRueil = countPresence(k, "rueil");
-                            const nParis = countPresence(k, "paris");
-                            const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                            const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
-                            return (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 1, marginBottom: 2, alignItems: "center" }}>
-                                {nRueil > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nRueil}</div>}
-                                {nParis > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nParis}</div>}
-                              </div>
-                            );
-                          })()}
+                          <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
+                            {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
+                              <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
+                            )}
+                            {filterMode === "presence" && !wk && (() => {
+                              const nRueil = countPresence(k, "rueil");
+                              const nParis = countPresence(k, "paris");
+                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              return (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center" }}>
+                                  {nRueil > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nRueil}</div>}
+                                  {nParis > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nParis}</div>}
+                                </div>
+                              );
+                            })()}
+                          </div>
                           <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
@@ -1963,21 +1965,23 @@ function PlanningApp({ currentUser, onLogout }) {
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
                         return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
-                          {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
-                            <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, margin: "0 auto 4px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
-                          )}
-                          {filterMode === "presence" && !wk && (() => {
-                            const nRueil = countPresence(k, "rueil");
-                            const nParis = countPresence(k, "paris");
-                            const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                            const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
-                            return (
-                              <div style={{ display: "flex", gap: 4, justifyContent: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                                {nRueil > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nRueil}</div>}
-                                {nParis > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nParis}</div>}
-                              </div>
-                            );
-                          })()}
+                          <div style={{ height: 24, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
+                            {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
+                              <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
+                            )}
+                            {filterMode === "presence" && !wk && (() => {
+                              const nRueil = countPresence(k, "rueil");
+                              const nParis = countPresence(k, "paris");
+                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              return (
+                                <div style={{ display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
+                                  {nRueil > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nRueil}</div>}
+                                  {nParis > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nParis}</div>}
+                                </div>
+                              );
+                            })()}
+                          </div>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
