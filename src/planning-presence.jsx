@@ -1096,14 +1096,14 @@ function PlanningApp({ currentUser, onLogout }) {
 
   async function handleDeleteAll() {
     if (!contextMenu) return; const { leaveId } = contextMenu; setContextMenu(null);
-    try { await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }); await loadLeaves(leaveTypes, token, year, month); showNotif("Congé supprimé ✅"); }
+    try { await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }); setRequests(prev => prev.filter(r => r.id !== leaveId)); await loadLeaves(leaveTypes, token, year, month); showNotif("Congé supprimé ✅"); }
     catch { showNotif("Erreur", "error"); }
   }
 
   async function handleDeleteDay() {
     if (!contextMenu) return; const { leaveId, clickedDate, leave, agentId } = contextMenu; setContextMenu(null);
     try {
-      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+      await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }); setRequests(prev => prev.filter(r => r.id !== leaveId));
       const start = leave.leaveStart, end = leave.leaveEnd, code = leave.leaveCode || leave.code;
       if (compareDates(start, clickedDate) < 0) await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: start, end_date: addDays(clickedDate, -1), agent_id: agentId }) });
       if (compareDates(clickedDate, end) < 0) await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: code, start_date: addDays(clickedDate, 1), end_date: end, agent_id: agentId }) });
