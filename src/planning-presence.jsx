@@ -620,7 +620,7 @@ function MiniCalendarPicker({ value, onChange, minDate }) {
   const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y+1); } else setViewMonth(m => m+1); };
   const fmt = (y,m,d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
   return (
-    <div style={{ background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:14, boxShadow:"0 8px 30px rgba(0,0,0,0.12)", padding:"14px", width:260, userSelect:"none" }}>
+    <div style={{ background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:14, boxShadow:"0 8px 30px rgba(0,0,0,0.12)", padding:"14px", width:280, userSelect:"none" }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
         <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid #e2e8f0", background:"#f8fafc", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#64748b" }}>‹</button>
         <span style={{ fontSize:13, fontWeight:700, color:"#1e293b" }}>{MONTHS[viewMonth]} {viewYear}</span>
@@ -2542,7 +2542,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       <span style={{ fontSize: 14 }}>📅</span>
                     </button>
                     {alShowEndCal && (
-                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 999999 }}>
+                      <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 999999 }}>
                         <MiniCalendarPicker value={addLeaveForm.endDate} minDate={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, endDate: v })); setAlShowEndCal(false); }} />
                       </div>
                     )}
