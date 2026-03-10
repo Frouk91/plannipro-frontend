@@ -71,7 +71,7 @@ function getFeries(year) {
   };
 }
 
-const LEAVE_ORDER = ["cp", "congé payé", "rtt", "½ cp", "½cp", "1/2 cp", "½ rtt", "½rtt", "1/2 rtt", "absence", "pont", "formation", "rueil", "paris"];
+const LEAVE_ORDER = ["cp", "congé payé", "rtt", "½ cp", "½cp", "1/2 cp", "½ rtt", "½rtt", "1/2 rtt", "veille de cp", "veille de férié", "absence", "pont", "formation", "rueil", "paris"];
 function sortLeaveTypes(lts) {
   return [...lts].sort((a, b) => {
     const ai = LEAVE_ORDER.indexOf((a.label || "").toLowerCase().trim());
@@ -114,7 +114,7 @@ function isHalfDay(leave) {
   if (!leave) return false;
   var label = (leave.label || "").toLowerCase();
   var code = (leave.code || "").toLowerCase();
-  return label.includes("1/2") || label.includes("½") || code.startsWith("_");
+  return label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié";
 }
 function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   var w = "calc(100% - " + (pad * 2) + "px)";
@@ -153,7 +153,7 @@ function teamPalette(teamName) {
 }
 function leaveAbbr(label) {
   if (!label) return "???";
-  const map = { "½ CP": "½CP", "½ RTT": "½RTT", "Congé payé": "CP", "CP": "CP", "RTT": "RTT", "Pont": "Pt", "Formation": "FOR", "Absence": "ABS", "Rueil": "R", "Paris": "P" };
+  const map = { "½ CP": "½CP", "½ RTT": "½RTT", "Congé payé": "CP", "CP": "CP", "RTT": "RTT", "Pont": "Pt", "Formation": "FOR", "Absence": "ABS", "Rueil": "R", "Paris": "P", "Veille de CP": "VCP", "Veille de Férié": "VDF" };
   if (map[label]) return map[label];
   return label.replace(/[^a-zA-Z0-9½]/g, "").slice(0, 4).toUpperCase() || label.slice(0, 3).toUpperCase();
 }
@@ -767,7 +767,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
-    if (label.includes("1/2") || label.includes("½")) return 0.5;
+    if (label.includes("1/2") || label.includes("½") || label === "veille de cp" || label === "veille de férié") return 0.5;
     return 1;
   }
 
