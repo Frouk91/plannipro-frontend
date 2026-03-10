@@ -1752,7 +1752,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
                           {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6366f1", margin: "1px auto 0" }} />}
                           {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
-                            <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: 5, padding: "1px 5px", margin: "2px auto 0", display: "inline-block", fontWeight: 800, lineHeight: "14px", minWidth: 16, textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{absent}</div>
+                            <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, margin: "2px auto 0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
                           )}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
@@ -1901,7 +1901,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
                           {isFer && <div style={{ fontSize: 9, color: "#d97706", marginTop: 2 }} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
                           {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
-                            <div style={{ marginTop: 4, fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: 6, padding: "2px 7px", display: "inline-block", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent} absent{absent > 1 ? "s" : ""}</div>
+                            <div style={{ marginTop: 4, fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, margin: "4px auto 0", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
                           )}
                           {filterMode === "presence" && !wk && (() => {
                             const nRueil = countPresence(k, "rueil");
