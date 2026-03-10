@@ -240,7 +240,7 @@ function LoginPage({ onLogin }) {
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15))", animation: "shimmer 3s ease-in-out infinite" }} />
             <span style={{ fontSize: 24 }}>📅</span>
           </div>
-          <h1 style={{ color: "#fff", fontSize: "34px", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-1px", background: "linear-gradient(135deg,#fff 30%,#a5b4fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>PlaniPro</h1>
+          <h1 style={{ color: "#fff", fontSize: "34px", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-1px", background: "linear-gradient(135deg,#fff 30%,#a5b4fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
           <p style={{ color: "rgba(148,163,184,0.8)", fontSize: "13px", margin: 0, animation: "slideInUp 0.7s ease 0.15s both" }}>Gestion des présences & congés</p>
         </div>
 
