@@ -1161,7 +1161,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   const navItems = [
-    { id: "planning", icon: "🗓", label: "Planning" },
+    { id: "planning", icon: "📆", label: "Planning" },
     { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
     { id: "stats", icon: "📊", label: "Statistiques" },
     ...(isManager ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
