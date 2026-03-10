@@ -827,7 +827,7 @@ function PlanningApp({ currentUser, onLogout }) {
           const allLeavesMap = {};
 
           allMonthsData.forEach(data => {
-            const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled" && l.status !== "rejected");
+            const leavesData = (Array.isArray(data) ? data : (data.leaves || [])).filter(l => l.status !== "cancelled" && l.status !== "rejected");
             leavesData.forEach(l => {
               if (!allLeavesMap[l.agent_id]) allLeavesMap[l.agent_id] = {};
               const lt = leaveFromBackend(l);
@@ -863,7 +863,7 @@ function PlanningApp({ currentUser, onLogout }) {
     try {
       const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`;
       const data = await apiFetch(`/leaves?month=${monthStr}`, tok);
-      const leavesData = (data.leaves || []).filter(l => l.status !== "cancelled" && l.status !== "rejected");
+      const leavesData = (Array.isArray(data) ? data : (data.leaves || [])).filter(l => l.status !== "cancelled" && l.status !== "rejected");
       const leavesMap = {};
       leavesData.forEach(l => {
         if (!leavesMap[l.agent_id]) leavesMap[l.agent_id] = {};
@@ -889,8 +889,8 @@ function PlanningApp({ currentUser, onLogout }) {
   async function loadRequests(tok) {
     try {
       const [pendingData, allData] = await Promise.all([apiFetch("/leaves?status=pending", tok), apiFetch("/leaves", tok)]);
-      const pending = (pendingData.leaves || []).map(requestFromBackend);
-      const others = (allData.leaves || []).filter(l => l.status !== "pending").map(requestFromBackend);
+      const pending = (Array.isArray(pendingData) ? pendingData : (pendingData.leaves || [])).map(requestFromBackend);
+      const others = (Array.isArray(allData) ? allData : (allData.leaves || [])).filter(l => l.status !== "pending").map(requestFromBackend);
       setRequests([...pending, ...others]);
     } catch (e) { console.error("Erreur demandes:", e); }
   }
