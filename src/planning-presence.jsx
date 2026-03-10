@@ -1322,7 +1322,7 @@ function PlanningApp({ currentUser, onLogout }) {
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
                 {[
-                  { mode: "all", label: "🗓 Planning", color: "#6366f1", bg: "#eef2ff" },
+                  { mode: "all", label: "📆 Planning", color: "#6366f1", bg: "#eef2ff" },
                   { mode: "presence", label: "🏢 Présences sur site", color: "#0d9488", bg: "#f0fdfa" },
                   { mode: "astreinte", label: "🔔 Astreintes", color: "#f59e0b", bg: "#fffbeb", managerOnly: false },
                 ].map(tab => (
