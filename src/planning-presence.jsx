@@ -1244,7 +1244,11 @@ function PlanningApp({ currentUser, onLogout }) {
         const isPont = (leaveType.code || "").toLowerCase().includes("pont") || (leaveType.label || "").toLowerCase().includes("pont");
         const autoApprove = (isManager && !isPont) || (filterMode === "presence" && agentCanPresence && isPresenceType(leaveType));
         if (autoApprove) {
-          await apiFetch(`/leaves/${data.leave.id}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
+          try {
+            await apiFetch(`/leaves/${data.leave.id}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
+          } catch (approveErr) {
+            console.warn("Approve échoué (non bloquant):", approveErr);
+          }
           showNotif(filterMode === "presence" ? "Présence enregistrée ✅" : "Congé sauvegardé ✅");
         } else {
           setRequests(prev => [...prev, { id: data.leave.id, agentId, agentName: agent.name, agentAvatar: agent.avatar, agentTeam: agent.team, leaveType, start, end, reason: reason || null, status: "pending", createdAt: new Date().toISOString() }]);
@@ -1252,7 +1256,7 @@ function PlanningApp({ currentUser, onLogout }) {
         }
         await loadLeaves(leaveTypes, token, year, month);
       }
-    } catch { showNotif("Erreur sauvegarde", "error"); }
+    } catch (e) { console.error("submitRequest error:", e); showNotif(e.message || "Erreur sauvegarde", "error"); }
     setRequestModal(null);
   }
 
