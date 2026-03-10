@@ -666,6 +666,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [month, setMonth] = useState(now.getMonth());
   const [agents, setAgents] = useState([]);
   const [agentsOrder, setAgentsOrder] = useState([]);  // Ordre personnalisé des agents
+  const [dragAgentId, setDragAgentId] = useState(null);
+  const [dragOverAgentId, setDragOverAgentId] = useState(null);
   const [teams, setTeams] = useState([]);
   const [leaveTypes, setLeaveTypes] = useState([]);
   const [leaves, setLeaves] = useState({});
@@ -774,6 +776,19 @@ function PlanningApp({ currentUser, onLogout }) {
       newOrder[idx] = newOrder[idx + 1];
       newOrder[idx + 1] = temp;
     }
+    setAgentsOrder(newOrder);
+    setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
+  };
+
+  const dragReorder = (fromId, toId) => {
+    if (fromId === toId) return;
+    const current = agentsOrder.length > 0 ? agentsOrder : agents.map(a => a.id);
+    const newOrder = [...current];
+    const fromIdx = newOrder.indexOf(fromId);
+    const toIdx = newOrder.indexOf(toId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    newOrder.splice(fromIdx, 1);
+    newOrder.splice(toIdx, 0, fromId);
     setAgentsOrder(newOrder);
     setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
   };
@@ -1862,13 +1877,18 @@ function PlanningApp({ currentUser, onLogout }) {
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
-                                  onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
-                                  onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
+                                  draggable={isAdmin}
+                                  onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
+                                  onDragOver={e => { if (!isAdmin || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
+                                  onDragLeave={() => setDragOverAgentId(null)}
+                                  onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
+                                  onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
+                                  style={{ opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
+                                  {isAdmin && <span style={{ fontSize: 11, color: "#cbd5e1", flexShrink: 0, cursor: "grab", userSelect: "none" }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isAdmin && <div data-sort-buttons style={{ display: "flex", gap: 2, opacity: 0, transition: "opacity 0.2s" }}><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "up"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? "none" : "auto" }}>▲</button><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "down"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? "none" : "auto" }}>▼</button></div>}
                                 </td>
                                 {Array.from({ length: daysInMonth }, (_, i) => {
                                   const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
@@ -2012,13 +2032,18 @@ function PlanningApp({ currentUser, onLogout }) {
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "5px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 11, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
-                                  onMouseEnter={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "1"; }}
-                                  onMouseLeave={e => { const btns = e.currentTarget.parentElement.querySelector("[data-sort-buttons]"); if (btns) btns.style.opacity = "0"; }}>
+                                  draggable={isAdmin}
+                                  onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
+                                  onDragOver={e => { if (!isAdmin || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
+                                  onDragLeave={() => setDragOverAgentId(null)}
+                                  onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
+                                  onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
+                                  style={{ opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
+                                  {isAdmin && <span style={{ fontSize: 11, color: "#cbd5e1", flexShrink: 0, cursor: "grab", userSelect: "none" }}>⠿</span>}
                                   <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
-                                  {isAdmin && <div data-sort-buttons style={{ display: "flex", gap: 2, opacity: 0, transition: "opacity 0.2s" }}><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "up"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === 0 ? "none" : "auto" }}>▲</button><button onClick={e => { e.stopPropagation(); moveAgent(agent.id, "down"); }} style={{ padding: "2px 6px", borderRadius: 3, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: 9, fontWeight: 700, color: "#3b82f6", opacity: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? 0.4 : 1, pointerEvents: sortedAgents.findIndex(a => a.id === agent.id) === sortedAgents.length - 1 ? "none" : "auto" }}>▼</button></div>}
                                 </td>
                                 {weekDays.map((d, i) => {
                                   const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6;
