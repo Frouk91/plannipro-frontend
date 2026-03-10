@@ -1963,7 +1963,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const rowBg = tp.row;
                             return (
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
+                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
                                   onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
@@ -1971,7 +1971,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDragLeave={() => setDragOverAgentId(null)}
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
-                                  style={{ display: "flex", alignItems: "center", opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
+                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
                                   {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
@@ -2122,7 +2122,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const rowBg = tp.row;
                             return (
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
+                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
                                   onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
@@ -2130,7 +2130,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDragLeave={() => setDragOverAgentId(null)}
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
-                                  style={{ display: "flex", alignItems: "center", opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
+                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
                                   {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
