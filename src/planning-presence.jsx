@@ -2015,6 +2015,10 @@ function PlanningApp({ currentUser, onLogout }) {
                                             </span>
                                           </div>
                                         </div>
+                                      ) : isHalfDay(leave) && leave.status === "pending" ? (
+                                        <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                          <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
+                                        </div>
                                       ) : isHalfDay(leave) ? (
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
                                       ) : (
@@ -2158,6 +2162,10 @@ function PlanningApp({ currentUser, onLogout }) {
                                               {leave.status === "pending" ? "…" : leave.label.slice(0, 1).toUpperCase()}
                                             </span>
                                           </div>
+                                        </div>
+                                      ) : isHalfDay(leave) && leave.status === "pending" ? (
+                                        <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                          <span style={{ fontSize: 8, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
