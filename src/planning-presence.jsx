@@ -600,6 +600,66 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
 }
 
 // ─── APP PRINCIPALE ───
+function MiniCalendarPicker({ value, onChange, minDate }) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const parsed = value ? new Date(value + "T00:00:00") : today;
+  const [viewYear, setViewYear] = React.useState(parsed.getFullYear());
+  const [viewMonth, setViewMonth] = React.useState(parsed.getMonth());
+  const MONTHS = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+  const DAYS = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const startDow = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+  const selDate = value ? new Date(value + "T00:00:00") : null;
+  const minD = minDate ? new Date(minDate + "T00:00:00") : null;
+  const prevMonth = () => { if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y-1); } else setViewMonth(m => m-1); };
+  const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y+1); } else setViewMonth(m => m+1); };
+  const fmt = (y,m,d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  return (
+    <div style={{ background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:14, boxShadow:"0 8px 30px rgba(0,0,0,0.12)", padding:"14px", width:260, userSelect:"none" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
+        <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid #e2e8f0", background:"#f8fafc", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#64748b" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:"#1e293b" }}>{MONTHS[viewMonth]} {viewYear}</span>
+        <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid #e2e8f0", background:"#f8fafc", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#64748b" }}>›</button>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:6 }}>
+        {DAYS.map(d => <div key={d} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:"#94a3b8", padding:"2px 0" }}>{d}</div>)}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
+        {cells.map((d, i) => {
+          if (!d) return <div key={i} />;
+          const dateStr = fmt(viewYear, viewMonth, d);
+          const date = new Date(dateStr + "T00:00:00");
+          const isSelected = selDate && selDate.getTime() === date.getTime();
+          const isToday = date.getTime() === today.getTime();
+          const isWe = date.getDay() === 0 || date.getDay() === 6;
+          const isDisabled = minD && date < minD;
+          return (
+            <button key={i} onClick={() => !isDisabled && onChange(dateStr)}
+              style={{ width:"100%", aspectRatio:"1", borderRadius:8, border:"none", cursor: isDisabled ? "not-allowed" : "pointer", fontSize:12, fontWeight: isSelected ? 700 : 400,
+                background: isSelected ? "#6366f1" : isToday ? "#eef2ff" : "transparent",
+                color: isDisabled ? "#d1d5db" : isSelected ? "#fff" : isWe ? "#94a3b8" : "#1e293b",
+                outline: isToday && !isSelected ? "1.5px solid #6366f1" : "none",
+                transition:"all 0.1s" }}
+              onMouseEnter={e => { if (!isDisabled && !isSelected) e.currentTarget.style.background="#f1f5f9"; }}
+              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background= isToday ? "#eef2ff" : "transparent"; }}>
+              {d}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:10, paddingTop:8, borderTop:"1px solid #f1f5f9" }}>
+        <button onClick={() => onChange("")} style={{ fontSize:11, color:"#94a3b8", background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6 }}>Effacer</button>
+        <button onClick={() => onChange(fmt(today.getFullYear(), today.getMonth(), today.getDate()))} style={{ fontSize:11, color:"#6366f1", background:"none", border:"none", cursor:"pointer", fontWeight:600, padding:"2px 6px", borderRadius:6 }}>Aujourd'hui</button>
+      </div>
+    </div>
+  );
+}
+
 function PlanningApp({ currentUser, onLogout }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -628,6 +688,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "" });
   const [alSearchQuery, setAlSearchQuery] = useState("");
   const [alShowAgentDrop, setAlShowAgentDrop] = useState(false);
+  const [alShowStartCal, setAlShowStartCal] = useState(false);
+  const [alShowEndCal, setAlShowEndCal] = useState(false);
   const [requestReason, setRequestReason] = useState("");
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
@@ -2459,17 +2521,31 @@ function PlanningApp({ currentUser, onLogout }) {
                   </div>
                 )}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div>
+                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
-                    <input type="date" value={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, startDate: e.target.value, endDate: f.endDate < e.target.value ? e.target.value : f.endDate }))}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                    <button onClick={() => { setAlShowStartCal(p => !p); setAlShowEndCal(false); }}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowStartCal ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", fontSize: 13, color: addLeaveForm.startDate ? "#1e293b" : "#94a3b8", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span>{addLeaveForm.startDate ? new Date(addLeaveForm.startDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
+                      <span style={{ fontSize: 14 }}>📅</span>
+                    </button>
+                    {alShowStartCal && (
+                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 999999 }}>
+                        <MiniCalendarPicker value={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, startDate: v, endDate: f.endDate < v ? v : f.endDate })); setAlShowStartCal(false); }} />
+                      </div>
+                    )}
                   </div>
-                  <div>
+                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
-                    <input type="date" value={addLeaveForm.endDate} min={addLeaveForm.startDate} onChange={e => setAddLeaveForm(f => ({ ...f, endDate: e.target.value }))}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                    <button onClick={() => { setAlShowEndCal(p => !p); setAlShowStartCal(false); }}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowEndCal ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", fontSize: 13, color: addLeaveForm.endDate ? "#1e293b" : "#94a3b8", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span>{addLeaveForm.endDate ? new Date(addLeaveForm.endDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
+                      <span style={{ fontSize: 14 }}>📅</span>
+                    </button>
+                    {alShowEndCal && (
+                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 999999 }}>
+                        <MiniCalendarPicker value={addLeaveForm.endDate} minDate={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, endDate: v })); setAlShowEndCal(false); }} />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div>
