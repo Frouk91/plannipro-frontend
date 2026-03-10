@@ -195,29 +195,57 @@ function LoginPage({ onLogin }) {
     setLoading(false);
   }
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0f172a 0%,#1e3a8a 50%,#1f2937 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", position: "relative", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#060818", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", position: "relative", overflow: "hidden" }}>
       <style>{GLOBAL_STYLE}</style>
-
-      {/* Éléments de fond animés */}
-      <div style={{ position: "absolute", top: "-50%", left: "-10%", width: "600px", height: "600px", background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", borderRadius: "50%", animation: "float 20s infinite ease-in-out" }} />
-      <div style={{ position: "absolute", bottom: "-30%", right: "-5%", width: "500px", height: "500px", background: "radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)", borderRadius: "50%", animation: "float 25s infinite ease-in-out reverse" }} />
-
       <style>{`
-        @keyframes float { 0%, 100% { transform: translate(0px, 0px); } 50% { transform: translate(30px, 30px); } }
-        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes aurora1 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.15);} 66%{transform:translate(-30px,50px) scale(0.9);} }
+        @keyframes aurora2 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(-80px,30px) scale(1.1);} 66%{transform:translate(50px,-60px) scale(1.2);} }
+        @keyframes aurora3 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,40px) scale(1.25);} }
+        @keyframes gridPulse { 0%,100%{opacity:0.03;} 50%{opacity:0.07;} }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes particle { 0%{transform:translateY(0px) scale(1);opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{transform:translateY(-120px) scale(0.4);opacity:0;} }
+        @keyframes shimmer { 0%{transform:translateX(-100%);} 100%{transform:translateX(200%);} }
+        @keyframes glowPulse { 0%,100%{box-shadow:0 0 40px rgba(99,102,241,0.3),0 25px 50px rgba(0,0,0,0.5);} 50%{box-shadow:0 0 80px rgba(99,102,241,0.5),0 25px 50px rgba(0,0,0,0.5);} }
       `}</style>
 
-      <div style={{ width: "100%", maxWidth: "500px", padding: "24px", animation: "slideInUp 0.8s ease", position: "relative", zIndex: 10 }}>
+      {/* Aurora blobs */}
+      <div style={{position:"absolute",top:"-20%",left:"-10%",width:"70vw",height:"70vw",background:"radial-gradient(ellipse,rgba(99,102,241,0.35) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(60px)",animation:"aurora1 18s ease-in-out infinite",willChange:"transform"}} />
+      <div style={{position:"absolute",bottom:"-20%",right:"-15%",width:"65vw",height:"65vw",background:"radial-gradient(ellipse,rgba(6,182,212,0.25) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(70px)",animation:"aurora2 22s ease-in-out infinite",willChange:"transform"}} />
+      <div style={{position:"absolute",top:"30%",right:"10%",width:"40vw",height:"40vw",background:"radial-gradient(ellipse,rgba(139,92,246,0.2) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(50px)",animation:"aurora3 15s ease-in-out infinite",willChange:"transform"}} />
+
+      {/* Grille */}
+      <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)",backgroundSize:"48px 48px",animation:"gridPulse 8s ease-in-out infinite"}} />
+
+      {/* Particules */}
+      {[...Array(12)].map((_,i) => (
+        <div key={i} style={{
+          position:"absolute",
+          left:`${8+i*7.5}%`,
+          bottom:`${10+Math.sin(i*1.3)*15}%`,
+          width: i%3===0?3:2,
+          height: i%3===0?3:2,
+          borderRadius:"50%",
+          background: i%2===0 ? "rgba(99,102,241,0.8)" : "rgba(6,182,212,0.6)",
+          animation:`particle ${4+i*0.7}s ease-in-out infinite`,
+          animationDelay:`${i*0.4}s`,
+          willChange:"transform,opacity"
+        }} />
+      ))}
+
+      <div style={{ width: "100%", maxWidth: "440px", padding: "20px", position: "relative", zIndex: 10 }}>
 
         {/* En-tête */}
-        <div style={{ marginBottom: "48px", textAlign: "center" }}>
-          <h1 style={{ color: "#f8fafc", fontSize: "52px", fontWeight: "900", margin: "0 0 12px", letterSpacing: "-2px", animation: "slideInUp 0.8s ease 0.1s both", fontFamily: "'Poppins', 'Outfit', sans-serif", background: "linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
-          <p style={{ color: "#cbd5e1", fontSize: "14px", margin: "0", animation: "slideInUp 0.8s ease 0.2s both", fontWeight: "500", letterSpacing: "0.5px" }}>Gestion des présences & congés</p>
+        <div style={{ marginBottom: "36px", textAlign: "center", animation: "slideInUp 0.7s ease both" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#6366f1,#06b6d4)", boxShadow: "0 8px 32px rgba(99,102,241,0.4)", marginBottom: 16, position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15))", animation: "shimmer 3s ease-in-out infinite" }} />
+            <span style={{ fontSize: 24 }}>📅</span>
+          </div>
+          <h1 style={{ color: "#fff", fontSize: "34px", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-1px", background: "linear-gradient(135deg,#fff 30%,#a5b4fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>PlaniPro</h1>
+          <p style={{ color: "rgba(148,163,184,0.8)", fontSize: "13px", margin: 0, animation: "slideInUp 0.7s ease 0.15s both" }}>Gestion des présences & congés</p>
         </div>
 
         {/* Formulaire */}
-        <div style={{ background: "rgba(15,23,42,0.6)", border: "1px solid rgba(148,163,184,0.15)", borderRadius: "20px", padding: "40px", backdropFilter: "blur(20px)", boxShadow: "0 25px 50px rgba(0,0,0,0.4)", animation: "slideInUp 0.8s ease 0.4s both" }}>
+        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "24px", padding: "36px", backdropFilter: "blur(24px)", animation: "slideInUp 0.7s ease 0.25s both, glowPulse 4s ease-in-out infinite" }}>
 
           {/* Email */}
           <div style={{ marginBottom: "20px" }}>
@@ -233,8 +261,8 @@ function LoginPage({ onLogin }) {
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="vous@quadient.com"
                 style={{ width: "100%", padding: "14px 16px 14px 48px", borderRadius: "12px", border: "1.5px solid rgba(148,163,184,0.2)", background: "rgba(30,41,59,0.5)", fontSize: "14px", color: "#f1f5f9", transition: "all 0.3s", boxSizing: "border-box" }}
-                onFocus={e => { e.target.style.border = "1.5px solid #3b82f6"; e.target.style.background = "rgba(30,41,59,0.8)"; e.target.style.boxShadow = "0 0 20px rgba(59, 130, 246, 0.2)"; }}
-                onBlur={e => { e.target.style.border = "1.5px solid rgba(148,163,184,0.2)"; e.target.style.background = "rgba(30,41,59,0.5)"; e.target.style.boxShadow = "none"; }}
+                onFocus={e => { e.target.style.border = "1.5px solid #6366f1"; e.target.style.background = "rgba(30,41,59,0.8)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)"; }}
+                onBlur={e => { e.target.style.border = "1.5px solid rgba(148,163,184,0.15)"; e.target.style.background = "rgba(30,41,59,0.5)"; e.target.style.boxShadow = "none"; }}
               />
             </div>
           </div>
@@ -269,7 +297,7 @@ function LoginPage({ onLogin }) {
           <button
             onClick={handleLogin}
             disabled={loading}
-            style={{ width: "100%", padding: "14px 0", borderRadius: "12px", border: "none", background: "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)", color: "#fff", fontSize: "15px", fontWeight: "700", cursor: loading ? "default" : "pointer", transition: "all 0.3s", boxShadow: "0 10px 30px rgba(59, 130, 246, 0.3)", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{ width: "100%", padding: "14px 0", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#6366f1 0%,#06b6d4 100%)", color: "#fff", fontSize: "15px", fontWeight: "700", cursor: loading ? "default" : "pointer", transition: "all 0.3s", boxShadow: "0 8px 32px rgba(99,102,241,0.4)", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", letterSpacing: "0.3px", position: "relative", overflow: "hidden" }}
             onMouseEnter={e => !loading && (e.target.style.boxShadow = "0 15px 40px rgba(59, 130, 246, 0.4)")}
             onMouseLeave={e => !loading && (e.target.style.boxShadow = "0 10px 30px rgba(59, 130, 246, 0.3)")}
           >
