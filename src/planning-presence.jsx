@@ -2582,46 +2582,104 @@ function PlanningApp({ currentUser, onLogout }) {
       })()}
 
       {requestModal && (() => {
-        const availTypes = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
+        const allAvail = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
+        // Séparer les types "groupés" (CP, RTT et leurs ½) des autres
+        const isCpFamily  = t => /^(cp|_cp|congé payé)$/i.test((t.code||"").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label||"").trim());
+        const isRttFamily = t => /^(rtt|_rtt)$/i.test((t.code||"").trim()) || /^(rtt|½ rtt)$/i.test((t.label||"").trim());
+        const isHalfCp    = t => /^_cp$/i.test(t.code) || /^½ cp$/i.test(t.label);
+        const isHalfRtt   = t => /^_rtt$/i.test(t.code) || /^½ rtt$/i.test(t.label);
+        // Types affichés dans la liste (sans les ½ CP et ½ RTT)
+        const displayTypes = allAvail.filter(t => !isHalfCp(t) && !isHalfRtt(t));
+        // Trouver les types ½ correspondants
+        const halfCpType  = allAvail.find(isHalfCp)  || allAvail.find(t => (t.code||"").includes("cp") && isHalfDay(t));
+        const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code||"").includes("rtt") && isHalfDay(t));
+        const [expandedType, setExpandedType] = React.useState(null);
+        const reason = React.useRef("");
+        function handleTypeClick(t) {
+          if (isCpFamily(t) || isRttFamily(t)) {
+            setExpandedType(expandedType === t.id ? null : t.id);
+          } else if (isHalfDay(t)) {
+            setRequestModal(null); setHalfDayPendingType(t); setHalfDayPeriod(null);
+          } else {
+            setRequestModal(null); submitRequest(t, reason.current);
+          }
+        }
+        function submitPeriod(t, period) {
+          setRequestModal(null);
+          if (period === "journee") {
+            submitRequest(t, reason.current);
+          } else {
+            const halfType = isCpFamily(t) ? halfCpType : halfRttType;
+            if (halfType) {
+              const finalReason = "[" + period + "]" + (reason.current ? " " + reason.current : "");
+              submitRequest(halfType, finalReason);
+            } else {
+              setHalfDayPendingType(t); setHalfDayPeriod(period);
+            }
+          }
+        }
         return (
           <div onClick={e => e.stopPropagation()} style={{
             position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
             background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
-            zIndex: 99999, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease"
+            zIndex: 99999, width: 310, overflow: "hidden", animation: "slideIn 0.2s ease"
           }}>
+            {/* Header */}
             <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
               <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>
-                {requestModal.start === requestModal.end
-                  ? formatDate(requestModal.start)
-                  : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
+                {requestModal.start === requestModal.end ? formatDate(requestModal.start) : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
               </div>
             </div>
+            {/* Liste des types */}
             <div style={{ padding: "6px 0" }}>
-              {availTypes.map(t => (
-                <button key={t.id} onClick={() => {
-                  if (isHalfDay({label: t.label, code: t.code})) {
-                    setRequestModal(null);
-                    setHalfDayPendingType(t);
-                    setHalfDayPeriod(null);
-                  } else {
-                    const reason = document.getElementById("leave-reason-input")?.value || "";
-                    submitRequest(t, reason);
-                  }
-                }} style={{
-                  display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
-                  border: "none", background: "none", cursor: "pointer", textAlign: "left", transition: "background 0.1s"
-                }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}>
-                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", flex: 1 }}>{t.label}</span>
-                  <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>{leaveAbbr(t.label)}</span>
-                </button>
-              ))}
+              {displayTypes.map(t => {
+                const isGrouped = isCpFamily(t) || isRttFamily(t);
+                const isOpen = expandedType === t.id;
+                return (
+                  <div key={t.id}>
+                    <button onClick={() => handleTypeClick(t)} style={{
+                      display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
+                      border: "none", background: isOpen ? hexToLight(t.color) : "none", cursor: "pointer",
+                      textAlign: "left", transition: "background 0.1s"
+                    }}
+                      onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "#f8fafc"; }}
+                      onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
+                      <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", flex: 1 }}>{t.label}</span>
+                      <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>{leaveAbbr(t.label)}</span>
+                      {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
+                    </button>
+                    {/* Sous-menu Matin / Après-midi / Journée */}
+                    {isGrouped && isOpen && (
+                      <div style={{ background: hexToLight(t.color), borderTop: `1px solid ${t.color}25`, borderBottom: `1px solid ${t.color}25`, padding: "8px 16px 10px" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
+                        <div style={{ display: "flex", gap: 7 }}>
+                          {[
+                            { key: "matin",      label: "🌅 Matin",        sub: "½ journée" },
+                            { key: "apres-midi", label: "🌆 Après-midi",   sub: "½ journée" },
+                            { key: "journee",    label: "☀️ Journée",      sub: "complète"  },
+                          ].map(opt => (
+                            <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
+                              flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
+                              background: "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
+                            }}
+                              onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.style.color = "#fff"; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = "rgba(255,255,255,0.8)"); }}
+                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}>{opt.label}</div>
+                              <span style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
+            {/* Raison */}
             <div style={{ padding: "8px 16px 14px", borderTop: "1px solid #f8fafc" }}>
-              <input id="leave-reason-input" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
+              <input onChange={e => reason.current = e.target.value} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
             </div>
             <button onClick={() => setRequestModal(null)} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid #f1f5f9", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
           </div>
