@@ -255,7 +255,7 @@ function LoginPage({ onLogin }) {
 
           {/* Illustration SVG */}
           <div style={{ display: "inline-block", animation: "floatIllus 5s ease-in-out infinite", marginBottom: 20, filter: "drop-shadow(0 16px 40px rgba(99,102,241,0.35))" }}>
-            <svg width="220" height="160" viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="240" height="165" viewBox="0 0 240 165" fill="none" xmlns="http://www.w3.org/2000/svg">
 
               {/* ── CALENDRIER ── */}
               {/* Ombre portée calendrier */}
@@ -270,7 +270,7 @@ function LoginPage({ onLogin }) {
               <rect x="75" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
               <rect x="127" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
               {/* Texte mois */}
-              <text x="110" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">MARS 2026</text>
+              <text x="110" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">{new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"}).toUpperCase()}</text>
 
               {/* Grille jours */}
               {/* Ligne 1 */}
@@ -346,22 +346,7 @@ function LoginPage({ onLogin }) {
                 <path d="M26,120 Q34,124 42,120" stroke="rgba(99,102,241,0.7)" strokeWidth="2" fill="none" strokeLinecap="round" />
               </g>
 
-              {/* ── CRAYON ── */}
-              <g transform="translate(152,95)" style={{transformOrigin:"0px 40px", animation:"pencilWiggle 5s ease-in-out infinite"}}>
-                {/* Corps crayon */}
-                <rect x="-5" y="0" width="10" height="52" rx="2" fill="rgba(245,158,11,0.85)" />
-                {/* Liseré haut */}
-                <rect x="-5" y="0" width="10" height="6" rx="2" fill="rgba(255,200,100,0.9)" />
-                {/* Gomme */}
-                <rect x="-5" y="-8" width="10" height="10" rx="2" fill="rgba(239,68,68,0.7)" />
-                <rect x="-5" y="-2" width="10" height="2" fill="rgba(180,50,50,0.5)" />
-                {/* Pointe bois */}
-                <path d="M-5,52 L5,52 L0,65 Z" fill="rgba(210,140,60,0.8)" />
-                {/* Mine */}
-                <path d="M-1.5,60 L1.5,60 L0,65 Z" fill="rgba(50,50,50,0.9)" />
-                {/* Reflet */}
-                <rect x="-2" y="4" width="3" height="44" rx="1.5" fill="rgba(255,255,255,0.15)" />
-              </g>
+
 
               {/* Lignes ondulées décoratives (traits de texte) */}
               <line x1="56" y1="57" x2="90" y2="57" stroke="rgba(165,180,252,0.4)" strokeWidth="1.5" strokeLinecap="round" />
