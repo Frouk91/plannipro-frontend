@@ -457,21 +457,38 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
   async function handleDeleteLT(lt) { try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "DELETE" }); onLeaveTypeDeleted(lt.id); showNotif("Type supprimé", "error"); } catch { showNotif("Erreur", "error"); } }
 
+  const TAB_CONFIG = [
+    { id: "agents",     label: "👥 Agents",          color: "#6366f1" },
+    { id: "teams",      label: "🏷 Équipes",          color: "#0d9488" },
+    { id: "leavetypes", label: "📋 Types de congés",  color: "#f59e0b" },
+  ];
   return (
     <div style={{ padding: 24, animation: "fadeIn 0.3s ease", maxWidth: 900 }}>
-      <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", gap: 4, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
-        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
-          {[{ id: "agents", label: "Agents" }, { id: "teams", label: "Équipes" }, { id: "leavetypes", label: "Types de congés" }].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: "5px 16px", borderRadius: 5, border: "none", background: tab === t.id ? "#fff" : "transparent", color: tab === t.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: tab === t.id ? 700 : 400, boxShadow: tab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{t.label}</button>
+      {/* ── Onglets ── */}
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          {TAB_CONFIG.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              padding: "8px 20px", borderRadius: 9, border: `2px solid ${tab === t.id ? t.color : "#e2e8f0"}`,
+              background: tab === t.id ? t.color : "#f8fafc",
+              color: tab === t.id ? "#fff" : "#64748b",
+              cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+              boxShadow: tab === t.id ? `0 3px 12px ${t.color}40` : "none",
+              transition: "all 0.15s"
+            }}
+            onMouseEnter={e => { if (tab !== t.id) { e.currentTarget.style.borderColor = t.color; e.currentTarget.style.color = t.color; e.currentTarget.style.background = "#fff"; }}}
+            onMouseLeave={e => { if (tab !== t.id) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#f8fafc"; }}}>
+              {t.label}
+            </button>
           ))}
         </div>
       </div>
       {tab === "agents" && (
         <div>
           <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-            <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>{agents.length} agent{agents.length > 1 ? "s" : ""}</span>
-              <button onClick={() => setAddModal(true)} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: "#1e293b", color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>+ Ajouter</button>
+            <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#4338ca" }}>👥 {agents.length} agent{agents.length > 1 ? "s" : ""}</span>
+              <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
             </div>
             {agents.map((a, i) => (
               <div key={a.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < agents.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
@@ -487,8 +504,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{a.email}{a.team && <span style={{ marginLeft: 8, color: "#64748b" }}>· {a.team}</span>}</div>
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 500 }}>Modifier</button>
-                  {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #fecaca", background: "#fef2f2", cursor: "pointer", fontSize: 11, color: "#ef4444" }}>✕</button>}
+                  <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
+                  {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} style={{ padding: "5px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>}
                 </div>
               </div>
             ))}
@@ -497,21 +514,21 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       )}
       {tab === "teams" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "10px 14px", marginBottom: 14, display: "flex", gap: 8, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-            <input value={newTeam} onChange={e => setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e => e.key === "Enter" && handleAddTeam()} style={{ flex: 1, padding: "6px 12px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 12, outline: "none" }} />
-            <button onClick={handleAddTeam} style={{ padding: "6px 14px", borderRadius: 7, border: "none", background: "#1e293b", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>+ Ajouter</button>
+          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "12px 16px", marginBottom: 14, display: "flex", gap: 8, alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+            <input value={newTeam} onChange={e => setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e => e.key === "Enter" && handleAddTeam()} style={{ flex: 1, padding: "8px 14px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 13, outline: "none", color: "#1e293b", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#0d9488"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+            <button onClick={handleAddTeam} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#0d9488,#14b8a6)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(13,148,136,0.35)", whiteSpace: "nowrap", transition: "all 0.15s" }}>＋ Ajouter</button>
           </div>
           {teams.map(team => {
             const teamAgents = agents.filter(a => a.team === team.name);
             const unassigned = agents.filter(a => !a.team || a.team !== team.name);
             return (
               <div key={team.id || team.name} style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", marginBottom: 10, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ padding: "11px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{team.name}</span>
-                    <span style={{ fontSize: 11, color: "#94a3b8" }}>{teamAgents.length} agent{teamAgents.length > 1 ? "s" : ""}</span>
+                    <span style={{ fontWeight: 700, fontSize: 13, color: "#0d9488" }}>🏷 {team.name}</span>
+                    <span style={{ fontSize: 11, color: "#94a3b8", background: "#e8edf5", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{teamAgents.length} agent{teamAgents.length > 1 ? "s" : ""}</span>
                   </div>
-                  {team.name !== "Admin" && <button onClick={() => handleDeleteTeam(team)} style={{ padding: "3px 8px", borderRadius: 5, border: "1px solid #fecaca", background: "#fef2f2", cursor: "pointer", fontSize: 11, color: "#ef4444" }}>Supprimer</button>}
+                  {team.name !== "Admin" && <button onClick={() => handleDeleteTeam(team)} style={{ padding: "4px 10px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 11, color: "#ef4444", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>🗑 Supprimer</button>}
                 </div>
                 {teamAgents.map((a, i) => (
                   <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: i < teamAgents.length - 1 ? "1px solid #f8fafc" : "none" }}
@@ -519,7 +536,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <span style={{ fontSize: 12, fontWeight: 500, color: "#1e293b", flex: 1 }}>{a.name}</span>
-                    <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "2px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "#f8fafc", cursor: "pointer", fontSize: 10, color: "#94a3b8" }}>Retirer</button>
+                    <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "3px 9px", borderRadius: 6, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 500, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "#fef2f2"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}>↩ Retirer</button>
                   </div>
                 ))}
                 {unassigned.filter(a => a.role !== "admin").length > 0 && (
@@ -538,10 +555,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       )}
       {tab === "leavetypes" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "12px 14px", marginBottom: 14, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
-              <input value={newLT.label} onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))} placeholder="Nom du type de congé..." onKeyDown={e => e.key === "Enter" && handleAddLT()} style={{ flex: 1, minWidth: 160, padding: "6px 12px", borderRadius: 7, border: "1px solid #e2e8f0", fontSize: 12, outline: "none" }} />
-              <button onClick={handleAddLT} style={{ padding: "6px 14px", borderRadius: 7, border: "none", background: "#1e293b", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>+ Ajouter</button>
+          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+              <input value={newLT.label} onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))} placeholder="Nom du type de congé..." onKeyDown={e => e.key === "Enter" && handleAddLT()} style={{ flex: 1, minWidth: 160, padding: "8px 14px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 13, outline: "none", color: "#1e293b", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#f59e0b"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+              <button onClick={handleAddLT} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#f59e0b,#fbbf24)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(245,158,11,0.35)", whiteSpace: "nowrap", transition: "all 0.15s" }}>＋ Ajouter</button>
             </div>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               <ColorPicker selected={newLT.color} onChange={c => setNewLT(p => ({ ...p, color: c }))} />
@@ -564,8 +581,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{lt.label}</span>
                     <div style={{ fontSize: 10, color: "#94a3b8", background: hexToLight(lt.color), padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(lt.label)}</div>
                     <div style={{ display: "flex", gap: 4 }}>
-                      <button type="button" onClick={() => setEditLT(lt.id)} style={{ padding: "3px 8px", borderRadius: 5, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b" }}>Modifier</button>
-                      <button type="button" onClick={() => handleDeleteLT(lt)} style={{ padding: "3px 7px", borderRadius: 5, border: "1px solid #fecaca", background: "#fef2f2", cursor: "pointer", fontSize: 11, color: "#ef4444" }}>✕</button>
+                      <button type="button" onClick={() => setEditLT(lt.id)} style={{ padding: "4px 11px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
+                      <button type="button" onClick={() => handleDeleteLT(lt)} style={{ padding: "4px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>
                     </div>
                   </div>
                 )}
