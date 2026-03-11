@@ -1514,25 +1514,28 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "10px 14px", marginBottom: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
+            <div style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(148,163,184,0.12)", borderRadius: 14, padding: "12px 16px", marginBottom: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.25)" }}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
-              <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid rgba(148,163,184,0.1)" }}>
                 {[
-                  { mode: "all", label: "📆 Planning", color: "#6366f1", bg: "#eef2ff" },
-                  { mode: "presence", label: "🏢 Présences sur site", color: "#0d9488", bg: "#f0fdfa" },
-                  { mode: "astreinte", label: "🔔 Astreintes", color: "#f59e0b", bg: "#fffbeb", managerOnly: false },
+                  { mode: "all",        label: "📆 Planning",          color: "#818cf8", glow: "rgba(129,140,248,0.35)" },
+                  { mode: "presence",   label: "🏢 Présences sur site", color: "#2dd4bf", glow: "rgba(45,212,191,0.3)"  },
+                  { mode: "astreinte",  label: "🔔 Astreintes",         color: "#fbbf24", glow: "rgba(251,191,36,0.3)"  },
                 ].map(tab => (
                   <button key={tab.mode} onClick={() => {
                     setFilterMode(tab.mode);
                     if (tab.mode === "presence") { const pt = leaveTypes.find(t => isPresenceType(t)); if (pt) setSelectedLTId(pt.id); }
                   }} style={{
-                    padding: "8px 18px", border: `2px solid ${filterMode === tab.mode ? tab.color : "#e2e8f0"}`,
-                    borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: filterMode === tab.mode ? 700 : 500,
-                    color: filterMode === tab.mode ? tab.color : "#94a3b8",
-                    background: filterMode === tab.mode ? tab.bg : "rgba(255,255,255,0.06)",
-                    boxShadow: filterMode === tab.mode ? `0 2px 8px ${tab.color}30` : "none",
-                    transition: "all 0.15s"
-                  }}>
+                    padding: "7px 18px",
+                    border: filterMode === tab.mode ? `1.5px solid ${tab.color}` : "1.5px solid rgba(148,163,184,0.15)",
+                    borderRadius: 9, cursor: "pointer", fontSize: 13, fontWeight: filterMode === tab.mode ? 700 : 500,
+                    color: filterMode === tab.mode ? tab.color : "#64748b",
+                    background: filterMode === tab.mode ? `rgba(${tab.color === "#818cf8" ? "129,140,248" : tab.color === "#2dd4bf" ? "45,212,191" : "251,191,36"},0.12)` : "rgba(255,255,255,0.04)",
+                    boxShadow: filterMode === tab.mode ? `0 0 16px ${tab.glow}, inset 0 1px 0 rgba(255,255,255,0.08)` : "none",
+                    transition: "all 0.18s", letterSpacing: "0.1px"
+                  }}
+                  onMouseEnter={e => { if (filterMode !== tab.mode) e.currentTarget.style.borderColor = tab.color + "60"; e.currentTarget.style.color = filterMode !== tab.mode ? "#cbd5e1" : tab.color; }}
+                  onMouseLeave={e => { if (filterMode !== tab.mode) { e.currentTarget.style.borderColor = "rgba(148,163,184,0.15)"; e.currentTarget.style.color = "#64748b"; } }}>
                     {tab.label}
                   </button>
                 ))}
@@ -1540,19 +1543,19 @@ function PlanningApp({ currentUser, onLogout }) {
               {/* Ligne 1 */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {/* Toggle Mois/Semaine - masqué en mode astreinte */}
-                {filterMode !== "astreinte" && <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
+                {filterMode !== "astreinte" && <div style={{ display: "flex", background: "rgba(0,0,0,0.25)", borderRadius: 8, padding: 3, gap: 2, border: "1px solid rgba(148,163,184,0.1)" }}>
                   {[{ v: "month", l: "Mois" }, { v: "week", l: "Semaine" }].map(({ v, l }) => (
-                    <button key={v} onClick={() => setPlanView(v)} style={{ padding: "4px 12px", borderRadius: 5, border: "none", background: planView === v ? "#fff" : "transparent", color: planView === v ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: planView === v ? 600 : 400, boxShadow: planView === v ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{l}</button>
+                    <button key={v} onClick={() => setPlanView(v)} style={{ padding: "5px 13px", borderRadius: 6, border: "none", background: planView === v ? "rgba(99,102,241,0.85)" : "transparent", color: planView === v ? "#fff" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: planView === v ? 700 : 500, boxShadow: planView === v ? "0 2px 8px rgba(99,102,241,0.4)" : "none", transition: "all 0.15s" }}>{l}</button>
                   ))}
                 </div>}
                 {/* Navigation date */}
                 <div style={{ display: "flex", alignItems: "center", gap: 2, position: "relative" }}>
-                  <button onClick={() => { if (planView === "month") { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() - 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 16, color: "#94a3b8", lineHeight: 1 }}>‹</button>
-                  <button onClick={() => setShowMonthPicker(p => !p)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 12, fontWeight: 600, color: "#1e293b", minWidth: planView === "month" ? 130 : 180, textAlign: "center", borderRadius: 6, transition: "background 0.15s" }}
-                    onMouseEnter={e => e.target.style.background = "#f1f5f9"} onMouseLeave={e => e.target.style.background = "none"}>
-                    {planView === "month" ? `${MONTHS_FR[month]} ${year}` : weekLabel()} <span style={{ fontSize: 9, color: "#94a3b8" }}>▾</span>
+                  <button onClick={() => { if (planView === "month") { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() - 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(148,163,184,0.12)", borderRadius: 7, cursor: "pointer", padding: "4px 9px", fontSize: 15, color: "#94a3b8", lineHeight: 1, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(129,140,248,0.2)"; e.currentTarget.style.color = "#818cf8"; }} onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94a3b8"; }}>‹</button>
+                  <button onClick={() => setShowMonthPicker(p => !p)} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(148,163,184,0.12)", cursor: "pointer", padding: "5px 12px", fontSize: 12, fontWeight: 700, color: "#e2e8f0", minWidth: planView === "month" ? 130 : 180, textAlign: "center", borderRadius: 7, transition: "all 0.15s", letterSpacing: "0.2px" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(129,140,248,0.15)"; e.currentTarget.style.borderColor = "#818cf8"; }} onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(148,163,184,0.12)"; }}>
+                    {planView === "month" ? `${MONTHS_FR[month]} ${year}` : weekLabel()} <span style={{ fontSize: 9, color: "#64748b" }}>▾</span>
                   </button>
-                  <button onClick={() => { if (planView === "month") { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() + 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px 6px", fontSize: 16, color: "#94a3b8", lineHeight: 1 }}>›</button>
+                  <button onClick={() => { if (planView === "month") { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() + 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(148,163,184,0.12)", borderRadius: 7, cursor: "pointer", padding: "4px 9px", fontSize: 15, color: "#94a3b8", lineHeight: 1, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(129,140,248,0.2)"; e.currentTarget.style.color = "#818cf8"; }} onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94a3b8"; }}>›</button>
                   {showMonthPicker && (
                     <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 9999, padding: 12, width: 240, animation: "slideIn 0.15s ease" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid #f1f5f9" }}>
@@ -1582,7 +1585,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     </div>
                   )}
                 </div>
-                <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 500, color: "#64748b" }}>Aujourd'hui</button>
+                <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "5px 11px", borderRadius: 7, border: "1px solid rgba(129,140,248,0.35)", background: "rgba(99,102,241,0.1)", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#818cf8", transition: "all 0.15s", letterSpacing: "0.1px" }} onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.22)"; e.currentTarget.style.borderColor = "#818cf8"; }} onMouseLeave={e => { e.currentTarget.style.background = "rgba(99,102,241,0.1)"; e.currentTarget.style.borderColor = "rgba(129,140,248,0.35)"; }}>Aujourd'hui</button>
 
                 {filterMode === "all" && (
                   <button onClick={() => {
@@ -1591,43 +1594,43 @@ function PlanningApp({ currentUser, onLogout }) {
                     const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
                     setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
                     setAddLeaveModal(true);
-                  }} className="btn-primary" style={{ padding: "5px 14px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 2px 8px rgba(99,102,241,0.35)" }}>
-                    <span style={{ fontSize: 14, lineHeight: 1 }}>+</span> Congé
+                  }} className="btn-primary" style={{ padding: "6px 15px", borderRadius: 8, border: "1px solid rgba(129,140,248,0.5)", background: "linear-gradient(135deg,#6366f1,#7c3aed)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 0 18px rgba(99,102,241,0.45), inset 0 1px 0 rgba(255,255,255,0.15)", letterSpacing: "0.2px" }}>
+                    <span style={{ fontSize: 15, lineHeight: 1, fontWeight: 800 }}>+</span> Congé
                   </button>
                 )}
 
                 {/* Filtres équipe - masqués en mode astreinte */}
                 {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
                   {allTeams.map(t => (
-                    <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
+                    <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "5px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 500, background: filterTeam === t ? "rgba(99,102,241,0.85)" : "rgba(255,255,255,0.05)", color: filterTeam === t ? "#fff" : "#94a3b8", borderColor: filterTeam === t ? "rgba(129,140,248,0.7)" : "rgba(148,163,184,0.15)", boxShadow: filterTeam === t ? "0 0 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.15s" }}>{t}</button>
                   ))}
                   {!isAdmin && (
                     <>
                       <div style={{ width: "1px", height: 20, background: "#e2e8f0", marginLeft: 4, marginRight: 4 }} />
-                      <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
+                      <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "5px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 500, background: filterTeam === `agent-${currentUser.id}` ? "rgba(99,102,241,0.85)" : "rgba(255,255,255,0.05)", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#94a3b8", borderColor: filterTeam === `agent-${currentUser.id}` ? "rgba(129,140,248,0.7)" : "rgba(148,163,184,0.15)", boxShadow: filterTeam === `agent-${currentUser.id}` ? "0 0 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.15s" }}>👤 Moi</button>
                     </>
                   )}
                 </div>}
               </div>
               {/* Ligne 2 */}
-              {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>
+              {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(148,163,184,0.1)", flexWrap: "wrap" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.3px", textTransform: "uppercase" }}>Filtrer :</span>
                 {["all", "Css Digital", "Mailing Solution"].map(f => (
-                  <button key={f} onClick={() => setAstreinteFilter(f)} style={{ padding: "3px 12px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f ? 700 : 400, background: astreinteFilter === f ? "#f59e0b" : "#fff", color: astreinteFilter === f ? "#fff" : "#64748b", borderColor: astreinteFilter === f ? "#f59e0b" : "#e2e8f0", transition: "all 0.15s" }}>{f === "all" ? "Toutes les équipes" : f}</button>
+                  <button key={f} onClick={() => setAstreinteFilter(f)} style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f ? 700 : 500, background: astreinteFilter === f ? "rgba(245,158,11,0.85)" : "rgba(255,255,255,0.05)", color: astreinteFilter === f ? "#fff" : "#94a3b8", borderColor: astreinteFilter === f ? "rgba(251,191,36,0.7)" : "rgba(148,163,184,0.15)", boxShadow: astreinteFilter === f ? "0 0 12px rgba(245,158,11,0.35)" : "none", transition: "all 0.15s" }}>{f === "all" ? "Toutes les équipes" : f}</button>
                 ))}
               </div>}
-              {filterMode !== "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
+              {filterMode !== "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(148,163,184,0.1)", flexWrap: "wrap" }}>
                 {filterMode === "presence" && !(isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>🔒 Consultation uniquement</span>
                 )}
                 {filterMode === "presence" && (isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
-                  <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
+                  <span style={{ fontSize: 11, color: "#2dd4bf", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
                 )}
-                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
+                {filterMode === "all" && <span style={{ fontSize: 11, color: "rgba(148,163,184,0.7)", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
                 {filterMode !== "presence" && (
                   <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
                     {[{ id: "all", label: "Tous" }, { id: "approved", label: "Approuvés" }, { id: "pending", label: "En attente" }].map(f => (
-                      <button key={f.id} onClick={() => setFilterStatus(f.id)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterStatus === f.id ? 600 : 400, background: filterStatus === f.id ? "#1e293b" : "#fff", color: filterStatus === f.id ? "#fff" : "#64748b", borderColor: filterStatus === f.id ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
+                      <button key={f.id} onClick={() => setFilterStatus(f.id)} style={{ padding: "4px 11px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterStatus === f.id ? 700 : 500, background: filterStatus === f.id ? "rgba(99,102,241,0.85)" : "rgba(255,255,255,0.05)", color: filterStatus === f.id ? "#fff" : "#94a3b8", borderColor: filterStatus === f.id ? "rgba(129,140,248,0.7)" : "rgba(148,163,184,0.15)", boxShadow: filterStatus === f.id ? "0 0 10px rgba(99,102,241,0.3)" : "none", transition: "all 0.15s" }}>{f.label}</button>
                     ))}
                   </div>
                 )}
