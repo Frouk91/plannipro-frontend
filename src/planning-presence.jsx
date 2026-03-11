@@ -1562,12 +1562,12 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
               {/* Ligne 1 */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                {/* Toggle Mois/Semaine - masqué en mode astreinte */}
-                {filterMode !== "astreinte" && <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 3, gap: 2 }}>
+                {/* Toggle Mois/Semaine */}
+                <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 3, gap: 2 }}>
                   {[{ v: "month", l: "Mois" }, { v: "week", l: "Semaine" }].map(({ v, l }) => (
                     <button key={v} onClick={() => setPlanView(v)} style={{ padding: "5px 14px", borderRadius: 6, border: "none", background: planView === v ? "#fff" : "transparent", color: planView === v ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: planView === v ? 700 : 400, boxShadow: planView === v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>{l}</button>
                   ))}
-                </div>}
+                </div>
                 {/* Navigation date */}
                 <div style={{ display: "flex", alignItems: "center", gap: 2, position: "relative" }}>
                   <button onClick={() => { if (planView === "month") { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() - 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 7, cursor: "pointer", padding: "4px 10px", fontSize: 15, color: "#64748b", lineHeight: 1, transition: "all 0.15s" }} onMouseEnter={e => { const c = filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"; e.currentTarget.style.background = filterMode==="presence"?"#f0fdfa":filterMode==="astreinte"?"#fffbeb":"#eef2ff"; e.currentTarget.style.color = c; e.currentTarget.style.borderColor = c; }} onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.borderColor = "#e2e8f0"; }}>‹</button>
@@ -1656,6 +1656,138 @@ function PlanningApp({ currentUser, onLogout }) {
                 )}
               </div>}
             </div>
+
+            {/* VUE SEMAINE ASTREINTE */}
+            {planView === "week" && filterMode === "astreinte" && (() => {
+              const cssAgents = agents.filter(a => a.team === "Css Digital" && a.role !== "admin");
+              const mailAgents = agents.filter(a => a.team === "Mailing Solution" && a.role !== "admin");
+              const mailingRows = [
+                { id: "astreinte",      label: "Astreinte vendredi",    fridayOnly: true,  color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", textColor: "#92400e" },
+                { id: "action_serveur", label: "Action Serveur / Admin", fridayOnly: false, color: "#8b5cf6", bg: "#f5f3ff", border: "#c4b5fd", textColor: "#5b21b6" },
+                { id: "mail",           label: "Mail",                   fridayOnly: false, color: "#06b6d4", bg: "#ecfeff", border: "#67e8f9", textColor: "#0e7490" },
+                { id: "es",             label: "ES",                     fridayOnly: false, color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7", textColor: "#065f46" },
+              ];
+              const showCss  = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+              const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
+
+              function AstreinteWeekRow({ teamName, rowId, rowLabel, fridayOnly, color, bg, border, textColor, teamAgentsList }) {
+                return (
+                  <tr style={{ borderBottom: "1px solid #f1f5f9", height: 52 }}>
+                    <td style={{ padding: "4px 12px", background: "#fff", fontSize: 11, fontWeight: 600, color: textColor, whiteSpace: "nowrap", minWidth: 160 }}>
+                      <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: color, marginRight: 6 }} />
+                      {rowLabel}
+                    </td>
+                    {weekDays.map((d, i) => {
+                      const k = dKey(d);
+                      const wk = d.getDay() === 0 || d.getDay() === 6;
+                      const isFriday = d.getDay() === 5;
+                      const isToday = k === dKey(now);
+                      const eligible = !wk && (fridayOnly ? isFriday : true);
+                      const canClick = canManageAstreintes && eligible;
+                      const aKey = `${teamName}|${rowId}|${k}`;
+                      const aAgentId = astreintes[aKey];
+                      const aAgent = aAgentId ? agents.find(a => a.id === aAgentId) : null;
+                      const inSel = astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId && astreinteHovered && eligible && k >= Math.min(astreinteSelStart.key, astreinteHovered) && k <= Math.max(astreinteSelStart.key, astreinteHovered);
+                      const inErase = astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId && astreinteHovered && eligible && k >= Math.min(astreinteEraseStart.key, astreinteHovered) && k <= Math.max(astreinteEraseStart.key, astreinteHovered);
+                      return (
+                        <td key={i}
+                          onMouseDown={e => {
+                            if (!canClick) return; e.preventDefault();
+                            if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
+                              const s = astreinteEraseStart.key, en = k;
+                              const minK = s < en ? s : en, maxK = s < en ? en : s;
+                              setAstreintes(prev => { const n = { ...prev }; weekDays.forEach(dd => { const dk = dKey(dd); if (dk >= minK && dk <= maxK) delete n[`${teamName}|${rowId}|${dk}`]; }); return n; });
+                              setAstreinteEraseStart(null); setAstreinteHovered(null);
+                            } else if (astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) {
+                              const s = astreinteSelStart.key, en = k;
+                              const minK = s < en ? s : en, maxK = s < en ? en : s;
+                              if (astreinteSelStart.agentId) {
+                                setAstreintes(prev => { const n = { ...prev }; weekDays.forEach(dd => { const dk = dKey(dd), dow2 = dd.getDay(), wk2 = dow2===0||dow2===6, isFri2 = dow2===5; if (dk >= minK && dk <= maxK && !wk2 && (fridayOnly ? isFri2 : true)) n[`${teamName}|${rowId}|${dk}`] = astreinteSelStart.agentId; }); return n; });
+                              }
+                              setAstreinteSelStart(null); setAstreinteHovered(null);
+                            } else {
+                              setAstreinteDropdown({
+                                aKey, teamName, rowId, rowType: rowId, key: k, x: e.clientX, y: e.clientY, fridayOnly,
+                                onAgentPicked: fridayOnly ? null : (agentId) => { setAstreinteSelStart({ teamName, rowId, key: k, agentId }); setAstreinteHovered(k); },
+                                onErasePicked: () => { setAstreinteEraseStart({ teamName, rowId, key: k }); setAstreinteHovered(k); }
+                              });
+                            }
+                          }}
+                          onContextMenu={e => { e.preventDefault(); if (!canClick) return; setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; }); }}
+                          onMouseEnter={() => {
+                            if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
+                              (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId)) { if (eligible) setAstreinteHovered(k); }
+                          }}
+                          className={canClick ? "cell-hover" : ""}
+                          style={{
+                            textAlign: "center", cursor: canClick ? "pointer" : "default",
+                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isToday ? "#fffbeb" : wk ? "#fafafa" : "#fff",
+                            borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
+                            outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
+                            opacity: (!eligible && !wk) ? 0.25 : 1
+                          }}>
+                          {eligible && (aAgent ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "4px 2px" }}>
+                              <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(aAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{aAgent.avatar}</div>
+                              <span style={{ fontSize: 9, color: textColor, fontWeight: 700, maxWidth: 60, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{aAgent.name.split(" ")[0]}</span>
+                            </div>
+                          ) : (
+                            canManageAstreintes && !astreinteSelStart && (
+                              <div style={{ width: "calc(100% - 8px)", height: 36, margin: "0 4px", borderRadius: 6, border: `1.5px dashed ${border}`, background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <span style={{ fontSize: 16, color: border, fontWeight: 700 }}>+</span>
+                              </div>
+                            )
+                          ))}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              }
+
+              return (
+                <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", border: "2px solid #f59e0b", boxShadow: "0 2px 24px rgba(245,158,11,0.15)" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
+                      <tr>
+                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        {weekDays.map((d, i) => {
+                          const k = dKey(d), wk = d.getDay()===0||d.getDay()===6, isToday = k===dKey(now), isFriday = d.getDay()===5;
+                          return (
+                            <th key={i} style={{ padding: "10px 6px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isFriday && !wk ? "#fef3c7" : isToday ? "#fffbeb" : wk ? "#fafafa" : "#f8fafc", color: isFriday && !wk ? "#d97706" : isToday ? "#f59e0b" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#fbbf24" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 80 }}>
+                              <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
+                              <div style={{ fontSize: 22, fontWeight: 800, color: isFriday && !wk ? "#d97706" : isToday ? "#f59e0b" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
+                              <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0,3)}</div>
+                              {isFriday && !wk && <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, marginTop: 2 }}>🔔 Astreinte</div>}
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {showCss && (
+                        <React.Fragment>
+                          <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
+                            <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
+                          </tr>
+                          <AstreinteWeekRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
+                        </React.Fragment>
+                      )}
+                      {showMail && (
+                        <React.Fragment>
+                          <tr style={{ background: "#fdf4ff", borderBottom: "2px solid #e9d5ff" }}>
+                            <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Mailing Solution</td>
+                          </tr>
+                          {mailingRows.map(row => (
+                            <AstreinteWeekRow key={row.id} teamName="Mailing Solution" rowId={row.id} rowLabel={row.label} fridayOnly={row.fridayOnly} color={row.color} bg={row.bg} border={row.border} textColor={row.textColor} teamAgentsList={mailAgents} />
+                          ))}
+                        </React.Fragment>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* VUE MOIS */}
             {planView === "month" && filterMode === "astreinte" && (
