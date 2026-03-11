@@ -3000,35 +3000,40 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
   const meta = STATUS_META[req.status] || { label: req.status, dot: "#94a3b8", text: "#64748b", bg: "#f8fafc" };
   const period = req.start === req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "36px 1fr auto", alignItems: "center", gap: 14, padding: "12px 16px", borderBottom: "1px solid #e5e7eb", transition: "all 0.2s" }}
-      onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "background 0.15s" }}
+      onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-      <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(req.agentTeam), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
+      {/* Avatar */}
+      <div style={{ width: 38, height: 38, borderRadius: "50%", background: teamGradient(req.agentTeam), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
+      {/* Infos */}
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
-          <span style={{ fontSize: 11, color: "#94a3b8" }}>{req.agentTeam}</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 4, padding: "1px 8px", fontSize: 11, fontWeight: 600 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: meta.dot, display: "inline-block" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 3 }}>
+          <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
+          {req.agentTeam && <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{req.agentTeam}</span>}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block" }} />
             {meta.label}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>{period}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>📅 {period}</span>
           <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} />
-          <span style={{ fontSize: 12, color: req.leaveType?.color || "#6366f1", fontWeight: 600 }}>{req.leaveType?.label}</span>
-          {req.reason && <><span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} /><span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{req.reason}</span></>}
-          {req.comment && <span style={{ fontSize: 11, color: "#ef4444", fontStyle: "italic" }}>↳ {req.comment}</span>}
+          <span style={{ fontSize: 12, fontWeight: 700, color: req.leaveType?.color || "#6366f1", background: req.leaveType?.color ? req.leaveType.color + "18" : "#eef2ff", padding: "1px 8px", borderRadius: 5 }}>{req.leaveType?.label}</span>
+          {req.reason && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>"{req.reason}"</span>}
+          {req.comment && <span style={{ fontSize: 11, color: "#ef4444", background: "#fef2f2", padding: "1px 7px", borderRadius: 5, fontWeight: 600 }}>↳ {req.comment}</span>}
         </div>
       </div>
+      {/* Actions */}
       {isManager && req.status === "pending" ? (
         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-          <button onClick={onApprove} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: "#10b981", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, transition: "all 0.2s", boxShadow: "0 2px 6px rgba(16, 185, 129, 0.2)" }}
-            onMouseEnter={e => { e.target.style.background = "#059669"; e.target.style.boxShadow = "0 4px 10px rgba(16, 185, 129, 0.3)"; }}
-            onMouseLeave={e => { e.target.style.background = "#10b981"; e.target.style.boxShadow = "0 2px 6px rgba(16, 185, 129, 0.2)"; }}>Approuver</button>
-          <button onClick={onReject} style={{ padding: "5px 12px", borderRadius: 6, border: "1px solid #fecaca", background: "#fff", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 600, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.target.style.background = "#fef2f2"; e.target.style.borderColor = "#fb7185"; }}
-            onMouseLeave={e => { e.target.style.background = "#fff"; e.target.style.borderColor = "#fecaca"; }}>Refuser</button>
+          <button onClick={onApprove}
+            style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#10b981,#34d399)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(16,185,129,0.35)", transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(16,185,129,0.45)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(16,185,129,0.35)"; e.currentTarget.style.transform = "none"; }}>✓ Approuver</button>
+          <button onClick={onReject}
+            style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#ef4444"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.transform = "none"; }}>✕ Refuser</button>
         </div>
       ) : <div />}
     </div>
@@ -3045,34 +3050,73 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
     <div style={{ padding: 24, maxWidth: 820, animation: "fadeIn 0.3s ease" }}>
-      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
-        onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
-        onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-        <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 7, padding: 2, gap: 1 }}>
-          {[{ id: "all", label: "Toutes" }, { id: "pending", label: "En attente" }, { id: "approved", label: "Approuvées" }, { id: "rejected", label: "Refusées" }].map(f => (
-            <button key={f.id} onClick={() => setStatusFilter(f.id)} style={{ padding: "4px 11px", borderRadius: 5, border: "none", background: statusFilter === f.id ? "#fff" : "transparent", color: statusFilter === f.id ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 12, fontWeight: statusFilter === f.id ? 600 : 400, boxShadow: statusFilter === f.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>
-              {f.label}{counts[f.id] > 0 && <span style={{ marginLeft: 5, background: statusFilter === f.id ? "#e0e7ff" : "#e2e8f0", color: statusFilter === f.id ? "#4338ca" : "#64748b", borderRadius: 10, padding: "0 5px", fontSize: 10, fontWeight: 700 }}>{counts[f.id]}</span>}
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+        {/* Ligne 1 : filtres statut */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: isManager ? 10 : 0 }}>
+          {[
+            { id: "all",      label: "Toutes",      color: "#6366f1", bg: "#eef2ff"  },
+            { id: "pending",  label: "En attente",  color: "#f59e0b", bg: "#fffbeb"  },
+            { id: "approved", label: "Approuvées",  color: "#10b981", bg: "#f0fdf4"  },
+            { id: "rejected", label: "Refusées",    color: "#ef4444", bg: "#fef2f2"  },
+          ].map(f => (
+            <button key={f.id} onClick={() => setStatusFilter(f.id)} style={{
+              padding: "6px 14px", borderRadius: 8,
+              border: `2px solid ${statusFilter === f.id ? f.color : "#e2e8f0"}`,
+              background: statusFilter === f.id ? f.bg : "#f8fafc",
+              color: statusFilter === f.id ? f.color : "#64748b",
+              cursor: "pointer", fontSize: 12, fontWeight: statusFilter === f.id ? 700 : 500,
+              boxShadow: statusFilter === f.id ? `0 2px 8px ${f.color}25` : "none",
+              transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6
+            }}
+            onMouseEnter={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = f.color; e.currentTarget.style.color = f.color; e.currentTarget.style.background = f.bg; }}}
+            onMouseLeave={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#f8fafc"; }}}>
+              {f.label}
+              {counts[f.id] > 0 && <span style={{ background: statusFilter === f.id ? f.color : "#e2e8f0", color: statusFilter === f.id ? "#fff" : "#64748b", borderRadius: 10, padding: "0 6px", fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center" }}>{counts[f.id]}</span>}
             </button>
           ))}
-        </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
-          {history.length > 0 && isManager && (
-            <>
-              <button onClick={() => { if (window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning.")) onClearHistory(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fecaca", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>Effacer l'historique</button>
-              {isAdmin && <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #fed7aa", background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 11, fontWeight: 500, transition: "all 0.2s" }}>🗑 Vider le planning</button>}
-            </>
-          )}
-          <button onClick={() => setShowHistory(h => !h)} style={{ padding: "4px 11px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 11, fontWeight: 500, display: "flex", alignItems: "center", gap: 5, transition: "all 0.2s" }}>
+
+          {/* Bouton historique aligné à droite */}
+          <button onClick={() => setShowHistory(h => !h)} style={{
+            marginLeft: "auto", padding: "6px 13px", borderRadius: 8,
+            border: `1.5px solid ${showHistory ? "#6366f1" : "#e2e8f0"}`,
+            background: showHistory ? "#eef2ff" : "#f8fafc",
+            color: showHistory ? "#4338ca" : "#64748b",
+            cursor: "pointer", fontSize: 12, fontWeight: 600,
+            display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s"
+          }}>
+            <span style={{ fontSize: 13, transform: showHistory ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
             {showHistory ? "Masquer" : "Afficher"} l'historique
-            <span style={{ fontSize: 10, color: "#94a3b8", transform: showHistory ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
           </button>
         </div>
+
+        {/* Ligne 2 : actions admin (séparée) */}
+        {history.length > 0 && isManager && (
+          <div style={{ display: "flex", gap: 8, paddingTop: 10, borderTop: "1px solid #f1f5f9" }}>
+            <button onClick={() => { if (window.confirm("Effacer l'historique des demandes refusées ?\n\nLes demandes approuvées resteront dans le planning.")) onClearHistory(); }} style={{
+              padding: "5px 13px", borderRadius: 8, border: "1.5px solid #fca5a5",
+              background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>
+              🗂 Effacer l'historique
+            </button>
+            {isAdmin && <button onClick={() => { if (window.confirm("⚠️ ATTENTION ⚠️\n\nCette action supprimera TOUTES les données du planning.\n\nContinuer ?")) onClearPlanningData(); }} style={{
+              padding: "5px 13px", borderRadius: 8, border: "1.5px solid #fcd34d",
+              background: "#fffbeb", color: "#b45309", cursor: "pointer", fontSize: 12, fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 6, transition: "all 0.15s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#f59e0b"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#f59e0b"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fffbeb"; e.currentTarget.style.color = "#b45309"; e.currentTarget.style.borderColor = "#fcd34d"; }}>
+              🗑 Vider le planning
+            </button>}
+          </div>
+        )}
       </div>
       {!isManager && (
-        <div style={{ fontSize: 12, color: "#4338ca", background: "#eef2ff", border: "1px solid #d5d9f7", borderRadius: 8, padding: "8px 14px", marginBottom: 14, transition: "all 0.2s" }}
-          onMouseEnter={e => { e.currentTarget.style.background = "#e6ebff"; e.currentTarget.style.borderColor = "#c7d2fe"; }}
-          onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.borderColor = "#d5d9f7"; }}>
-          Sélectionnez des dates dans le planning pour déposer une demande de congé.
+        <div style={{ fontSize: 12, color: "#4338ca", background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 10, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 18 }}>💡</span>
+          <span style={{ fontWeight: 500 }}>Sélectionnez des dates dans le planning pour déposer une demande de congé.</span>
         </div>
       )}
       {filtered.length === 0 ? (
@@ -3083,10 +3127,12 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 12, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(245,158,11,0.15)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(245,158,11,0.1)"}>
-              <div style={{ padding: "10px 16px", background: "#fffbeb", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#f59e0b", display: "inline-block" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>En attente</span>
-                <span style={{ fontSize: 11, color: "#b45309", marginLeft: 2 }}>{pending.length} demande{pending.length > 1 ? "s" : ""}</span>
+              <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#fffbeb,#fef9ec)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(245,158,11,0.3)" }}>⏳</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>En attente de validation</div>
+                  <div style={{ fontSize: 11, color: "#b45309" }}>{pending.length} demande{pending.length > 1 ? "s" : ""} à traiter</div>
+                </div>
               </div>
               {pending.map(req => (
                 <RequestRow key={req.id} req={req} isManager={isManager} onApprove={() => onApprove(req.id)} onReject={() => onReject(req.id)} />
@@ -3097,9 +3143,12 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-              <div style={{ padding: "10px 16px", background: "#f8fafc", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#64748b" }}>Historique</span>
-                <span style={{ fontSize: 11, color: "#94a3b8" }}>{history.filter(r => statusFilter === "all" || r.status === statusFilter).length} demande{history.length > 1 ? "s" : ""}</span>
+              <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#64748b,#94a3b8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(100,116,139,0.25)" }}>📋</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#374151" }}>Historique</div>
+                  <div style={{ fontSize: 11, color: "#94a3b8" }}>{history.filter(r => statusFilter === "all" || r.status === statusFilter).length} demande{history.length > 1 ? "s" : ""}</div>
+                </div>
               </div>
               {history.filter(r => statusFilter === "all" || r.status === statusFilter).map(req => (
                 <RequestRow key={req.id} req={req} isManager={isManager} />
