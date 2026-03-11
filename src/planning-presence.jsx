@@ -1413,6 +1413,7 @@ function PlanningApp({ currentUser, onLogout }) {
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "#060818", display: "flex", position: "relative" }}
       onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      <style>{GLOBAL_STYLE}</style>
 
       {/* Auroras fond */}
       <div style={{position:"fixed",top:"-20%",left:"-15%",width:"60vw",height:"60vw",background:"radial-gradient(ellipse,rgba(99,102,241,0.18) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(70px)",animation:"aurora1 18s ease-in-out infinite",pointerEvents:"none",zIndex:0}} />
