@@ -27,10 +27,11 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Outfit', sans-serif; background: #060818; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: rgba(148,163,184,0.1); }
-  ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.6); }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1 0%, #06b6d4 100%); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8 0%, #22d3ee 100%); }
+  ::-webkit-scrollbar-corner { background: transparent; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
