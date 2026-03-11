@@ -215,6 +215,13 @@ function LoginPage({ onLogin }) {
         @keyframes particle { 0%{transform:translateY(0px) scale(1);opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{transform:translateY(-120px) scale(0.4);opacity:0;} }
         @keyframes shimmer { 0%{transform:translateX(-100%);} 100%{transform:translateX(200%);} }
         @keyframes glowPulse { 0%,100%{box-shadow:0 0 40px rgba(99,102,241,0.3),0 25px 50px rgba(0,0,0,0.5);} 50%{box-shadow:0 0 80px rgba(99,102,241,0.5),0 25px 50px rgba(0,0,0,0.5);} }
+        @keyframes clockRing { 0%,100%{transform:rotate(0deg);} 10%{transform:rotate(-8deg);} 20%{transform:rotate(8deg);} 30%{transform:rotate(-6deg);} 40%{transform:rotate(6deg);} 50%{transform:rotate(-3deg);} 60%{transform:rotate(3deg);} 70%,100%{transform:rotate(0deg);} }
+        @keyframes bellBounce { 0%,100%{transform:translateY(0);} 25%{transform:translateY(-3px);} 75%{transform:translateY(2px);} }
+        @keyframes handTick { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+        @keyframes handTickMin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+        @keyframes floatIllus { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-8px);} }
+        @keyframes pencilWiggle { 0%,90%,100%{transform:rotate(-18deg);} 92%{transform:rotate(-22deg);} 96%{transform:rotate(-14deg);} }
+        @keyframes markPop { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.3);opacity:1;} }
       `}</style>
 
       {/* Aurora blobs */}
@@ -243,12 +250,133 @@ function LoginPage({ onLogin }) {
 
       <div style={{ width: "100%", maxWidth: "440px", padding: "20px", position: "relative", zIndex: 10 }}>
 
-        {/* En-tête */}
-        <div style={{ marginBottom: "36px", textAlign: "center", animation: "slideInUp 0.7s ease both" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#6366f1,#06b6d4)", boxShadow: "0 8px 32px rgba(99,102,241,0.4)", marginBottom: 16, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,transparent 40%,rgba(255,255,255,0.15))", animation: "shimmer 3s ease-in-out infinite" }} />
-            <span style={{ fontSize: 24 }}>📅</span>
+        {/* En-tête + Illustration */}
+        <div style={{ marginBottom: "28px", textAlign: "center", animation: "slideInUp 0.7s ease both" }}>
+
+          {/* Illustration SVG */}
+          <div style={{ display: "inline-block", animation: "floatIllus 5s ease-in-out infinite", marginBottom: 20, filter: "drop-shadow(0 16px 40px rgba(99,102,241,0.35))" }}>
+            <svg width="220" height="160" viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+              {/* ── CALENDRIER ── */}
+              {/* Ombre portée calendrier */}
+              <ellipse cx="110" cy="152" rx="65" ry="7" fill="rgba(0,0,0,0.25)" />
+              {/* Corps */}
+              <rect x="48" y="30" width="114" height="112" rx="10" fill="rgba(255,255,255,0.08)" stroke="rgba(99,102,241,0.6)" strokeWidth="2" />
+              <rect x="48" y="30" width="114" height="112" rx="10" fill="url(#calGrad)" />
+              {/* En-tête calendrier */}
+              <rect x="48" y="30" width="114" height="28" rx="10" fill="rgba(99,102,241,0.75)" />
+              <rect x="48" y="44" width="114" height="14" fill="rgba(99,102,241,0.75)" />
+              {/* Anneaux calendrier */}
+              <rect x="75" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
+              <rect x="127" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
+              {/* Texte mois */}
+              <text x="110" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">MARS 2026</text>
+
+              {/* Grille jours */}
+              {/* Ligne 1 */}
+              <rect x="56" y="66" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="74" y="66" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="92" y="66" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="110" y="66" width="14" height="14" rx="3" fill="rgba(99,102,241,0.5)" />
+              <rect x="128" y="66" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="146" y="66" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              {/* Croix rouge l1 */}
+              <line x1="58" y1="68" x2="68" y2="78" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <line x1="68" y1="68" x2="58" y2="78" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <line x1="94" y1="68" x2="104" y2="78" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <line x1="104" y1="68" x2="94" y2="78" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="135" cy="73" r="5" fill="rgba(99,102,241,0.7)" style={{animation:"markPop 2.5s ease-in-out infinite", animationDelay:"0.3s"}} />
+              {/* Ligne 2 */}
+              <rect x="56" y="84" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="74" y="84" width="14" height="14" rx="3" fill="rgba(6,182,212,0.35)" />
+              <rect x="92" y="84" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="110" y="84" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="128" y="84" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="146" y="84" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <line x1="130" y1="86" x2="140" y2="96" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <line x1="140" y1="86" x2="130" y2="96" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              {/* Ligne 3 */}
+              <rect x="56" y="102" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="74" y="102" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="92" y="102" width="14" height="14" rx="3" fill="rgba(245,158,11,0.5)" />
+              <rect x="110" y="102" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="128" y="102" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="146" y="102" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <circle cx="81" cy="109" r="5" fill="rgba(6,182,212,0.8)" style={{animation:"markPop 2.5s ease-in-out infinite", animationDelay:"1s"}} />
+              <line x1="58" y1="104" x2="68" y2="114" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              <line x1="68" y1="104" x2="58" y2="114" stroke="rgba(239,68,68,0.8)" strokeWidth="2" strokeLinecap="round" />
+              {/* Ligne 4 */}
+              <rect x="56" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="74" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="92" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <rect x="110" y="120" width="14" height="14" rx="3" fill="rgba(99,102,241,0.5)" />
+              <rect x="128" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
+              <circle cx="153" cy="127" r="5" fill="rgba(245,158,11,0.8)" style={{animation:"markPop 2.5s ease-in-out infinite", animationDelay:"1.7s"}} />
+
+              {/* ── RÉVEIL (animation ring) ── */}
+              <g style={{transformOrigin:"34px 98px", animation:"clockRing 4s ease-in-out infinite", animationDelay:"2s"}}>
+                {/* Ombre */}
+                <ellipse cx="34" cy="118" rx="20" ry="4" fill="rgba(0,0,0,0.2)" />
+                {/* Clochettes */}
+                <g style={{animation:"bellBounce 0.2s ease-in-out infinite", animationDelay:"2s"}}>
+                  <circle cx="18" cy="82" r="5" fill="rgba(99,102,241,0.8)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                  <circle cx="50" cy="82" r="5" fill="rgba(99,102,241,0.8)" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                  {/* Marteaux */}
+                  <rect x="13" y="84" width="5" height="3" rx="1.5" fill="rgba(165,180,252,0.9)" transform="rotate(-20,13,84)" />
+                  <rect x="50" y="84" width="5" height="3" rx="1.5" fill="rgba(165,180,252,0.9)" transform="rotate(20,50,84)" />
+                </g>
+                {/* Corps réveil */}
+                <circle cx="34" cy="100" r="22" fill="rgba(30,41,59,0.9)" stroke="rgba(99,102,241,0.7)" strokeWidth="2.5" />
+                <circle cx="34" cy="100" r="18" fill="rgba(15,23,42,0.95)" stroke="rgba(99,102,241,0.3)" strokeWidth="1" />
+                {/* Graduations */}
+                {[0,30,60,90,120,150,180,210,240,270,300,330].map((deg,i) => {
+                  const r1 = i%3===0 ? 14 : 15.5, r2 = 17;
+                  const rad = (deg-90)*Math.PI/180;
+                  return <line key={deg} x1={34+r1*Math.cos(rad)} y1={100+r1*Math.sin(rad)} x2={34+r2*Math.cos(rad)} y2={100+r2*Math.sin(rad)} stroke={i%3===0?"rgba(165,180,252,0.8)":"rgba(148,163,184,0.3)"} strokeWidth={i%3===0?1.5:1} />;
+                })}
+                {/* Aiguille minutes */}
+                <line x1="34" y1="100" x2="34" y2="86" stroke="rgba(165,180,252,0.95)" strokeWidth="1.5" strokeLinecap="round" style={{transformOrigin:"34px 100px", animation:"handTickMin 60s linear infinite"}} />
+                {/* Aiguille heures */}
+                <line x1="34" y1="100" x2="40" y2="94" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" style={{transformOrigin:"34px 100px", animation:"handTick 12s linear infinite"}} />
+                {/* Aiguille secondes */}
+                <line x1="34" y1="104" x2="34" y2="85" stroke="rgba(239,68,68,0.9)" strokeWidth="1" strokeLinecap="round" style={{transformOrigin:"34px 100px", animation:"handTick 1s linear infinite"}} />
+                {/* Centre */}
+                <circle cx="34" cy="100" r="2.5" fill="rgba(239,68,68,0.9)" />
+                {/* Pied */}
+                <path d="M26,120 Q34,124 42,120" stroke="rgba(99,102,241,0.7)" strokeWidth="2" fill="none" strokeLinecap="round" />
+              </g>
+
+              {/* ── CRAYON ── */}
+              <g transform="translate(152,95)" style={{transformOrigin:"0px 40px", animation:"pencilWiggle 5s ease-in-out infinite"}}>
+                {/* Corps crayon */}
+                <rect x="-5" y="0" width="10" height="52" rx="2" fill="rgba(245,158,11,0.85)" />
+                {/* Liseré haut */}
+                <rect x="-5" y="0" width="10" height="6" rx="2" fill="rgba(255,200,100,0.9)" />
+                {/* Gomme */}
+                <rect x="-5" y="-8" width="10" height="10" rx="2" fill="rgba(239,68,68,0.7)" />
+                <rect x="-5" y="-2" width="10" height="2" fill="rgba(180,50,50,0.5)" />
+                {/* Pointe bois */}
+                <path d="M-5,52 L5,52 L0,65 Z" fill="rgba(210,140,60,0.8)" />
+                {/* Mine */}
+                <path d="M-1.5,60 L1.5,60 L0,65 Z" fill="rgba(50,50,50,0.9)" />
+                {/* Reflet */}
+                <rect x="-2" y="4" width="3" height="44" rx="1.5" fill="rgba(255,255,255,0.15)" />
+              </g>
+
+              {/* Lignes ondulées décoratives (traits de texte) */}
+              <line x1="56" y1="57" x2="90" y2="57" stroke="rgba(165,180,252,0.4)" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="56" y1="61" x2="78" y2="61" stroke="rgba(165,180,252,0.25)" strokeWidth="1" strokeLinecap="round" />
+
+              {/* Dégradé fond calendrier */}
+              <defs>
+                <linearGradient id="calGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="rgba(15,23,42,0.85)" />
+                  <stop offset="100%" stopColor="rgba(30,41,59,0.7)" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
+
           <h1 style={{ color: "#fff", fontSize: "34px", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-1px", background: "linear-gradient(135deg,#fff 30%,#a5b4fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
           <p style={{ color: "rgba(148,163,184,0.8)", fontSize: "13px", margin: 0, animation: "slideInUp 0.7s ease 0.15s both" }}>Gestion des présences & congés</p>
         </div>
