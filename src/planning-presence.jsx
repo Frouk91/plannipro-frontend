@@ -722,7 +722,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [halfDayPeriod, setHalfDayPeriod] = useState(null);
   const [halfDayPendingType, setHalfDayPendingType] = useState(null);
   const [addLeaveModal, setAddLeaveModal] = useState(false);
-  const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "" });
+  const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "", _period: null });
   const [alSearchQuery, setAlSearchQuery] = useState("");
   const [alShowAgentDrop, setAlShowAgentDrop] = useState(false);
   const [alShowStartCal, setAlShowStartCal] = useState(false);
@@ -2772,18 +2772,65 @@ function PlanningApp({ currentUser, onLogout }) {
                     )}
                   </div>
                 </div>
-                <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                    {sortLeaveTypes(availLTs).map(t => (
-                      <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id }))}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${addLeaveForm.leaveTypeId === t.id ? t.color : "#e2e8f0"}`, background: addLeaveForm.leaveTypeId === t.id ? hexToLight(t.color) : "#fff", cursor: "pointer", fontSize: 12, fontWeight: addLeaveForm.leaveTypeId === t.id ? 700 : 500, color: addLeaveForm.leaveTypeId === t.id ? t.color : "#475569", transition: "all 0.15s" }}>
-                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {(() => {
+                  const isCpType   = t => /^(cp|congé payé)$/i.test((t.label||"").trim()) || (t.code === "cp");
+                  const isRttType  = t => /^rtt$/i.test((t.label||"").trim()) || (t.code === "rtt");
+                  const isHalfCpT  = t => /^½ cp$/i.test((t.label||"").trim()) || t.code === "_cp";
+                  const isHalfRttT = t => /^½ rtt$/i.test((t.label||"").trim()) || t.code === "_rtt";
+                  const halfCp  = availLTs.find(isHalfCpT);
+                  const halfRtt = availLTs.find(isHalfRttT);
+                  // Masquer ½ CP et ½ RTT de la liste principale
+                  const displayLTs = sortLeaveTypes(availLTs).filter(t => !isHalfCpT(t) && !isHalfRttT(t));
+                  // Quel type "parent" est ouvert pour montrer Matin/AM/Journée
+                  const openParentId = addLeaveForm.leaveTypeId &&
+                    displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t))) ? addLeaveForm.leaveTypeId : null;
+                  return (
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {displayLTs.map(t => {
+                          const isGrouped = isCpType(t) || isRttType(t);
+                          const isSelected = addLeaveForm.leaveTypeId === t.id;
+                          return (
+                            <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
+                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "#e2e8f0"}`, background: isSelected ? hexToLight(t.color) : "#fff", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#475569", transition: "all 0.15s" }}>
+                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
+                              {t.label}
+                              {isGrouped && <span style={{ fontSize: 9, opacity: 0.55, marginLeft: 1 }}>▾</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {/* Sous-menu période si CP ou RTT sélectionné */}
+                      {openParentId && (() => {
+                        const parentType = displayLTs.find(t => t.id === openParentId);
+                        const halfType = isCpType(parentType) ? halfCp : halfRtt;
+                        return (
+                          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: hexToLight(parentType.color), border: `1.5px solid ${parentType.color}30` }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: parentType.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Choisir la période</div>
+                            <div style={{ display: "flex", gap: 7 }}>
+                              {[
+                                { key: "matin",      label: "🌅 Matin",      sub: "½ journée" },
+                                { key: "apres-midi", label: "🌆 Après-midi", sub: "½ journée" },
+                                { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
+                              ].map(opt => {
+                                const isSelPeriod = addLeaveForm._period === opt.key;
+                                return (
+                                  <button key={opt.key}
+                                    onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id) }))}
+                                    style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : parentType.color + "40"}`, background: isSelPeriod ? parentType.color : "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#1e293b", lineHeight: 1.3 }}>{opt.label}</div>
+                                    <span style={{ fontSize: 9, color: isSelPeriod ? "rgba(255,255,255,0.75)" : "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })()}
                 <div>
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#94a3b8", textTransform: "none" }}>(optionnel)</span></label>
                   <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
@@ -2809,17 +2856,23 @@ function PlanningApp({ currentUser, onLogout }) {
                 <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 500 }}>Annuler</button>
                 <button onClick={async () => {
                   const agentId = addLeaveForm.agentId || currentUser.id;
-                  const lt = sortLeaveTypes(availLTs).find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
+                  const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
                   if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
                   const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
                   if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
-                  if (isHalfDay(lt)) {
+                  const period = addLeaveForm._period;
+                  // Si demi-journée via période sélectionnée
+                  const finalReason = (period && period !== "journee")
+                    ? "[" + period + "]" + (addLeaveForm.reason ? " " + addLeaveForm.reason : "")
+                    : addLeaveForm.reason;
+                  if (isHalfDay(lt) && !period) {
+                    // Cas ½ CP / ½ RTT sélectionné directement sans période → ouvrir modale période
                     setAddLeaveModal(false);
                     setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
                     setHalfDayPeriod(null);
                   } else {
                     setAddLeaveModal(false);
-                    await submitRequest({ ...lt }, addLeaveForm.reason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
+                    await submitRequest({ ...lt }, finalReason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
                   }
                 }} disabled={(() => {
                   const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
