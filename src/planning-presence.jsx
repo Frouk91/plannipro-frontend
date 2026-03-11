@@ -2006,7 +2006,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const leave = getLeaveForDay(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day;
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                   const isFridayCell = new Date(year, month, day).getDay() === 5;
-                                  const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
+                                  const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
                                   return <td key={i}
                                     onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
                                     onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
@@ -2170,7 +2170,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const inSel = isWeekInSel(agent.id, k);
                                   const isToday = k === dKey(now);
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
-                                  const canInteract = (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || currentUser.id === agent.id)) && !wk && (!isFer || isManager);
+                                  const canInteract = (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
                                   return <td key={i}
                                     onClick={() => canInteract && handleWeekCellClick(agent.id, d)}
                                     onContextMenu={e => !wk && handleWeekCellRightClick(e, agent.id, d)}
