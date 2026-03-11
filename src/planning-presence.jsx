@@ -206,6 +206,8 @@ function LoginPage({ onLogin }) {
   }
   return (
     <div style={{ minHeight: "100vh", background: "#060818", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* Vignette bords */}
+      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)", pointerEvents: "none", zIndex: 1 }} />
       <style>{GLOBAL_STYLE}</style>
       <style>{`
         @keyframes aurora1 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.15);} 66%{transform:translate(-30px,50px) scale(0.9);} }
@@ -379,15 +381,19 @@ function LoginPage({ onLogin }) {
             filter: "drop-shadow(0 0 20px rgba(165,180,252,0.4))",
             lineHeight: 1.1
           }}>Planning</h1>
-          <p style={{ color: "rgba(148,163,184,0.8)", fontSize: "13px", margin: 0, animation: "slideInUp 0.7s ease 0.15s both" }}>Gestion des présences & congés</p>
+          <p style={{ margin: "10px 0 0", animation: "slideInUp 0.7s ease 0.15s both", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <span style={{ display: "inline-block", width: 28, height: 1, background: "linear-gradient(90deg,transparent,rgba(165,180,252,0.5))" }} />
+            <span style={{ color: "rgba(165,180,252,0.7)", fontSize: "12px", fontWeight: 500, letterSpacing: "2px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif" }}>Présences & Congés</span>
+            <span style={{ display: "inline-block", width: 28, height: 1, background: "linear-gradient(90deg,rgba(165,180,252,0.5),transparent)" }} />
+          </p>
         </div>
 
         {/* Formulaire */}
-        <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "24px", padding: "36px", backdropFilter: "blur(24px)", animation: "slideInUp 0.7s ease 0.25s both, glowPulse 4s ease-in-out infinite" }}>
+        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(165,180,252,0.15)", borderRadius: "28px", padding: "40px 36px 32px", backdropFilter: "blur(32px)", animation: "slideInUp 0.7s ease 0.25s both, glowPulse 4s ease-in-out infinite", boxShadow: "0 0 0 1px rgba(255,255,255,0.04) inset" }}>
 
           {/* Email */}
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#94a3b8", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Identifiant</label>
+          <div style={{ marginBottom: "22px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "11px", fontWeight: "600", color: "rgba(165,180,252,0.8)", marginBottom: "8px", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif" }}><span style={{ width: 3, height: 12, background: "linear-gradient(180deg,#6366f1,#06b6d4)", borderRadius: 2, display: "inline-block" }} />Identifiant</label>
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", zIndex: 5 }}>✉️</span>
               <input
@@ -398,7 +404,7 @@ function LoginPage({ onLogin }) {
                 onChange={e => { setEmail(e.target.value); setError(""); }}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="vous@quadient.com"
-                style={{ width: "100%", padding: "14px 16px 14px 48px", borderRadius: "12px", border: "1.5px solid rgba(148,163,184,0.2)", background: "rgba(30,41,59,0.5)", fontSize: "14px", color: "#f1f5f9", transition: "all 0.3s", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "15px 16px 15px 48px", borderRadius: "14px", border: "1.5px solid rgba(99,102,241,0.2)", background: "rgba(15,23,42,0.6)", fontSize: "14px", color: "#f1f5f9", transition: "all 0.3s", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }}
                 onFocus={e => { e.target.style.border = "1.5px solid #6366f1"; e.target.style.background = "rgba(30,41,59,0.8)"; e.target.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)"; }}
                 onBlur={e => { e.target.style.border = "1.5px solid rgba(148,163,184,0.15)"; e.target.style.background = "rgba(30,41,59,0.5)"; e.target.style.boxShadow = "none"; }}
               />
@@ -406,8 +412,8 @@ function LoginPage({ onLogin }) {
           </div>
 
           {/* Mot de passe */}
-          <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: "#94a3b8", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Mot de passe</label>
+          <div style={{ marginBottom: "28px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "11px", fontWeight: "600", color: "rgba(165,180,252,0.8)", marginBottom: "8px", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif" }}><span style={{ width: 3, height: 12, background: "linear-gradient(180deg,#6366f1,#06b6d4)", borderRadius: 2, display: "inline-block" }} />Mot de passe</label>
             <div style={{ position: "relative" }}>
               <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px" }}>🔐</span>
               <input
@@ -418,7 +424,7 @@ function LoginPage({ onLogin }) {
                 onChange={e => { setPassword(e.target.value); setError(""); }}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="••••••••"
-                style={{ width: "100%", padding: "14px 48px 14px 48px", borderRadius: "12px", border: "1.5px solid rgba(148,163,184,0.2)", background: "rgba(30,41,59,0.5)", fontSize: "14px", color: "#f1f5f9", transition: "all 0.3s", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "15px 48px 15px 48px", borderRadius: "14px", border: "1.5px solid rgba(99,102,241,0.2)", background: "rgba(15,23,42,0.6)", fontSize: "14px", color: "#f1f5f9", transition: "all 0.3s", boxSizing: "border-box", fontFamily: "'Outfit', sans-serif" }}
                 onFocus={e => { e.target.style.border = "1.5px solid #3b82f6"; e.target.style.background = "rgba(30,41,59,0.8)"; e.target.style.boxShadow = "0 0 20px rgba(59, 130, 246, 0.2)"; }}
                 onBlur={e => { e.target.style.border = "1.5px solid rgba(148,163,184,0.2)"; e.target.style.background = "rgba(30,41,59,0.5)"; e.target.style.boxShadow = "none"; }}
               />
@@ -426,9 +432,9 @@ function LoginPage({ onLogin }) {
           </div>
 
           {/* Message d'erreur */}
-          {error && <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "10px", padding: "12px 14px", marginBottom: "24px", fontSize: "13px", color: "#fca5a5", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span>⚠️</span>
-            <span>{error}</span>
+          {error && <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "14px", padding: "13px 16px", marginBottom: "20px", fontSize: "13px", color: "#fca5a5", display: "flex", alignItems: "center", gap: "10px", backdropFilter: "blur(8px)", boxShadow: "0 4px 20px rgba(239,68,68,0.1)" }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+            <span style={{ fontWeight: 500, lineHeight: 1.4 }}>{error}</span>
           </div>}
 
           {/* Bouton de connexion */}
@@ -450,24 +456,32 @@ function LoginPage({ onLogin }) {
           </button>
         </div>
 
-        {/* Comptes démo */}
-        <div style={{ marginTop: "28px", padding: "20px", background: "rgba(30,41,59,0.4)", border: "1px solid rgba(148,163,184,0.1)", borderRadius: "16px", backdropFilter: "blur(10px)" }}>
-          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "14px", textAlign: "center", textTransform: "uppercase", letterSpacing: "1px", fontWeight: "600" }}>📋 Comptes de test</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            {DEMO_USERS.map((u, i) => (
-              <button
-                key={i}
-                onClick={() => { setEmail(u.email); setPassword(u.password); setError(""); }}
-                style={{ background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.3)", borderRadius: "10px", padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "all 0.3s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(59,130,246,0.2)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.6)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(59,130,246,0.1)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)"; }}
-              >
-                <div style={{ color: "#f1f5f9", fontSize: "11px", fontWeight: "600" }}>{u.email.split("@")[0]}</div>
-                <div style={{ color: "#94a3b8", fontSize: "10px", marginTop: "2px" }}>{u.email}</div>
+        {/* Comptes démo repliés */}
+        {(() => {
+          const [showDemo, setShowDemo] = React.useState(false);
+          return (
+            <div style={{ marginTop: "20px", animation: "slideInUp 0.7s ease 0.4s both" }}>
+              <button onClick={() => setShowDemo(s => !s)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0" }}>
+                <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
+                <span style={{ fontSize: "11px", color: "rgba(148,163,184,0.5)", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, whiteSpace: "nowrap" }}>Comptes de test {showDemo ? "▴" : "▾"}</span>
+                <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
               </button>
-            ))}
-          </div>
-        </div>
+              {showDemo && (
+                <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {DEMO_USERS.map((u, i) => (
+                    <button key={i} onClick={() => { setEmail(u.email); setPassword(u.password); setError(""); }}
+                      style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px", padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(99,102,241,0.08)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)"; }}>
+                      <div style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "700", fontFamily: "'Space Grotesk', sans-serif" }}>{u.email.split("@")[0]}</div>
+                      <div style={{ color: "rgba(148,163,184,0.6)", fontSize: "10px", marginTop: 2 }}>{u.email}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       </div>
     </div>
