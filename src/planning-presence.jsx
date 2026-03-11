@@ -27,11 +27,12 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Outfit', sans-serif; background: #060818; }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1 0%, #06b6d4 100%); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8 0%, #22d3ee 100%); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; border: 1px solid rgba(99,102,241,0.3); }
+  ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
+  * { scrollbar-width: thin; scrollbar-color: #6366f1 rgba(6,8,24,0.8); }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
