@@ -33,12 +33,7 @@ const GLOBAL_STYLE = `
   ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
   * { scrollbar-width: thin; scrollbar-color: #6366f1 rgba(6,8,24,0.8); }
-  body.mode-presence ::-webkit-scrollbar-thumb { background: #0d9488 !important; }
-  body.mode-presence ::-webkit-scrollbar-thumb:hover { background: #14b8a6 !important; }
-  body.mode-presence * { scrollbar-color: #0d9488 rgba(6,8,24,0.8) !important; }
-  body.mode-astreinte ::-webkit-scrollbar-thumb { background: #f59e0b !important; }
-  body.mode-astreinte ::-webkit-scrollbar-thumb:hover { background: #fbbf24 !important; }
-  body.mode-astreinte * { scrollbar-color: #f59e0b rgba(6,8,24,0.8) !important; }
+
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -1055,9 +1050,11 @@ function PlanningApp({ currentUser, onLogout }) {
   // Touche Échap pour annuler la sélection en cours
   // ── Scrollbar dynamique selon filterMode ──
   useEffect(() => {
-    document.body.classList.remove("mode-presence", "mode-astreinte");
-    if (filterMode === "presence") document.body.classList.add("mode-presence");
-    else if (filterMode === "astreinte") document.body.classList.add("mode-astreinte");
+    const thumb = filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1";
+    const thumbHover = filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8";
+    let el = document.getElementById("scrollbar-style");
+    if (!el) { el = document.createElement("style"); el.id = "scrollbar-style"; document.head.appendChild(el); }
+    el.textContent = `#main-scroll::-webkit-scrollbar{width:6px;height:6px}#main-scroll::-webkit-scrollbar-track{background:rgba(6,8,24,0.8);border-radius:10px}#main-scroll::-webkit-scrollbar-thumb{background:${thumb};border-radius:10px}#main-scroll::-webkit-scrollbar-thumb:hover{background:${thumbHover}}`;
   }, [filterMode]);
 
   useEffect(() => {
@@ -1522,7 +1519,7 @@ function PlanningApp({ currentUser, onLogout }) {
       </aside>
 
       {/* MAIN */}
-      <main style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
+      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
         <div style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(10px)", border: "1px solid rgba(148,163,184,0.1)", borderBottom: "2px solid rgba(59,130,246,0.2)", padding: "11px 24px", display: "flex", alignItems: "center", gap: 10 }}>
           <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Statistiques" : "Administration"}</h1>
           {view === "validations" && <span style={{ fontSize: 12, color: "#94a3b8" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
