@@ -29,8 +29,8 @@ const GLOBAL_STYLE = `
   body { font-family: 'Outfit', sans-serif; background: #060818; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb { background: var(--sb-thumb, #6366f1); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--sb-hover, #818cf8); }
+  ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
 
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
@@ -1433,6 +1433,7 @@ function PlanningApp({ currentUser, onLogout }) {
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "#060818", display: "flex", position: "relative" }}
       onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
       <style>{GLOBAL_STYLE}</style>
+      <style>{`::-webkit-scrollbar-thumb{background:${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}!important;border-radius:10px}::-webkit-scrollbar-thumb:hover{background:${filterMode==="presence"?"#14b8a6":filterMode==="astreinte"?"#fbbf24":"#818cf8"}!important}`}</style>
 
       {/* Auroras fond */}
       <div style={{position:"fixed",top:"-20%",left:"-15%",width:"60vw",height:"60vw",background:"radial-gradient(ellipse,rgba(99,102,241,0.18) 0%,transparent 65%)",borderRadius:"50%",filter:"blur(70px)",animation:"aurora1 18s ease-in-out infinite",pointerEvents:"none",zIndex:0}} />
@@ -1511,10 +1512,7 @@ function PlanningApp({ currentUser, onLogout }) {
       </aside>
 
       {/* MAIN */}
-      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)",
-        "--sb-thumb": filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1",
-        "--sb-hover": filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8"
-      }}>
+      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
         <div style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(10px)", border: "1px solid rgba(148,163,184,0.1)", borderBottom: "2px solid rgba(59,130,246,0.2)", padding: "11px 24px", display: "flex", alignItems: "center", gap: 10 }}>
           <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Statistiques" : "Administration"}</h1>
           {view === "validations" && <span style={{ fontSize: 12, color: "#94a3b8" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
