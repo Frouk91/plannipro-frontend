@@ -720,6 +720,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [requestModal, setRequestModal] = useState(null);
   const [halfDayPeriod, setHalfDayPeriod] = useState(null);
+  const [expandedLeaveType, setExpandedLeaveType] = useState(null);
+  const [requestReason, setRequestReason] = useState("");
   const [halfDayPendingType, setHalfDayPendingType] = useState(null);
   const [addLeaveModal, setAddLeaveModal] = useState(false);
   const [addLeaveForm, setAddLeaveForm] = useState({ agentId: null, startDate: "", endDate: "", leaveTypeId: null, reason: "", _period: null });
@@ -727,7 +729,6 @@ function PlanningApp({ currentUser, onLogout }) {
   const [alShowAgentDrop, setAlShowAgentDrop] = useState(false);
   const [alShowStartCal, setAlShowStartCal] = useState(false);
   const [alShowEndCal, setAlShowEndCal] = useState(false);
-  const [requestReason, setRequestReason] = useState("");
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
   const [notification, setNotification] = useState(null);
@@ -2593,25 +2594,23 @@ function PlanningApp({ currentUser, onLogout }) {
         // Trouver les types ½ correspondants
         const halfCpType  = allAvail.find(isHalfCp)  || allAvail.find(t => (t.code||"").includes("cp") && isHalfDay(t));
         const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code||"").includes("rtt") && isHalfDay(t));
-        const [expandedType, setExpandedType] = React.useState(null);
-        const reason = React.useRef("");
         function handleTypeClick(t) {
           if (isCpFamily(t) || isRttFamily(t)) {
-            setExpandedType(expandedType === t.id ? null : t.id);
+            setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
           } else if (isHalfDay(t)) {
-            setRequestModal(null); setHalfDayPendingType(t); setHalfDayPeriod(null);
+            setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType(t); setHalfDayPeriod(null);
           } else {
-            setRequestModal(null); submitRequest(t, reason.current);
+            setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason);
           }
         }
         function submitPeriod(t, period) {
           setRequestModal(null);
           if (period === "journee") {
-            submitRequest(t, reason.current);
+            submitRequest(t, requestReason);
           } else {
             const halfType = isCpFamily(t) ? halfCpType : halfRttType;
             if (halfType) {
-              const finalReason = "[" + period + "]" + (reason.current ? " " + reason.current : "");
+              const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
               submitRequest(halfType, finalReason);
             } else {
               setHalfDayPendingType(t); setHalfDayPeriod(period);
@@ -2635,7 +2634,7 @@ function PlanningApp({ currentUser, onLogout }) {
             <div style={{ padding: "6px 0" }}>
               {displayTypes.map(t => {
                 const isGrouped = isCpFamily(t) || isRttFamily(t);
-                const isOpen = expandedType === t.id;
+                const isOpen = expandedLeaveType === t.id;
                 return (
                   <div key={t.id}>
                     <button onClick={() => handleTypeClick(t)} style={{
@@ -2679,9 +2678,9 @@ function PlanningApp({ currentUser, onLogout }) {
             </div>
             {/* Raison */}
             <div style={{ padding: "8px 16px 14px", borderTop: "1px solid #f8fafc" }}>
-              <input onChange={e => reason.current = e.target.value} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
+              <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
             </div>
-            <button onClick={() => setRequestModal(null)} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid #f1f5f9", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
+            <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid #f1f5f9", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
           </div>
         );
       })()}
