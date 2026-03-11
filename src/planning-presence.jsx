@@ -24,6 +24,7 @@ const DEMO_USERS = [
 ];
 
 const GLOBAL_STYLE = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Outfit', sans-serif; background: #060818; }
@@ -270,7 +271,10 @@ function LoginPage({ onLogin }) {
               <rect x="75" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
               <rect x="127" y="22" width="8" height="16" rx="4" fill="rgba(99,102,241,0.9)" />
               {/* Texte mois */}
-              <text x="110" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="rgba(255,255,255,0.95)" fontFamily="sans-serif">{new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"}).toUpperCase()}</text>
+              {/* Jour de la semaine */}
+              <text x="110" y="42" textAnchor="middle" fontSize="7.5" fontWeight="400" fill="rgba(255,255,255,0.7)" fontFamily="'Space Grotesk', sans-serif" letterSpacing="2.5">{new Date().toLocaleDateString("fr-FR",{weekday:"long"}).toUpperCase()}</text>
+              {/* Jour numéro + mois */}
+              <text x="110" y="52" textAnchor="middle" fontSize="10" fontWeight="700" fill="rgba(255,255,255,0.98)" fontFamily="'Space Grotesk', sans-serif" letterSpacing="1">{new Date().getDate()+" "+new Date().toLocaleDateString("fr-FR",{month:"long"}).toUpperCase()+" "+new Date().getFullYear()}</text>
 
               {/* Grille jours */}
               {/* Ligne 1 */}
@@ -364,8 +368,8 @@ function LoginPage({ onLogin }) {
 
           <h1 style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "42px",
-            fontWeight: "700",
+            fontSize: "46px",
+            fontWeight: "800",
             margin: "0 0 8px",
             letterSpacing: "-2px",
             background: "linear-gradient(135deg, #ffffff 0%, #e0e7ff 40%, #a5b4fc 70%, #818cf8 100%)",
