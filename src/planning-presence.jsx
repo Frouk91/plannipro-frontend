@@ -311,7 +311,7 @@ function LoginPage({ onLogin }) {
               <rect x="92" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
               <rect x="110" y="120" width="14" height="14" rx="3" fill="rgba(99,102,241,0.5)" />
               <rect x="128" y="120" width="14" height="14" rx="3" fill="rgba(255,255,255,0.06)" />
-              <circle cx="153" cy="127" r="5" fill="rgba(245,158,11,0.8)" style={{animation:"markPop 2.5s ease-in-out infinite", animationDelay:"1.7s"}} />
+              <circle cx="146" cy="121" r="5" fill="rgba(245,158,11,0.8)" style={{animation:"markPop 2.5s ease-in-out infinite", animationDelay:"1.7s"}} />
 
               {/* ── RÉVEIL (animation ring) ── */}
               <g style={{transformOrigin:"34px 98px", animation:"clockRing 4s ease-in-out infinite", animationDelay:"2s"}}>
