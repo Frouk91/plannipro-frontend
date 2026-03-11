@@ -1311,7 +1311,29 @@ function PlanningApp({ currentUser, onLogout }) {
         @keyframes gearMD  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
         @keyframes fadeUp  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
         @keyframes loadBar { 0%{width:0%} 100%{width:100%} }
-        @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+        .half-tooltip { position: relative; }
+.half-tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15,23,42,0.88);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+  letter-spacing: 0.2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.half-tooltip:hover::after { opacity: 1; }
+@keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
         @keyframes auroraL { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
         @keyframes auroraR { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-40px,30px) scale(1.15);} }
       `}</style>
@@ -1991,7 +2013,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                                     onMouseLeave={() => setHoveredDay(null)}
                                     className={canInteract ? "cell-hover" : ""}
-                                    title={isFer ? `🗓 ${feries[k]}` : ""}
+                                    title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
                                     style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 36, position: "relative", transition: "background 0.15s" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
@@ -2024,11 +2046,13 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
+                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
+                                        </div>
                                       ) : (
                                         <div style={{
                                           width: "calc(100% - 2px)", height: 20, margin: "0 1px",
@@ -2153,7 +2177,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseEnter={() => { if (weekSelAgent === agent.id) setWeekHovered(k); }}
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
-                                    title={isFer ? `🗓 ${feriesDay[k]}` : ""}
+                                    title={isFer ? `🗓 ${feriesDay[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
                                     style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, borderLeft: "1px solid " + tp.border + "25", height: 38, verticalAlign: "middle", transition: "background 0.15s" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
@@ -2172,11 +2196,13 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 8, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
+                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
+                                        </div>
                                       ) : (
                                         <div style={{
                                           width: "calc(100% - 4px)", height: 24, margin: "0 2px",
