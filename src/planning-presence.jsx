@@ -1047,6 +1047,23 @@ function PlanningApp({ currentUser, onLogout }) {
   }, [astreintes]);
 
   // Touche Échap pour annuler la sélection en cours
+  // ── Scrollbar dynamique selon filterMode ──
+  useEffect(() => {
+    const colors = {
+      all:       { thumb: "#6366f1", hover: "#818cf8" },
+      presence:  { thumb: "#0d9488", hover: "#14b8a6" },
+      astreinte: { thumb: "#f59e0b", hover: "#fbbf24" },
+    };
+    const c = colors[filterMode] || colors.all;
+    let el = document.getElementById("dynamic-scrollbar");
+    if (!el) { el = document.createElement("style"); el.id = "dynamic-scrollbar"; document.head.appendChild(el); }
+    el.textContent = `
+      ::-webkit-scrollbar-thumb { background: ${c.thumb} !important; }
+      ::-webkit-scrollbar-thumb:hover { background: ${c.hover} !important; }
+      * { scrollbar-color: ${c.thumb} rgba(6,8,24,0.8); }
+    `;
+  }, [filterMode]);
+
   useEffect(() => {
     const handleKeyDown = e => {
       if (e.key === "Escape") {
