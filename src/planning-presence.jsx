@@ -33,6 +33,12 @@ const GLOBAL_STYLE = `
   ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
   * { scrollbar-width: thin; scrollbar-color: #6366f1 rgba(6,8,24,0.8); }
+  body.mode-presence ::-webkit-scrollbar-thumb { background: #0d9488 !important; }
+  body.mode-presence ::-webkit-scrollbar-thumb:hover { background: #14b8a6 !important; }
+  body.mode-presence * { scrollbar-color: #0d9488 rgba(6,8,24,0.8) !important; }
+  body.mode-astreinte ::-webkit-scrollbar-thumb { background: #f59e0b !important; }
+  body.mode-astreinte ::-webkit-scrollbar-thumb:hover { background: #fbbf24 !important; }
+  body.mode-astreinte * { scrollbar-color: #f59e0b rgba(6,8,24,0.8) !important; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -1049,19 +1055,9 @@ function PlanningApp({ currentUser, onLogout }) {
   // Touche Échap pour annuler la sélection en cours
   // ── Scrollbar dynamique selon filterMode ──
   useEffect(() => {
-    const colors = {
-      all:       { thumb: "#6366f1", hover: "#818cf8" },
-      presence:  { thumb: "#0d9488", hover: "#14b8a6" },
-      astreinte: { thumb: "#f59e0b", hover: "#fbbf24" },
-    };
-    const c = colors[filterMode] || colors.all;
-    let el = document.getElementById("dynamic-scrollbar");
-    if (!el) { el = document.createElement("style"); el.id = "dynamic-scrollbar"; document.head.appendChild(el); }
-    el.textContent = `
-      ::-webkit-scrollbar-thumb { background: ${c.thumb} !important; }
-      ::-webkit-scrollbar-thumb:hover { background: ${c.hover} !important; }
-      * { scrollbar-color: ${c.thumb} rgba(6,8,24,0.8); }
-    `;
+    document.body.classList.remove("mode-presence", "mode-astreinte");
+    if (filterMode === "presence") document.body.classList.add("mode-presence");
+    else if (filterMode === "astreinte") document.body.classList.add("mode-astreinte");
   }, [filterMode]);
 
   useEffect(() => {
