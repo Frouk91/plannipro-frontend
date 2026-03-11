@@ -24,7 +24,7 @@ const DEMO_USERS = [
 ];
 
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Outfit', sans-serif; background: #060818; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -362,7 +362,19 @@ function LoginPage({ onLogin }) {
             </svg>
           </div>
 
-          <h1 style={{ color: "#fff", fontSize: "34px", fontWeight: "800", margin: "0 0 8px", letterSpacing: "-1px", background: "linear-gradient(135deg,#fff 30%,#a5b4fc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Planning</h1>
+          <h1 style={{
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: "42px",
+            fontWeight: "700",
+            margin: "0 0 8px",
+            letterSpacing: "-2px",
+            background: "linear-gradient(135deg, #ffffff 0%, #e0e7ff 40%, #a5b4fc 70%, #818cf8 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            filter: "drop-shadow(0 0 20px rgba(165,180,252,0.4))",
+            lineHeight: 1.1
+          }}>Planning</h1>
           <p style={{ color: "rgba(148,163,184,0.8)", fontSize: "13px", margin: 0, animation: "slideInUp 0.7s ease 0.15s both" }}>Gestion des présences & congés</p>
         </div>
 
