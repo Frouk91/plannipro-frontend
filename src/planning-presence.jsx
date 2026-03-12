@@ -2629,7 +2629,7 @@ function PlanningApp({ currentUser, onLogout }) {
               }
 
               return (
-                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
                   {/* ── Sélecteur agent (managers uniquement) ── */}
                   {isManager && (<>
@@ -2638,17 +2638,17 @@ function PlanningApp({ currentUser, onLogout }) {
                         <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                       </div>
                       <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 9, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none", minWidth: 160 }}>
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
                         {selAgent ? (<>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                           </div>
                         </>) : (<>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
                           </div>
                         </>)}
@@ -2657,9 +2657,9 @@ function PlanningApp({ currentUser, onLogout }) {
                       {statsAgentDropOpen && (
                         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
                           <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "9px 14px", border: "1.5px solid #e2e8f0" }}>
                               <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
-                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher..." style={{ flex: 1, border: "none", background: "none", fontSize: 12, color: "#1e293b", outline: "none" }} />
+                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher..." style={{ flex: 1, border: "none", background: "none", fontSize: 13, color: "#1e293b", outline: "none" }} />
                               {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
                             </div>
                           </div>
@@ -2671,7 +2671,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                                 <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
                                   <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
                                 </div>
                                 {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
@@ -2726,13 +2726,13 @@ function PlanningApp({ currentUser, onLogout }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
                         <button onClick={navPrev} title="Mois précédent"
-                          style={{ padding: "7px 12px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                          style={{ padding: "5px 10px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
                           onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                           onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
                         <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                            style={{ padding: "7px 16px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 800, minWidth: 155, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
+                            style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 12, fontWeight: 800, minWidth: 140, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
                             📅 {MONTHS_FR[navMonth]} {navYear}
                             {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
                           </button>
@@ -2770,7 +2770,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           )}
                         </div>
                         <button onClick={navNext} title="Mois suivant"
-                          style={{ padding: "7px 12px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                          style={{ padding: "5px 10px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
                           onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                           onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
                       </div>
@@ -2781,7 +2781,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       {/* ── Bouton Année ── */}
                       <button
                         onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
-                        style={{ padding: "7px 16px", borderRadius: 9, border: "2px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
+                        style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
                         onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; }}}
                         onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}}>
                         📆 Année {navYear}
