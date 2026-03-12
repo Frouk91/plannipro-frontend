@@ -2599,7 +2599,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 3, height: 14, background: "#6366f1", borderRadius: 2, display: "inline-block" }}></span> Agent</div>
                   {/* Trigger */}
                   <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 9, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none" }}>
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 0, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none" }}>
                     {selAgent ? (
                       <>
                         <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
@@ -2621,7 +2621,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   </div>
                   {/* Dropdown */}
                   {statsAgentDropOpen && (
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 0, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
                       {/* Search */}
                       <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
@@ -2726,13 +2726,13 @@ function PlanningApp({ currentUser, onLogout }) {
                 else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
               }
               return (
-                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
 
                   {/* ── Navigateur mois ‹ / label / › ── */}
-                  <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
+                  <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 0, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
                     {/* Flèche gauche */}
                     <button onClick={navPrev} title="Mois précédent"
-                      style={{ padding: "7px 12px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                      style={{ padding: "7px 12px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: 0, transition: "background 0.15s" }}
                       onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                       onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
 
@@ -2747,7 +2747,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
                       {/* Calendrier déroulant */}
                       {statsPickerOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 0, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
                           {yearsAvailable.map(yr => (
                             <div key={yr}>
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
@@ -2782,7 +2782,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
                     {/* Flèche droite */}
                     <button onClick={navNext} title="Mois suivant"
-                      style={{ padding: "7px 12px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                      style={{ padding: "7px 12px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: 0, transition: "background 0.15s" }}
                       onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                       onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
                   </div>
@@ -2793,7 +2793,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   {/* ── Bouton Année ── */}
                   <button
                     onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
-                    style={{ padding: "7px 16px", borderRadius: 9, border: "2px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
+                    style={{ padding: "7px 16px", borderRadius: 0, border: "2px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
                     onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; }}}
                     onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}}>
                     📆 Année {navYear}
@@ -2805,7 +2805,7 @@ function PlanningApp({ currentUser, onLogout }) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
               {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
                 <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 0 }}>
                     <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
                     <span style={{ fontSize: 12, color: "#4338ca", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
                   </div>
@@ -2828,7 +2828,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <>
                     {/* Bandeau agent si manager */}
                     {isManager && selectedAgentForStats && (
-                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
+                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "3px solid #6366f1", borderRadius: 0, marginBottom: 4 }}>
                         <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
                         <div>
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
@@ -2838,11 +2838,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       </div>
                     )}
                     {stats.map(s => (
-                      <div key={s.key} style={{ background: "#fff", borderRadius: 14, border: "1px solid #f1f5f9", padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default" }}
+                      <div key={s.key} style={{ background: "#fff", borderRadius: 0, border: "1px solid #f1f5f9", borderLeft: "3px solid " + s.color, padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default" }}
                         onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                         onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                        {/* Barre couleur en haut */}
-                        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: s.color, borderRadius: "14px 14px 0 0" }} />
+
                         {/* Label + valeur */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 4 }}>
                           <div>
@@ -2853,15 +2852,15 @@ function PlanningApp({ currentUser, onLogout }) {
                             </div>
                           </div>
                           {/* Indicateur couleur */}
-                          <div style={{ width: 38, height: 38, borderRadius: 10, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <div style={{ width: 38, height: 38, borderRadius: 0, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <div style={{ width: 12, height: 12, borderRadius: "50%", background: s.color }} />
                           </div>
                         </div>
                         {/* Barre de progression relative au total */}
                         {totalDays > 0 && (
                           <div style={{ marginTop: 16 }}>
-                            <div style={{ height: 4, background: "#f1f5f9", borderRadius: 2, overflow: "hidden" }}>
-                              <div style={{ height: "100%", width: Math.round((s.days / totalDays) * 100) + "%", background: s.color, borderRadius: 2, transition: "width 0.6s ease" }} />
+                            <div style={{ height: 3, background: "#f1f5f9", borderRadius: 0, overflow: "hidden" }}>
+                              <div style={{ height: "100%", width: Math.round((s.days / totalDays) * 100) + "%", background: s.color, borderRadius: 0, transition: "width 0.6s ease" }} />
                             </div>
                             <div style={{ fontSize: 10, color: "#cbd5e1", marginTop: 5, textAlign: "right" }}>{periodLabel}</div>
                           </div>
