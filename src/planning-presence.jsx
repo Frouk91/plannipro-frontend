@@ -886,6 +886,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [filterTeam, setFilterTeam] = useState("Tous");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
+  const [showAbsentBanner, setShowAbsentBanner] = useState(true);
   const [selectedLTId, setSelectedLTId] = useState(null);
   const [selectedAgentRow, setSelectedAgentRow] = useState(null);
   const [selectionStart, setSelectionStart] = useState(null);
@@ -1810,6 +1811,78 @@ function PlanningApp({ currentUser, onLogout }) {
                 )}
               </div>}
             </div>
+
+            {/* BANDE ABSENTS DU JOUR */}
+            {filterMode === "all" && (() => {
+              const todayKey = dateKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+              // Récupérer les agents absents aujourd'hui (congés approuvés ou posés)
+              const absentAgents = agents.filter(a => {
+                if (a.role === "admin") return false;
+                const aLeaves = leaves[a.id] || {};
+                const l = aLeaves[todayKey];
+                if (!l) return false;
+                if (Array.isArray(l)) return l.some(x => x.status !== "rejected" && !isPresenceCode(x.leaveType, x.leaveLabel));
+                return l.status !== "rejected" && !isPresenceCode(l.leaveType, l.leaveLabel);
+              });
+              if (absentAgents.length === 0) return null;
+              // Grouper par équipe
+              const byTeam = {};
+              absentAgents.forEach(a => {
+                const t = a.team || "Sans équipe";
+                if (!byTeam[t]) byTeam[t] = [];
+                byTeam[t].push(a);
+              });
+              const today = new Date();
+              const todayLabel = today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+              return (
+                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, marginBottom: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                  {/* Header cliquable */}
+                  <button onClick={() => setShowAbsentBanner(s => !s)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", border: "none", background: "none", cursor: "pointer", textAlign: "left" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0, boxShadow: "0 0 0 3px rgba(239,68,68,0.15)" }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>
+                      Absents aujourd'hui
+                    </span>
+                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 400 }}>
+                      — {todayLabel.charAt(0).toUpperCase() + todayLabel.slice(1)}
+                    </span>
+                    <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ background: "#fef2f2", color: "#ef4444", fontSize: 11, fontWeight: 700, padding: "1px 8px", borderRadius: 20, border: "1px solid #fecaca" }}>{absentAgents.length}</span>
+                      <span style={{ fontSize: 11, color: "#cbd5e1", transform: showAbsentBanner ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                    </span>
+                  </button>
+                  {/* Corps */}
+                  {showAbsentBanner && (
+                    <div style={{ borderTop: "1px solid #f1f5f9", padding: "10px 14px", display: "flex", gap: 12, flexWrap: "wrap" }}>
+                      {Object.entries(byTeam).sort(([a],[b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
+                        const tp = teamPalette(teamName);
+                        return (
+                          <div key={teamName} style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px", background: tp.header, padding: "2px 7px", borderRadius: 4, border: "1px solid " + tp.border + "60", whiteSpace: "nowrap" }}>{teamName}</span>
+                            {teamAgents.map(a => {
+                              const aLeaves = leaves[a.id] || {};
+                              const l = aLeaves[todayKey];
+                              const leaveArr = Array.isArray(l) ? l : (l ? [l] : []);
+                              const leave = leaveArr.find(x => x.status !== "rejected");
+                              const leaveLabel = leave?.leaveLabel || leave?.leaveType || "";
+                              return (
+                                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 5, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "3px 10px 3px 5px" }}>
+                                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 7, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: "#374151" }}>{a.first_name || a.name.split(" ")[0]}</span>
+                                  {leaveLabel && <span style={{ fontSize: 10, color: "#94a3b8" }}>· {leaveLabel}</span>}
+                                </div>
+                              );
+                            })}
+                            {Object.entries(byTeam).indexOf(Object.entries(byTeam).find(([t]) => t === teamName)) < Object.entries(byTeam).length - 1 && (
+                              <div style={{ width: 1, height: 20, background: "#e2e8f0", borderRadius: 1, flexShrink: 0 }} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* VUE SEMAINE ASTREINTE */}
             {planView === "week" && filterMode === "astreinte" && (() => {
