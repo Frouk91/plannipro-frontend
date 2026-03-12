@@ -718,18 +718,15 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <button onClick={() => setSelectedTeam(null)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 12, color: "#64748b", fontWeight: 600, transition: "all 0.15s", flexShrink: 0 }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.07)", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 600, transition: "all 0.15s", flexShrink: 0 }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.color = "#0d9488"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}>
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "#94a3b8"; }}>
                   ← Retour
                 </button>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "1.5px solid #e8edf5", borderRadius: 10, padding: "8px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: teamGradient(selectedTeam.name), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🏷</div>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: "#1e293b", fontFamily: "'Space Grotesk', sans-serif" }}>{selectedTeam.name}</span>
-                  <span style={{ fontSize: 11, color: "#0d9488", background: "#f0fdfa", border: "1px solid #99f6e4", padding: "2px 9px", borderRadius: 20, fontWeight: 700 }}>
-                    {agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length} agent{agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length !== 1 ? "s" : ""}
-                  </span>
-                </div>
+                <span style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.3px" }}>{selectedTeam.name}</span>
+                <span style={{ fontSize: 11, color: "#0d9488", background: "rgba(13,148,136,0.15)", border: "1px solid rgba(13,148,136,0.3)", padding: "2px 9px", borderRadius: 20, fontWeight: 700 }}>
+                  {agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length} agent{agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length !== 1 ? "s" : ""}
+                </span>
               </div>
               <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div style={{ padding: "10px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
