@@ -194,7 +194,7 @@ async function apiFetch(path, token, options = {}) {
 // ─── LOGIN ───
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [showPwd, setShowPwd] = useState(false);
+  const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [showPwd, setShowPwd] = useState(false); const [showDemo, setShowDemo] = useState(false);
   async function handleLogin() {
     setLoading(true);
     try {
@@ -251,14 +251,17 @@ function LoginPage({ onLogin }) {
         }} />
       ))}
 
-      <div style={{ width: "100%", maxWidth: "440px", padding: "20px", position: "relative", zIndex: 10 }}>
+      <div style={{ width: "100%", maxWidth: "960px", padding: "20px 40px", position: "relative", zIndex: 10, display: "flex", alignItems: "center", gap: 0, minHeight: "100vh" }}>
+
+        {/* COLONNE GAUCHE — Illustration */}
+        <div style={{ flex: "0 0 45%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 48px 40px 0", borderRight: "1px solid rgba(165,180,252,0.1)", minHeight: "60vh" }}>
 
         {/* En-tête + Illustration */}
         <div style={{ marginBottom: "28px", textAlign: "center", animation: "slideInUp 0.7s ease both" }}>
 
           {/* Illustration SVG */}
-          <div style={{ display: "inline-block", animation: "floatIllus 5s ease-in-out infinite", marginBottom: 20, filter: "drop-shadow(0 16px 40px rgba(99,102,241,0.35))" }}>
-            <svg width="240" height="165" viewBox="0 0 240 165" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div style={{ display: "inline-block", animation: "floatIllus 5s ease-in-out infinite", marginBottom: 32, filter: "drop-shadow(0 20px 50px rgba(99,102,241,0.4))" }}>
+            <svg width="280" height="195" viewBox="0 0 240 165" fill="none" xmlns="http://www.w3.org/2000/svg">
 
               {/* ── CALENDRIER ── */}
               {/* Ombre portée calendrier */}
@@ -370,10 +373,10 @@ function LoginPage({ onLogin }) {
 
           <h1 style={{
             fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: "46px",
+            fontSize: "52px",
             fontWeight: "800",
-            margin: "0 0 8px",
-            letterSpacing: "-2px",
+            margin: "0 0 10px",
+            letterSpacing: "-3px",
             background: "linear-gradient(135deg, #ffffff 0%, #e0e7ff 40%, #a5b4fc 70%, #818cf8 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -386,6 +389,17 @@ function LoginPage({ onLogin }) {
             <span style={{ color: "rgba(165,180,252,0.7)", fontSize: "12px", fontWeight: 500, letterSpacing: "2px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif" }}>Présences & Congés</span>
             <span style={{ display: "inline-block", width: 28, height: 1, background: "linear-gradient(90deg,rgba(165,180,252,0.5),transparent)" }} />
           </p>
+        </div>
+
+        </div>{/* fin colonne gauche */}
+
+        {/* COLONNE DROITE — Formulaire */}
+        <div style={{ flex: "0 0 55%", padding: "40px 0 40px 48px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+
+        {/* Titre colonne droite */}
+        <div style={{ marginBottom: 28, animation: "slideInUp 0.6s ease both" }}>
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.5px" }}>Bon retour 👋</h2>
+          <p style={{ fontSize: 13, color: "rgba(148,163,184,0.7)", margin: 0 }}>Connectez-vous pour accéder à votre espace</p>
         </div>
 
         {/* Formulaire */}
@@ -457,31 +471,28 @@ function LoginPage({ onLogin }) {
         </div>
 
         {/* Comptes démo repliés */}
-        {(() => {
-          const [showDemo, setShowDemo] = React.useState(false);
-          return (
-            <div style={{ marginTop: "20px", animation: "slideInUp 0.7s ease 0.4s both" }}>
-              <button onClick={() => setShowDemo(s => !s)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0" }}>
-                <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
-                <span style={{ fontSize: "11px", color: "rgba(148,163,184,0.5)", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, whiteSpace: "nowrap" }}>Comptes de test {showDemo ? "▴" : "▾"}</span>
-                <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
-              </button>
-              {showDemo && (
-                <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  {DEMO_USERS.map((u, i) => (
-                    <button key={i} onClick={() => { setEmail(u.email); setPassword(u.password); setError(""); }}
-                      style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px", padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(99,102,241,0.08)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)"; }}>
-                      <div style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "700", fontFamily: "'Space Grotesk', sans-serif" }}>{u.email.split("@")[0]}</div>
-                      <div style={{ color: "rgba(148,163,184,0.6)", fontSize: "10px", marginTop: 2 }}>{u.email}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
+        <div style={{ marginTop: "20px", animation: "slideInUp 0.7s ease 0.4s both" }}>
+          <button onClick={() => setShowDemo(s => !s)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0" }}>
+            <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
+            <span style={{ fontSize: "11px", color: "rgba(148,163,184,0.5)", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, whiteSpace: "nowrap" }}>Comptes de test {showDemo ? "▴" : "▾"}</span>
+            <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
+          </button>
+          {showDemo && (
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {DEMO_USERS.map((u, i) => (
+                <button key={i} onClick={() => { setEmail(u.email); setPassword(u.password); setError(""); }}
+                  style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px", padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(99,102,241,0.08)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)"; }}>
+                  <div style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "700", fontFamily: "'Space Grotesk', sans-serif" }}>{u.email.split("@")[0]}</div>
+                  <div style={{ color: "rgba(148,163,184,0.6)", fontSize: "10px", marginTop: 2 }}>{u.email}</div>
+                </button>
+              ))}
             </div>
-          );
-        })()}
+          )}
+        </div>
+
+        </div>{/* fin colonne droite */}
 
       </div>
     </div>
