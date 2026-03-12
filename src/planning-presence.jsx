@@ -668,43 +668,157 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       )}
       {tab === "teams" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "12px 16px", marginBottom: 14, display: "flex", gap: 8, alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-            <input value={newTeam} onChange={e => setNewTeam(e.target.value)} placeholder="Nom de la nouvelle équipe..." onKeyDown={e => e.key === "Enter" && handleAddTeam()} style={{ flex: 1, padding: "8px 14px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 13, outline: "none", color: "#1e293b", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#0d9488"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-            <button onClick={handleAddTeam} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#0d9488,#14b8a6)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(13,148,136,0.35)", whiteSpace: "nowrap", transition: "all 0.15s" }}>＋ Ajouter</button>
-          </div>
-          {teams.map(team => {
-            const teamAgents = agents.filter(a => a.team === team.name);
-            const unassigned = agents.filter(a => !a.team || a.team !== team.name);
-            return (
-              <div key={team.id || team.name} style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", marginBottom: 10, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-                <div style={{ padding: "11px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: "#0d9488" }}>🏷 {team.name}</span>
-                    <span style={{ fontSize: 11, color: "#94a3b8", background: "#e8edf5", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{teamAgents.length} agent{teamAgents.length > 1 ? "s" : ""}</span>
-                  </div>
-                  {team.name !== "Admin" && <button onClick={() => handleDeleteTeam(team)} style={{ padding: "4px 10px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 11, color: "#ef4444", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>🗑 Supprimer</button>}
-                </div>
-                {teamAgents.map((a, i) => (
-                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", borderBottom: i < teamAgents.length - 1 ? "1px solid #f8fafc" : "none" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: "#1e293b", flex: 1 }}>{a.name}</span>
-                    <button onClick={() => handleAssignAgentTeam(a.id, "")} style={{ padding: "3px 9px", borderRadius: 6, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 500, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "#fef2f2"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}>↩ Retirer</button>
-                  </div>
-                ))}
-                {unassigned.filter(a => a.role !== "admin").length > 0 && (
-                  <div style={{ padding: "8px 16px", borderTop: teamAgents.length > 0 ? "1px solid #f8fafc" : "none", background: "#fafafa" }}>
-                    <select onChange={e => { if (e.target.value) handleAssignAgentTeam(e.target.value, team.name); e.target.value = ""; }}
-                      style={{ width: "100%", padding: "5px 10px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", fontSize: 11, color: "#64748b", cursor: "pointer" }}>
-                      <option value="">+ Ajouter un agent à cette équipe...</option>
-                      {unassigned.filter(a => a.role !== "admin").map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
-                  </div>
-                )}
+          {!selectedTeam ? (
+            /* ── VUE GRILLE ÉQUIPES ── */
+            <div>
+              {/* Header avec bouton Ajouter */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#0d9488" }}>{teams.length} équipe{teams.length > 1 ? "s" : ""}</span>
+                <button onClick={() => { setNewTeam(""); setTeamModal(true); }}
+                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#0d9488,#14b8a6)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(13,148,136,0.35)", transition: "all 0.15s" }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(13,148,136,0.5)"}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(13,148,136,0.35)"}>
+                  ＋ Nouvelle équipe
+                </button>
               </div>
-            );
-          })}
+              {/* Grille de blocs */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+                {teams.map(team => {
+                  const teamAgents = agents.filter(a => a.team === team.name && a.role !== "admin");
+                  const tp = teamPalette(team.name);
+                  return (
+                    <div key={team.id || team.name}
+                      onClick={() => setSelectedTeam(team)}
+                      style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "18px 16px", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", transition: "all 0.18s", position: "relative", overflow: "hidden" }}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.15)"; e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "#e8edf5"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                      {/* Barre couleur haut */}
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: teamGradient(team.name), borderRadius: "14px 14px 0 0" }} />
+                      {/* Avatars empilés */}
+                      <div style={{ display: "flex", marginBottom: 10, marginTop: 4 }}>
+                        {teamAgents.slice(0, 4).map((a, i) => (
+                          <div key={a.id} style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, border: "2px solid #fff", marginLeft: i === 0 ? 0 : -8, boxShadow: "0 1px 3px rgba(0,0,0,0.15)", flexShrink: 0, zIndex: 4 - i }}>{a.avatar}</div>
+                        ))}
+                        {teamAgents.length > 4 && (
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 9, fontWeight: 700, border: "2px solid #fff", marginLeft: -8, flexShrink: 0 }}>+{teamAgents.length - 4}</div>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{team.name}</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 11, color: "#94a3b8" }}>{teamAgents.length} agent{teamAgents.length !== 1 ? "s" : ""}</span>
+                        {team.name !== "Admin" && (
+                          <button onClick={e => { e.stopPropagation(); handleDeleteTeam(team); }}
+                            style={{ padding: "2px 8px", borderRadius: 6, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 10, color: "#ef4444", fontWeight: 600, transition: "all 0.15s" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>
+                            🗑
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            /* ── VUE DÉTAIL ÉQUIPE ── */
+            (() => {
+              const team = selectedTeam;
+              const teamAgents = agents.filter(a => a.team === team.name && a.role !== "admin");
+              const unassigned = agents.filter(a => a.role !== "admin" && a.team !== team.name);
+              return (
+                <div>
+                  {/* Header retour */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                    <button onClick={() => setSelectedTeam(null)}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 12, color: "#64748b", fontWeight: 600, transition: "all 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.color = "#0d9488"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; }}>
+                      ← Retour
+                    </button>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: teamGradient(team.name), flexShrink: 0 }} />
+                        <span style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>{team.name}</span>
+                        <span style={{ fontSize: 11, color: "#94a3b8", background: "#f1f5f9", padding: "1px 8px", borderRadius: 10 }}>{teamAgents.length} agent{teamAgents.length !== 1 ? "s" : ""}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Liste agents */}
+                  <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", marginBottom: 12 }}>
+                    {/* Header liste */}
+                    <div style={{ padding: "10px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#0d9488" }}>Membres</span>
+                      {unassigned.length > 0 && (
+                        <select onChange={e => { if (e.target.value) { handleAssignAgentTeam(e.target.value, team.name); } e.target.value = ""; }}
+                          style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid #0d9488", background: "#fff", fontSize: 11, color: "#0d9488", cursor: "pointer", fontWeight: 600, outline: "none" }}>
+                          <option value="">＋ Ajouter un agent...</option>
+                          {unassigned.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                        </select>
+                      )}
+                    </div>
+                    {teamAgents.length === 0 && (
+                      <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>Aucun agent dans cette équipe</div>
+                    )}
+                    {teamAgents.map((a, i) => (
+                      <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderBottom: i < teamAgents.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        <div style={{ width: 34, height: 34, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{a.email}</div>
+                        </div>
+                        <span style={{ background: a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "2px 8px", borderRadius: 5, fontSize: 10, fontWeight: 600 }}>
+                          {a.role === "manager" ? "Manager" : a.role === "coordinator" ? "Coordinateur" : "Agent"}
+                        </span>
+                        <button onClick={() => handleAssignAgentTeam(a.id, "")}
+                          style={{ padding: "4px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 500, transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "#fef2f2"; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}>
+                          ↩ Retirer
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()
+          )}
+
+          {/* ── POPUP Nouvelle équipe ── */}
+          {teamModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(4px)" }}
+              onClick={() => setTeamModal(false)}>
+              <div style={{ background: "#fff", borderRadius: 18, padding: "28px 28px 24px", width: 360, boxShadow: "0 24px 60px rgba(0,0,0,0.18)", animation: "slideIn 0.2s ease" }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#0d9488,#14b8a6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷</div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>Nouvelle équipe</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>Saisissez le nom de l'équipe</div>
+                  </div>
+                </div>
+                <input autoFocus value={newTeam} onChange={e => setNewTeam(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") { handleAddTeam(); setTeamModal(false); } if (e.key === "Escape") setTeamModal(false); }}
+                  placeholder="Ex: Développement, Marketing..."
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid #e2e8f0", fontSize: 14, color: "#1e293b", outline: "none", boxSizing: "border-box", marginBottom: 16, transition: "border 0.15s" }}
+                  onFocus={e => e.target.style.borderColor = "#0d9488"}
+                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => setTeamModal(false)}
+                    style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+                    Annuler
+                  </button>
+                  <button onClick={() => { handleAddTeam(); setTeamModal(false); }}
+                    style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#0d9488,#14b8a6)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(13,148,136,0.35)" }}>
+                    ＋ Créer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {tab === "leavetypes" && (
