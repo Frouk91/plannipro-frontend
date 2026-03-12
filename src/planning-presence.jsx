@@ -1862,7 +1862,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
                     setAddLeaveModal(true);
                   }} className="btn-primary" style={{ padding: "6px 15px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 3px 12px rgba(99,102,241,0.4)" }}>
-                    <span style={{ fontSize: 15, lineHeight: 1, fontWeight: 800 }}>+</span> Congé
+                    <span style={{ fontSize: 15, lineHeight: 1, fontWeight: 800 }}>+</span> Demander un congé / absence
                   </button>
                 )}
 
