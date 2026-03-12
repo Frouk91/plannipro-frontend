@@ -2657,10 +2657,19 @@ function PlanningApp({ currentUser, onLogout }) {
                       {statsAgentDropOpen && (
                         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
                           <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "9px 14px", border: "1.5px solid #e2e8f0" }}>
-                              <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
-                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher..." style={{ flex: 1, border: "none", background: "none", fontSize: 13, color: "#1e293b", outline: "none" }} />
-                              {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
+                            <div style={{ position: "relative" }}>
+                              <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
+                                <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2"/>
+                                <path d="M13 13l3.5 3.5" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
+                              </svg>
+                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher un agent ou une équipe..."
+                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #e2e8f0", borderRadius: 10, background: "#f8fafc", fontSize: 12, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
+                                onFocus={e => e.target.style.borderColor = "#6366f1"}
+                                onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                              />
+                              {statsAgentSearch && (
+                                <button onClick={() => setStatsAgentSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "rgba(148,163,184,0.15)", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", color: "#64748b", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>✕</button>
+                              )}
                             </div>
                           </div>
                           <div style={{ maxHeight: 320, overflowY: "auto" }}>
