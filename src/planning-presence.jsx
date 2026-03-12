@@ -46,6 +46,11 @@ const GLOBAL_STYLE = `
   .card { transition: all 0.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
+  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:40px; height:40px; padding:0 11px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:20px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
+  .btn-conge-expand svg { flex-shrink:0; width:18px; height:18px; }
+  .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:13px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:9px; }
+  .btn-conge-expand:hover { width:190px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
+  .btn-conge-expand:hover .btn-label { opacity:1; }
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -1861,8 +1866,9 @@ function PlanningApp({ currentUser, onLogout }) {
                     const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
                     setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
                     setAddLeaveModal(true);
-                  }} className="btn-primary" style={{ padding: "6px 15px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 3px 12px rgba(99,102,241,0.4)" }}>
-                    <span style={{ fontSize: 15, lineHeight: 1, fontWeight: 800 }}>+</span> Demander un congé
+                  }} className="btn-conge-expand" title="Demander un congé">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+                    <span className="btn-label">Demander un congé</span>
                   </button>
                 )}
 
