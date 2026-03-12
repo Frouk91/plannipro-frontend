@@ -1868,12 +1868,8 @@ function PlanningApp({ currentUser, onLogout }) {
 
                 {/* Filtres équipe - masqués en mode astreinte */}
                 {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
-                  {allTeams.map(t => (
-                    <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
-                  ))}
                   {!isAdmin && (
                     <>
-                      <div style={{ width: "1px", height: 20, background: "#e2e8f0", marginLeft: 4, marginRight: 4 }} />
                       <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
                     </>
                   )}
@@ -1896,8 +1892,8 @@ function PlanningApp({ currentUser, onLogout }) {
                 {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
                 {filterMode !== "presence" && (
                   <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
-                    {[{ id: "all", label: "Tous" }, { id: "approved", label: "Approuvés" }, { id: "pending", label: "En attente" }].map(f => (
-                      <button key={f.id} onClick={() => setFilterStatus(f.id)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterStatus === f.id ? 600 : 400, background: filterStatus === f.id ? "#1e293b" : "#fff", color: filterStatus === f.id ? "#fff" : "#64748b", borderColor: filterStatus === f.id ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
+                    {allTeams.map(t => (
+                      <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
                     ))}
                   </div>
                 )}
