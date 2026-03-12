@@ -2582,9 +2582,9 @@ function PlanningApp({ currentUser, onLogout }) {
 
         {view === "stats" && (
           <div style={{ padding: 24, animation: "fadeIn 0.3s ease" }}>
-            {isManager && (() => {
+            {(() => {
+              /* ── Calculs agent ── */
               const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
-              // Grouper par équipe
               const teamMap = {};
               agents.filter(a => a.role !== "admin").forEach(a => {
                 const t = a.team || "Sans équipe";
@@ -2594,103 +2594,8 @@ function PlanningApp({ currentUser, onLogout }) {
               const filteredAgents = statsAgentSearch
                 ? agents.filter(a => a.role !== "admin" && (a.name.toLowerCase().includes(statsAgentSearch.toLowerCase()) || (a.team||"").toLowerCase().includes(statsAgentSearch.toLowerCase())))
                 : null;
-              return (
-                <div style={{ marginBottom: 16, position: "relative" }} onClick={e => e.stopPropagation()}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 3, height: 14, background: "#6366f1", borderRadius: 2, display: "inline-block" }}></span> Agent</div>
-                  {/* Trigger */}
-                  <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 9, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none" }}>
-                    {selAgent ? (
-                      <>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
-                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                          <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
-                        </div>
-                      </>
-                    )}
-                    <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
-                  </div>
-                  {/* Dropdown */}
-                  {statsAgentDropOpen && (
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                      {/* Search */}
-                      <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
-                          <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
-                          <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher par nom ou équipe..." style={{ flex: 1, border: "none", background: "none", fontSize: 12, color: "#1e293b", outline: "none" }} />
-                          {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
-                        </div>
-                      </div>
-                      <div style={{ maxHeight: 320, overflowY: "auto" }}>
-                        {/* Option "Mon profil" */}
-                        {(!statsAgentSearch) && (
-                          <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", borderBottom: "1px solid #f8fafc" }}
-                            onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
-                            onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
-                            <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
-                            <div style={{ flex: 1, textAlign: "left" }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                              <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
-                            </div>
-                            {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                          </button>
-                        )}
-                        {/* Avec recherche : liste plate */}
-                        {filteredAgents ? filteredAgents.map(a => (
-                          <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
-                            onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                            onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
-                            <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                            <div style={{ flex: 1, textAlign: "left" }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
-                              <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</div>
-                            </div>
-                            {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                          </button>
-                        )) : (
-                          /* Sans recherche : groupé par équipe */
-                          Object.entries(teamMap).sort(([a],[b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
-                            const tp = teamPalette(teamName);
-                            return (
-                              <div key={teamName}>
-                                <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>
-                                  {teamName}
-                                </div>
-                                {teamAgents.map(a => (
-                                  <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
-                                    onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                                    onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
-                                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                    <div style={{ flex: 1, textAlign: "left" }}>
-                                      <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
-                                    </div>
-                                    {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                                  </button>
-                                ))}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-            {(() => {
-              // Calculer les mois avec congés pour cet agent
+
+              /* ── Calculs dates ── */
               const displayAgentIdForPicker = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
               const agentLeaves = leaves[displayAgentIdForPicker] || {};
               const monthsWithLeaves = {};
@@ -2700,15 +2605,12 @@ function PlanningApp({ currentUser, onLogout }) {
                 const key = `${y}-${m}`;
                 if (!monthsWithLeaves[key]) monthsWithLeaves[key] = { year: parseInt(y), month: parseInt(m) - 1 };
               });
-              const sortedMonths = Object.values(monthsWithLeaves).sort((a, b) => a.year !== b.year ? b.year - a.year : b.month - a.month);
-              // Calculer les années disponibles (pour le calendrier)
               const yearsAvailable = [...new Set(Object.values(monthsWithLeaves).map(x => x.year))].sort((a,b) => b-a);
               if (!yearsAvailable.includes(year)) yearsAvailable.push(year);
               yearsAvailable.sort((a,b) => b-a);
               const navMonth = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.month : month;
               const navYear  = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.year  : year;
               const isYearMode = statsFilter === "year";
-              const isCurrentMonth = !isYearMode && navMonth === month && navYear === year;
               function navPrev() {
                 setStatsPickerOpen(false);
                 if (isYearMode) return;
@@ -2725,83 +2627,172 @@ function PlanningApp({ currentUser, onLogout }) {
                 if (nm === month && ny === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
                 else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
               }
+
               return (
-                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
-                  {/* ── Navigateur mois ‹ / label / › ── */}
-                  <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
-                    {/* Flèche gauche */}
-                    <button onClick={navPrev} title="Mois précédent"
-                      style={{ padding: "7px 12px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
-                      onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
-                      onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
-
-                    {/* Label mois cliquable → ouvre le calendrier */}
-                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                      <button
-                        onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                        style={{ padding: "7px 16px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 800, minWidth: 155, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
-                        📅 {MONTHS_FR[navMonth]} {navYear}
-                        {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
-                      </button>
-
-                      {/* Calendrier déroulant */}
-                      {statsPickerOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
-                          {yearsAvailable.map(yr => (
-                            <div key={yr}>
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
-                                <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
-                              </div>
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
-                                {Array.from({ length: 12 }, (_, mi) => {
-                                  const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi+1).padStart(2,"0")}`];
-                                  const isAct = (!isYearMode && navYear === yr && navMonth === mi);
-                                  const isCurrMth = yr === year && mi === month;
-                                  return (
-                                    <button key={mi}
-                                      onClick={() => {
-                                        if (mi === month && yr === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
-                                        else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
-                                        setStatsPickerOpen(false);
-                                      }}
-                                      style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
-                                      onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
-                                      onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
-                                      {MONTHS_FR[mi].slice(0,3)}
-                                    </button>
-                                  );
-                                })}
-                              </div>
+                  {/* ── Sélecteur agent (managers uniquement) ── */}
+                  {isManager && (<>
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
+                      </div>
+                      <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 9, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", transition: "all 0.15s", userSelect: "none", minWidth: 160 }}>
+                        {selAgent ? (<>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
+                          </div>
+                        </>) : (<>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
+                          </div>
+                        </>)}
+                        <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
+                      </div>
+                      {statsAgentDropOpen && (
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
+                          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#f8fafc", borderRadius: 8, padding: "7px 12px", border: "1.5px solid #e2e8f0" }}>
+                              <span style={{ fontSize: 13, color: "#94a3b8" }}>🔍</span>
+                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher..." style={{ flex: 1, border: "none", background: "none", fontSize: 12, color: "#1e293b", outline: "none" }} />
+                              {statsAgentSearch && <button onClick={() => setStatsAgentSearch("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#94a3b8", fontSize: 13, padding: 0 }}>✕</button>}
                             </div>
-                          ))}
+                          </div>
+                          <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                            {(!statsAgentSearch) && (
+                              <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", borderBottom: "1px solid #f8fafc" }}
+                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
+                                onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
+                                <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                                <div style={{ flex: 1, textAlign: "left" }}>
+                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                                  <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
+                                </div>
+                                {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                              </button>
+                            )}
+                            {filteredAgents ? filteredAgents.map(a => (
+                              <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                <div style={{ flex: 1, textAlign: "left" }}>
+                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                                  <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</div>
+                                </div>
+                                {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                              </button>
+                            )) : Object.entries(teamMap).sort(([a],[b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
+                              const tp = teamPalette(teamName);
+                              return (
+                                <div key={teamName}>
+                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>{teamName}</div>
+                                  {teamAgents.map(a => (
+                                    <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                      <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                      <div style={{ flex: 1, textAlign: "left" }}>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                                      </div>
+                                      {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                                    </button>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Flèche droite */}
-                    <button onClick={navNext} title="Mois suivant"
-                      style={{ padding: "7px 12px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
-                      onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
-                      onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
+                    {/* ── Séparateur vertical ── */}
+                    <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
+                  </>)}
+
+                  {/* ── Navigateur mois ‹ / label / › ── */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
+                        <button onClick={navPrev} title="Mois précédent"
+                          style={{ padding: "7px 12px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                          onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
+                        <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                          <button
+                            onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
+                            style={{ padding: "7px 16px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 800, minWidth: 155, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
+                            📅 {MONTHS_FR[navMonth]} {navYear}
+                            {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
+                          </button>
+                          {statsPickerOpen && (
+                            <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                              {yearsAvailable.map(yr => (
+                                <div key={yr}>
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
+                                    <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
+                                    <span style={{ fontSize: 10, color: "#94a3b8" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
+                                  </div>
+                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
+                                    {Array.from({ length: 12 }, (_, mi) => {
+                                      const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi+1).padStart(2,"0")}`];
+                                      const isAct = (!isYearMode && navYear === yr && navMonth === mi);
+                                      const isCurrMth = yr === year && mi === month;
+                                      return (
+                                        <button key={mi}
+                                          onClick={() => {
+                                            if (mi === month && yr === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
+                                            else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
+                                            setStatsPickerOpen(false);
+                                          }}
+                                          style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
+                                          onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
+                                          onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
+                                          {MONTHS_FR[mi].slice(0,3)}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <button onClick={navNext} title="Mois suivant"
+                          style={{ padding: "7px 12px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 17, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                          onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
+                      </div>
+
+                      {/* ── Séparateur ── */}
+                      <div style={{ width: 1, height: 28, background: "#e8edf5", borderRadius: 1 }} />
+
+                      {/* ── Bouton Année ── */}
+                      <button
+                        onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
+                        style={{ padding: "7px 16px", borderRadius: 9, border: "2px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
+                        onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; }}}
+                        onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}}>
+                        📆 Année {navYear}
+                      </button>
+                    </div>
                   </div>
-
-                  {/* ── Séparateur ── */}
-                  <div style={{ width: 1, height: 28, background: "#e8edf5", borderRadius: 1 }} />
-
-                  {/* ── Bouton Année ── */}
-                  <button
-                    onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
-                    style={{ padding: "7px 16px", borderRadius: 9, border: "2px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
-                    onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; }}}
-                    onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}}>
-                    📆 Année {navYear}
-                  </button>
 
                 </div>
               );
             })()}
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
               {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
                 <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
