@@ -398,7 +398,7 @@ function LoginPage({ onLogin }) {
 
         {/* Titre colonne droite */}
         <div style={{ marginBottom: 28, animation: "slideInUp 0.6s ease both" }}>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.5px" }}>Bon retour 👋</h2>
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 26, fontWeight: 800, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.5px" }}>Bienvenue 👋</h2>
           <p style={{ fontSize: 13, color: "rgba(148,163,184,0.7)", margin: 0 }}>Connectez-vous pour accéder à votre espace</p>
         </div>
 
