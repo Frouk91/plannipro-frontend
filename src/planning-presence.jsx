@@ -1872,9 +1872,6 @@ function PlanningApp({ currentUser, onLogout }) {
                 {filterMode === "presence" && !(isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>🔒 Consultation uniquement</span>
                 )}
-                {filterMode === "presence" && (isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
-                  <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
-                )}
                 {filterMode === "all" && <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>}
                 <div style={{ display: "flex", gap: 4 }}>
                   {allTeams.map(t => (
