@@ -2862,13 +2862,13 @@ function PlanningApp({ currentUser, onLogout }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
                         <button onClick={navPrev} title="Mois précédent"
-                          style={{ padding: "5px 10px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                          style={{ padding: "2px 8px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 13, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
                           onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                           onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
                         <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                            style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
+                            style={{ padding: "2px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
                             📅 {MONTHS_FR[navMonth]} {navYear}
                             {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
                           </button>
@@ -2906,7 +2906,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           )}
                         </div>
                         <button onClick={navNext} title="Mois suivant"
-                          style={{ padding: "5px 10px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                          style={{ padding: "2px 8px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 13, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
                           onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                           onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
                       </div>
