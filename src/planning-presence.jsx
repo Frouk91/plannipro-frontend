@@ -632,7 +632,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   return (
     <div style={adminStyle}>
       {/* ── Onglets ── */}
-      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         <div style={{ display: "flex", gap: 6 }}>
           {TAB_CONFIG.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -652,7 +652,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       </div>
       {tab === "agents" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
             <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#4338ca" }}>👥 {agents.length} agent{agents.length > 1 ? "s" : ""}</span>
               <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
@@ -695,7 +695,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 return (
                   <div key={t.id || t.name}
                     onClick={() => setSelectedTeam(t)}
-                    style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "18px 16px", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", transition: "all 0.18s", position: "relative", overflow: "hidden" }}
+                    style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "18px 16px", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", transition: "all 0.18s", position: "relative", overflow: "hidden" }}
                     onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.15)"; e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                     onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "#e8edf5"; e.currentTarget.style.transform = "translateY(0)"; }}>
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: teamGradient(t.name), borderRadius: "14px 14px 0 0" }} />
@@ -738,7 +738,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   {agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length} agent{agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div style={{ padding: "10px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#0d9488" }}>Membres</span>
                   {agents.filter(a => a.role !== "admin" && a.team !== selectedTeam.name).length > 0 && (
@@ -811,7 +811,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       )}
       {tab === "leavetypes" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
               <input value={newLT.label} onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))} placeholder="Nom du type de congé..." onKeyDown={e => e.key === "Enter" && handleAddLT()} style={{ flex: 1, minWidth: 160, padding: "8px 14px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 13, outline: "none", color: "#1e293b", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#f59e0b"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
               <button onClick={handleAddLT} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#f59e0b,#fbbf24)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(245,158,11,0.35)", whiteSpace: "nowrap", transition: "all 0.15s" }}>＋ Ajouter</button>
@@ -820,7 +820,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               <ColorPicker selected={newLT.color} onChange={c => setNewLT(p => ({ ...p, color: c }))} />
             </div>
           </div>
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
             {sortLeaveTypes(leaveTypes).map((lt, i) => (
               <div key={lt.id} style={{ borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none" }}>
                 {editLT === lt.id ? (
@@ -1777,7 +1777,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
+            <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
               {/* ONGLETS Planning / Présences sur site / Astreintes */}
               <div style={{ display: "flex", gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
                 {[
@@ -2027,7 +2027,7 @@ function PlanningApp({ currentUser, onLogout }) {
               }
 
               return (
-                <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", border: "2px solid #f59e0b", boxShadow: "0 2px 24px rgba(245,158,11,0.15)" }}>
+                <div style={{ background: "#fff", borderRadius: 0, overflow: "hidden", border: "2px solid #f59e0b", boxShadow: "0 2px 24px rgba(245,158,11,0.15)" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                       <tr>
@@ -2074,7 +2074,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {planView === "month" && filterMode === "astreinte" && (
               <React.Fragment>
                 <div style={{
-                  background: "#fff", borderRadius: 14,
+                  background: "#fff", borderRadius: 0,
                   border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                   overflow: "auto",
                   boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
@@ -2366,7 +2366,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
             {planView === "month" && filterMode !== "astreinte" && (
               <div style={{
-                background: "#fff", borderRadius: 14, overflow: "hidden",
+                background: "#fff", borderRadius: 0, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -2529,7 +2529,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* VUE SEMAINE */}
             {planView === "week" && (
               <div style={{
-                background: "#fff", borderRadius: 14, overflow: "hidden",
+                background: "#fff", borderRadius: 0, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -2756,7 +2756,7 @@ function PlanningApp({ currentUser, onLogout }) {
               }
 
               return (
-                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
                   {/* ── Sélecteur agent (managers uniquement) ── */}
                   {isManager && (<>
@@ -3500,7 +3500,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
     <div style={{ padding: 24, maxWidth: 820, animation: "fadeIn 0.3s ease" }}>
-      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         {/* Ligne 1 : filtres statut */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: isManager ? 10 : 0 }}>
           {[
@@ -3570,11 +3570,11 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
         </div>
       )}
       {filtered.length === 0 ? (
-        <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: "48px 0", textAlign: "center", color: "#94a3b8", fontSize: 13, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>Aucune demande</div>
+        <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 0, padding: "48px 0", textAlign: "center", color: "#94a3b8", fontSize: 13, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>Aucune demande</div>
       ) : (
         <>
           {(statusFilter === "all" || statusFilter === "pending") && pending.length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 12, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s" }}
+            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 0, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(245,158,11,0.15)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(245,158,11,0.1)"}>
               <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#fffbeb,#fef9ec)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 10 }}>
@@ -3590,7 +3590,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             </div>
           )}
           {showHistory && (statusFilter === "all" || statusFilter === "approved" || statusFilter === "rejected") && history.filter(r => statusFilter === "all" || r.status === statusFilter).length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
+            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
               <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 10 }}>
