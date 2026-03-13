@@ -1521,7 +1521,7 @@ function PlanningApp({ currentUser, onLogout }) {
     if (!modal || !leaveType) return;
     const { agentId, start, end } = modal; const agent = agents.find(a => a.id === agentId);
     try {
-      const data = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: leaveType.code, start_date: start, end_date: end, reason: reason || null, agent_id: agentId }) });
+      const data = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_id: leaveType.id, leave_type_code: leaveType.code, start_date: start, end_date: end, reason: reason || null, agent_id: agentId }) });
       if (data.leave) {
         const agentCanPresence = agents.find(a => a.id === agentId)?.can_book_presence_sites;
         const isPont = (leaveType.code || "").toLowerCase().includes("pont") || (leaveType.label || "").toLowerCase().includes("pont");
