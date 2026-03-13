@@ -1874,13 +1874,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 )}
 
                 {/* Filtres équipe - masqués en mode astreinte */}
-                {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
-                  {!isAdmin && (
-                    <>
-                      <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "4px 12px", borderRadius: 7, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
-                    </>
-                  )}
-                </div>}
+                {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }} />}
               </div>
               {/* Ligne 2 */}
               {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
@@ -1897,13 +1891,14 @@ function PlanningApp({ currentUser, onLogout }) {
                   <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
                 )}
                 {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
-                {filterMode !== "presence" && (
-                  <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
-                    {allTeams.map(t => (
-                      <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
-                    ))}
-                  </div>
-                )}
+                <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+                  {allTeams.map(t => (
+                    <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
+                  ))}
+                  {!isAdmin && (
+                    <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
+                  )}
+                </div>
               </div>}
             </div>
 
