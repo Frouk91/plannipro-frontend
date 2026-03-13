@@ -1107,7 +1107,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }, [agentsOrder, agents]);
 
   function getStatsCounts(filterType, agentId) {
-    const stats = { cp: 0, rtt: 0, pont: 0, absence: 0 };
+    const stats = { cp: 0, rtt: 0, pont: 0, absence: 0, veille_cp: 0, veille_ferie: 0 };
     const agent = agents.find(a => a.id === agentId);
     if (!agent) return stats;
     Object.entries(leaves[agentId] || {}).forEach(([dateKey, leave]) => {
@@ -1127,7 +1127,8 @@ function PlanningApp({ currentUser, onLogout }) {
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
       // Ordre important : veille_de_cp avant cp pour éviter faux-positif
-      if (code === "veille_de_cp" || code === "veille_de_ferie") { /* ne pas compter dans CP */ }
+      if (code === "veille_de_cp" || lbl === "veille de cp") { stats.veille_cp += days; }
+      else if (code === "veille_de_ferie" || lbl === "veille de férié") { stats.veille_ferie += days; }
       else if (code.includes("cp") || lbl.includes("congé payé") || lbl === "cp") { stats.cp += days; }
       else if (code.includes("rtt") || lbl.includes("rtt")) { stats.rtt += days; }
       else if (code.includes("pont") || lbl.includes("pont")) { stats.pont += days; }
@@ -2948,6 +2949,8 @@ function PlanningApp({ currentUser, onLogout }) {
                   { key: "rtt", label: "RTT", color: "#10b981", icon: "⏱️", days: counts.rtt },
                   { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
                   { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
+                  { key: "veille_cp", label: "Veille de CP", color: "#8b5cf6", icon: "🌙", days: counts.veille_cp },
+                  { key: "veille_ferie", label: "Veille de Férié", color: "#f97316", icon: "🎉", days: counts.veille_ferie },
                 ];
                 const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
                 const totalDays = stats.reduce((s, x) => s + x.days, 0);
