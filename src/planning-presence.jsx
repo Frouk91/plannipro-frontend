@@ -1880,7 +1880,7 @@ function PlanningApp({ currentUser, onLogout }) {
               {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>
                 {["all", "Css Digital", "Mailing Solution"].map(f => (
-                  <button key={f} onClick={() => setAstreinteFilter(f)} style={{ padding: "3px 12px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f ? 700 : 400, background: astreinteFilter === f ? "#f59e0b" : "#fff", color: astreinteFilter === f ? "#fff" : "#64748b", borderColor: astreinteFilter === f ? "#f59e0b" : "#e2e8f0", transition: "all 0.15s" }}>{f === "all" ? "Toutes les équipes" : f}</button>
+                  <button key={f} onClick={() => setAstreinteFilter(f)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f ? 700 : 400, background: astreinteFilter === f ? "#1e293b" : "#fff", color: astreinteFilter === f ? "#fff" : "#64748b", borderColor: astreinteFilter === f ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f === "all" ? "Tous" : f}</button>
                 ))}
               </div>}
               {filterMode !== "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
