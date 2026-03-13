@@ -3039,7 +3039,8 @@ function PlanningApp({ currentUser, onLogout }) {
       {/* DROPDOWN ASTREINTE */}
       {astreinteDropdown && (() => {
         const { aKey, teamName: aTeamName, rowType, rowId, key: aDateKey, onAgentPicked } = astreinteDropdown;
-        const aTeamAgents = agents.filter(a => a.team === aTeamName && a.role !== "admin");
+        const ASTREINTE_EXCLUDED = ["carol horlaville", "yannick loubery"];
+        const aTeamAgents = agents.filter(a => a.team === aTeamName && a.role !== "admin" && !ASTREINTE_EXCLUDED.includes(a.name.toLowerCase()));
         const rowLabels = { "astreinte": "Astreinte vendredi", "action_serveur": "Action Serveur / Admin", "mail": "Mail", "es": "ES" };
         const [ay, am, ad] = (aDateKey || "").split("-");
         const dateLabel = `${ad}/${am}`;
