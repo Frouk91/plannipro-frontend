@@ -47,6 +47,10 @@ const GLOBAL_STYLE = `
   .card { transition: all 0.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
+  .half-tooltip { position: relative; }
+  .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
+  .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
+  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
   .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:40px; height:40px; padding:0 11px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:20px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
   .btn-conge-expand svg { flex-shrink:0; width:18px; height:18px; }
   .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:13px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:9px; }
@@ -1591,44 +1595,7 @@ function PlanningApp({ currentUser, onLogout }) {
         @keyframes gearMD  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
         @keyframes fadeUp  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
         @keyframes loadBar { 0%{width:0%} 100%{width:100%} }
-        .half-tooltip { position: relative; }
-.half-tooltip::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 2px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: rgba(15,23,42,0.92);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 9999;
-}
-.half-tooltip::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15,23,42,0.92);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'Outfit', sans-serif;
-  padding: 6px 12px;
-  border-radius: 8px;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-  z-index: 9999;
-  letter-spacing: 0.2px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
-@keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+        @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
         @keyframes auroraL { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
         @keyframes auroraR { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-40px,30px) scale(1.15);} }
       `}</style>
