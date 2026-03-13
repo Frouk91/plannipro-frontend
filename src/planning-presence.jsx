@@ -3070,7 +3070,7 @@ function PlanningApp({ currentUser, onLogout }) {
           if (isCpFamily(t) || isRttFamily(t)) {
             setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
           } else if (isHalfDay(t)) {
-            setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType(t); setHalfDayPeriod(null);
+            setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType({ ...t, _overrideModal: requestModal }); setHalfDayPeriod(null);
           } else {
             setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason);
           }
