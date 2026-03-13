@@ -1792,10 +1792,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       if (tab.mode === "presence") { const pt = leaveTypes.find(t => isPresenceType(t)); if (pt) setSelectedLTId(pt.id); }
                     }} style={{
                       display: "flex", alignItems: "center", gap: 7,
-                      padding: "9px 18px",
+                      padding: "6px 14px",
                       borderRadius: 10,
                       cursor: "pointer",
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: isActive ? 700 : 500,
                       fontFamily: "'Space Grotesk', sans-serif",
                       color: isActive ? "#fff" : "#64748b",
@@ -1812,7 +1812,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     }}
                     onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#374151"; e.currentTarget.style.transform = "translateY(-1px)"; }}}
                     onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.transform = "translateY(0px)"; }}}>
-                      <span style={{ fontSize: 15 }}>{tab.icon}</span>
+                      <span style={{ fontSize: 13 }}>{tab.icon}</span>
                       {tab.label}
                     </button>
                   );
