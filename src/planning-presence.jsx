@@ -2946,13 +2946,15 @@ function PlanningApp({ currentUser, onLogout }) {
                 const displayAgent = agents.find(a => a.id === displayAgentId);
                 if (!displayAgent) return <div style={{ color: "#94a3b8", fontSize: 12 }}>Agent non trouvé</div>;
                 const counts = getStatsCounts(statsFilter, displayAgentId);
+                const veilleCpLT    = leaveTypes.find(t => (t.code||"") === "veille_de_cp"    || (t.label||"").toLowerCase() === "veille de cp");
+                const veilleEFerieLT = leaveTypes.find(t => (t.code||"") === "veille_de_ferie" || (t.label||"").toLowerCase() === "veille de férié");
                 const stats = [
-                  { key: "cp", label: "Congés Payés", color: "#6366f1", icon: "✏️", days: counts.cp },
-                  { key: "rtt", label: "RTT", color: "#10b981", icon: "⏱️", days: counts.rtt },
-                  { key: "pont", label: "Ponts", color: "#f59e0b", icon: "🌉", days: counts.pont },
-                  { key: "absence", label: "Absences", color: "#ef4444", icon: "❌", days: counts.absence },
-                  { key: "veille_cp", label: "Veille de CP", color: "#8b5cf6", icon: "🌙", days: counts.veille_cp },
-                  { key: "veille_ferie", label: "Veille de Férié", color: "#f97316", icon: "🎉", days: counts.veille_ferie },
+                  { key: "cp",           label: "Congés Payés",    color: "#6366f1", icon: "✏️", days: counts.cp },
+                  { key: "rtt",          label: "RTT",             color: "#10b981", icon: "⏱️", days: counts.rtt },
+                  { key: "pont",         label: "Ponts",           color: "#f59e0b", icon: "🌉", days: counts.pont },
+                  { key: "absence",      label: "Absences",        color: "#ef4444", icon: "❌", days: counts.absence },
+                  { key: "veille_cp",    label: "Veille de CP",    color: veilleCpLT?.color    || "#8b5cf6", icon: "🌙", days: counts.veille_cp },
+                  { key: "veille_ferie", label: "Veille de Férié", color: veilleEFerieLT?.color || "#f97316", icon: "🎉", days: counts.veille_ferie },
                 ];
                 const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
                 const totalDays = stats.reduce((s, x) => s + x.days, 0);
