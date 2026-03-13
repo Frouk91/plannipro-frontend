@@ -36,6 +36,7 @@ const GLOBAL_STYLE = `
 
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+  @keyframes modalPop { from { opacity:0; } to { opacity:1; } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   .cell-hover:hover { background: rgba(59,130,246,0.15) !important; }
@@ -3165,7 +3166,7 @@ function PlanningApp({ currentUser, onLogout }) {
         return (
           <>
             <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 99998, backdropFilter: "blur(4px)" }} />
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "slideIn 0.2s ease" }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
               <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
