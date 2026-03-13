@@ -3491,8 +3491,8 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
 }
 
 function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequests, onApprove, onReject, onClearHistory, onClearPlanningData }) {
-  const [statusFilter, setStatusFilter] = useState("pending");
-  const [showHistory, setShowHistory] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showHistory, setShowHistory] = useState(true);
   const sourceList = isManager ? requests : myRequests;
   const pending = sourceList.filter(r => r.status === "pending");
   const history = sourceList.filter(r => r.status !== "pending");
