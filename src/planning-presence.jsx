@@ -1890,8 +1890,8 @@ function PlanningApp({ currentUser, onLogout }) {
                 {filterMode === "presence" && (isManager || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#0d9488", fontStyle: "italic" }}>Cliquez sur une date pour poser une présence</span>
                 )}
-                {filterMode === "all" && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic" }}>Cliquez sur une date pour poser un congé</span>}
-                <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+                {filterMode === "all" && <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>}
+                <div style={{ display: "flex", gap: 4 }}>
                   {allTeams.map(t => (
                     <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
                   ))}
