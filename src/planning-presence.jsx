@@ -1107,9 +1107,11 @@ function PlanningApp({ currentUser, onLogout }) {
   }, [agentsOrder, agents]);
 
   function getStatsCounts(filterType, agentId) {
-    const stats = { cp: 0, rtt: 0, pont: 0, absence: 0, veille_cp: 0, veille_ferie: 0 };
+    const stats = { cp: 0, cp_current: 0, cp_next: 0, rtt: 0, pont: 0, absence: 0, veille_cp: 0, veille_ferie: 0 };
     const agent = agents.find(a => a.id === agentId);
     if (!agent) return stats;
+    // Période CP courante : juin N → mai N+1, où N = année si mois >= juin, sinon N-1
+    const todayPeriodYear = (new Date().getMonth() >= 5) ? new Date().getFullYear() : new Date().getFullYear() - 1;
     Object.entries(leaves[agentId] || {}).forEach(([dateKey, leave]) => {
       if (!leave) return;
       const [y, m, d] = dateKey.split("-");
@@ -1118,18 +1120,21 @@ function PlanningApp({ currentUser, onLogout }) {
       if (filterType === "month") { if (leaveYear !== year || leaveMonth !== month) return; }
       else if (filterType === "year") { if (leaveYear !== year) return; }
       else if (filterType === "custom" && statsCustomMonth) { if (leaveYear !== statsCustomMonth.year || leaveMonth !== statsCustomMonth.month) return; }
-      // Exclure week-ends du comptage (sauf demi-journées qui ont leur propre poids)
       const dow = new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getDay();
-      if (dow === 0 || dow === 6) return; // dimanche = 0, samedi = 6
-      // Exclure les congés en attente des stats
+      if (dow === 0 || dow === 6) return;
       if (leave.status === "pending") return;
       const days = getDaysForLeaveType(leave);
       const code = (leave.code || "").toLowerCase();
       const lbl = (leave.label || "").toLowerCase();
-      // Ordre important : veille_de_cp avant cp pour éviter faux-positif
       if (code === "veille_de_cp" || lbl === "veille de cp") { stats.veille_cp += days; }
       else if (code === "veille_de_ferie" || lbl === "veille de férié") { stats.veille_ferie += days; }
-      else if (code.includes("cp") || lbl.includes("congé payé") || lbl === "cp") { stats.cp += days; }
+      else if (code.includes("cp") || lbl.includes("congé payé") || lbl === "cp") {
+        stats.cp += days;
+        // Période CP : juin N → mai N+1
+        const leavePeriodYear = leaveMonth >= 5 ? leaveYear : leaveYear - 1;
+        if (leavePeriodYear === todayPeriodYear) stats.cp_current += days;
+        else if (leavePeriodYear === todayPeriodYear + 1) stats.cp_next += days;
+      }
       else if (code.includes("rtt") || lbl.includes("rtt")) { stats.rtt += days; }
       else if (code.includes("pont") || lbl.includes("pont")) { stats.pont += days; }
       else if (code.includes("absence") || lbl.includes("absence")) { stats.absence += days; }
@@ -2964,27 +2969,52 @@ function PlanningApp({ currentUser, onLogout }) {
                         <div style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#64748b" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })} j total</div>
                       </div>
                     )}
-                    {stats.map(s => (
+                    {stats.map(s => {
+                      const isCp = s.key === "cp";
+                      const todayPeriodYear = (new Date().getMonth() >= 5) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+                      const periodCurrent = `Juin ${todayPeriodYear} → Mai ${todayPeriodYear + 1}`;
+                      const periodNext    = `Juin ${todayPeriodYear + 1} → Mai ${todayPeriodYear + 2}`;
+                      return (
                       <div key={s.key} style={{ background: "#fff", borderRadius: 0, border: "1px solid #f1f5f9", borderLeft: "3px solid " + s.color, padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default" }}
                         onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                         onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}>
 
                         {/* Label + valeur */}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 4 }}>
-                          <div>
+                          <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 8 }}>{s.label}</div>
-                            <div style={{ fontSize: 32, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>
-                              {s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
-                              <span style={{ fontSize: 14, fontWeight: 500, color: "#94a3b8", marginLeft: 5 }}>j</span>
-                            </div>
+                            {isCp ? (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                                  <div>
+                                    <span style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
+                                  </div>
+                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600, whiteSpace: "nowrap" }}>{periodCurrent}</span>
+                                </div>
+                                <div style={{ height: 1, background: "#f1f5f9" }} />
+                                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                                  <div>
+                                    <span style={{ fontSize: 26, fontWeight: 800, color: s.color + "99", letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
+                                  </div>
+                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600, whiteSpace: "nowrap" }}>{periodNext}</span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ fontSize: 32, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>
+                                {s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
+                                <span style={{ fontSize: 14, fontWeight: 500, color: "#94a3b8", marginLeft: 5 }}>j</span>
+                              </div>
+                            )}
                           </div>
                           {/* Indicateur couleur */}
-                          <div style={{ width: 38, height: 38, borderRadius: 0, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <div style={{ width: 38, height: 38, borderRadius: 0, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 12 }}>
                             <div style={{ width: 12, height: 12, borderRadius: "50%", background: s.color }} />
                           </div>
                         </div>
-                        {/* Barre de progression relative au total */}
-                        {totalDays > 0 && (
+                        {/* Barre de progression */}
+                        {!isCp && totalDays > 0 && (
                           <div style={{ marginTop: 16 }}>
                             <div style={{ height: 3, background: "#f1f5f9", borderRadius: 0, overflow: "hidden" }}>
                               <div style={{ height: "100%", width: Math.round((s.days / totalDays) * 100) + "%", background: s.color, borderRadius: 0, transition: "width 0.6s ease" }} />
@@ -2993,7 +3023,8 @@ function PlanningApp({ currentUser, onLogout }) {
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </>
                 );
               })()}
