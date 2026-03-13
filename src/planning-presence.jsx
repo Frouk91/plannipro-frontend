@@ -51,10 +51,10 @@ const GLOBAL_STYLE = `
   .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
   .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
   .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
-  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:40px; height:40px; padding:0 11px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:20px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
-  .btn-conge-expand svg { flex-shrink:0; width:18px; height:18px; }
-  .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:13px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:9px; }
-  .btn-conge-expand:hover { width:190px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
+  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:30px; height:30px; padding:0 8px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:15px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
+  .btn-conge-expand svg { flex-shrink:0; width:14px; height:14px; }
+  .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
+  .btn-conge-expand:hover { width:175px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
   .btn-conge-expand:hover .btn-label { opacity:1; }
 `;
 
