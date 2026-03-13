@@ -2472,11 +2472,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ display: "contents" }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
                                         </div>
                                       ) : (
@@ -2622,11 +2622,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 8, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ display: "contents" }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
                                         </div>
                                       ) : (
@@ -3143,8 +3143,8 @@ function PlanningApp({ currentUser, onLogout }) {
                         <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
                         <div style={{ display: "flex", gap: 7 }}>
                           {[
-                            { key: "matin",      label: "🌅 Matin",        sub: "½ journée" },
-                            { key: "apres-midi", label: "🌆 Après-midi",   sub: "½ journée" },
+                            { key: "matin",      label: "Matin",        sub: "½ journée" },
+                            { key: "apres-midi", label: "Après-midi",   sub: "½ journée" },
                             { key: "journee",    label: "☀️ Journée",      sub: "complète"  },
                           ].map(opt => (
                             <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
@@ -3297,8 +3297,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             <div style={{ fontSize: 10, fontWeight: 700, color: parentType.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Choisir la période</div>
                             <div style={{ display: "flex", gap: 7 }}>
                               {[
-                                { key: "matin",      label: "🌅 Matin",      sub: "½ journée" },
-                                { key: "apres-midi", label: "🌆 Après-midi", sub: "½ journée" },
+                                { key: "matin",      label: "Matin",      sub: "½ journée" },
+                                { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
                                 { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
                               ].map(opt => {
                                 const isSelPeriod = addLeaveForm._period === opt.key;
@@ -3390,7 +3390,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     : <><div style={{ height: "50%", background: "#fff" }} /><div style={{ height: "50%", background: halfDayPendingType.color }} /></>
                   }
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "🌅 Matin" : "🌆 Après-midi"}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "Matin" : "Après-midi"}</span>
               </button>
             ))}
           </div>
