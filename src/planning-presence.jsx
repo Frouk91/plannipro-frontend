@@ -123,7 +123,7 @@ function isHalfDay(leave) {
   if (!leave) return false;
   var label = (leave.label || "").toLowerCase();
   var code = (leave.code || "").toLowerCase();
-  return label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié";
+  return (label.includes("1/2") || label.includes("½") || code.startsWith("_")) && !code.includes("veille");
 }
 function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   var w = "calc(100% - " + (pad * 2) + "px)";
@@ -1046,7 +1046,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
-    if (label.includes("1/2") || label.includes("½") || label === "veille de cp" || label === "veille de férié") return 0.5;
+    if (label.includes("1/2") || label.includes("½")) return 0.5;
     return 1;
   }
 
@@ -3067,9 +3067,10 @@ function PlanningApp({ currentUser, onLogout }) {
         const halfCpType  = allAvail.find(isHalfCp)  || allAvail.find(t => (t.code||"").includes("cp") && isHalfDay(t));
         const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code||"").includes("rtt") && isHalfDay(t));
         function handleTypeClick(t) {
+          const isVeille = (t.code || "").includes("veille");
           if (isCpFamily(t) || isRttFamily(t)) {
             setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
-          } else if (isHalfDay(t)) {
+          } else if (!isVeille && isHalfDay(t)) {
             setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType(t); setHalfDayPeriod(null);
           } else {
             setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason);
