@@ -1592,27 +1592,42 @@ function PlanningApp({ currentUser, onLogout }) {
         @keyframes fadeUp  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
         @keyframes loadBar { 0%{width:0%} 100%{width:100%} }
         .half-tooltip { position: relative; }
+.half-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(15,23,42,0.92);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+}
 .half-tooltip::after {
   content: attr(data-tip);
   position: absolute;
-  bottom: calc(100% + 5px);
+  bottom: calc(100% + 12px);
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(15,23,42,0.88);
+  background: rgba(15,23,42,0.92);
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
+  font-family: 'Outfit', sans-serif;
+  padding: 6px 12px;
+  border-radius: 8px;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s ease;
   z-index: 9999;
   letter-spacing: 0.2px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
 }
-.half-tooltip:hover::after { opacity: 1; }
+.half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
 @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
         @keyframes auroraL { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,-30px) scale(1.1);} }
         @keyframes auroraR { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(-40px,30px) scale(1.15);} }
@@ -2490,11 +2505,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
-                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ display: "contents" }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
                                         </div>
                                       ) : (
@@ -2640,11 +2655,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 8, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
-                                        <div className="half-tooltip" data-tip={getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"} style={{ display: "contents" }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "🌅 Matin" : "🌆 Après-midi"}`} style={{ display: "contents" }}>
                                         <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½","").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={24} fontSize={7} pad={2} />
                                         </div>
                                       ) : (
