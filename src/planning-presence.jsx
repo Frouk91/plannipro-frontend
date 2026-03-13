@@ -1706,7 +1706,9 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)", color: "#cbd5e1", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "transparent", border: "1px solid transparent", color: "#94a3b8", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(59,130,246,0.15)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)"; e.currentTarget.style.color = "#cbd5e1"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}>🚪 Déconnexion</button>
         </div>
         <nav style={{ padding: "12px", flex: 1 }}>
           {navItems.map(item => (
