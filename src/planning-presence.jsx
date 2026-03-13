@@ -1802,7 +1802,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 ))}
               </div>
               {/* Ligne 1 */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minHeight: 36 }}>
                 {/* Toggle Mois/Semaine */}
                 <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 3, gap: 2 }}>
                   {[{ v: "month", l: "Mois" }, { v: "week", l: "Semaine" }].map(({ v, l }) => (
