@@ -3159,9 +3159,9 @@ function PlanningApp({ currentUser, onLogout }) {
                         <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
                         <div style={{ display: "flex", gap: 7 }}>
                           {[
+                            { key: "journee",    label: "☀️ Journée",      sub: "complète"  },
                             { key: "matin",      label: "Matin",        sub: "½ journée" },
                             { key: "apres-midi", label: "Après-midi",   sub: "½ journée" },
-                            { key: "journee",    label: "☀️ Journée",      sub: "complète"  },
                           ].map(opt => (
                             <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
                               flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
@@ -3313,9 +3313,9 @@ function PlanningApp({ currentUser, onLogout }) {
                             <div style={{ fontSize: 10, fontWeight: 700, color: parentType.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Choisir la période</div>
                             <div style={{ display: "flex", gap: 7 }}>
                               {[
+                                { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
                                 { key: "matin",      label: "Matin",      sub: "½ journée" },
                                 { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
-                                { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
                               ].map(opt => {
                                 const isSelPeriod = addLeaveForm._period === opt.key;
                                 return (
