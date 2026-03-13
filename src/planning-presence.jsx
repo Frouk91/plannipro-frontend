@@ -636,10 +636,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <div style={{ display: "flex", gap: 6 }}>
           {TAB_CONFIG.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: "8px 20px", borderRadius: 9, border: `2px solid ${tab === t.id ? t.color : "#e2e8f0"}`,
+              padding: "5px 13px", borderRadius: 9, border: `2px solid ${tab === t.id ? t.color : "#e2e8f0"}`,
               background: tab === t.id ? t.color : "#f8fafc",
               color: tab === t.id ? "#fff" : "#64748b",
-              cursor: "pointer", fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+              cursor: "pointer", fontSize: 11, fontWeight: tab === t.id ? 700 : 500,
               boxShadow: tab === t.id ? `0 3px 12px ${t.color}40` : "none",
               transition: "all 0.15s"
             }}
