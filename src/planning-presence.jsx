@@ -2868,7 +2868,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                           <button
                             onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                            style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 12, fontWeight: 800, minWidth: 140, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
+                            style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
                             📅 {MONTHS_FR[navMonth]} {navYear}
                             {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
                           </button>
