@@ -1862,7 +1862,18 @@ function PlanningApp({ currentUser, onLogout }) {
                 <button onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); setWeekAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate())); }} style={{ padding: "5px 12px", borderRadius: 7, border: `1.5px solid ${filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"}`, background: filterMode==="presence"?"#f0fdfa":filterMode==="astreinte"?"#fffbeb":"#eef2ff", cursor: "pointer", fontSize: 11, fontWeight: 600, color: filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#d97706":"#6366f1", transition: "all 0.15s" }} onMouseEnter={e => { const c = filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#f59e0b":"#6366f1"; e.currentTarget.style.background = c; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { const bg = filterMode==="presence"?"#f0fdfa":filterMode==="astreinte"?"#fffbeb":"#eef2ff"; const c = filterMode==="presence"?"#0d9488":filterMode==="astreinte"?"#d97706":"#6366f1"; e.currentTarget.style.background = bg; e.currentTarget.style.color = c; }}>Aujourd'hui</button>
 
                 {/* Filtres équipe - masqués en mode astreinte */}
-                {filterMode !== "astreinte" && <div style={{ marginLeft: "auto", display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }} />}
+                {filterMode !== "astreinte" && filterMode === "all" && (
+                  <button onClick={() => {
+                    const defaultAgent = isManager ? null : currentUser.id;
+                    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+                    const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
+                    setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
+                    setAddLeaveModal(true);
+                  }} className="btn-conge-expand" title="Demander un congé" style={{ marginLeft: "auto" }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
+                    <span className="btn-label">Demander un congé</span>
+                  </button>
+                )}
               </div>
               {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>
@@ -1886,18 +1897,6 @@ function PlanningApp({ currentUser, onLogout }) {
                     <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
                   )}
                 </div>
-                {filterMode === "all" && (
-                  <button onClick={() => {
-                    const defaultAgent = isManager ? null : currentUser.id;
-                    const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-                    const defaultLT = isManager ? leaveTypes.filter(t => !isPresenceType(t))[0] : leaveTypes.find(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
-                    setAddLeaveForm({ agentId: defaultAgent, startDate: today, endDate: today, leaveTypeId: defaultLT?.id || null, reason: "" });
-                    setAddLeaveModal(true);
-                  }} className="btn-conge-expand" title="Demander un congé" style={{ marginLeft: "auto" }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>
-                    <span className="btn-label">Demander un congé</span>
-                  </button>
-                )}
               </div>}
             </div>
 
