@@ -1407,6 +1407,10 @@ function PlanningApp({ currentUser, onLogout }) {
   const currentLT = leaveTypes.find(t => t.id === selectedLTId) || leaveTypes[0];
   const validationBadge = isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending" || (r.status === "rejected" && !seenRejected.includes(r.id))).length;
 
+  useEffect(() => {
+    document.title = validationBadge > 0 ? `(${validationBadge}) PlaniPro` : "PlaniPro";
+  }, [validationBadge]);
+
   const weekDays = getWeekDays(weekAnchor.getFullYear(), weekAnchor.getMonth(), weekAnchor.getDate());
 
   function getAllLeavesForKey(agentId, k) {
