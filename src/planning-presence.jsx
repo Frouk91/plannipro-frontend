@@ -2834,13 +2834,13 @@ function PlanningApp({ currentUser, onLogout }) {
                         {selAgent ? (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                           </div>
                         </>) : (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca" }}>{currentUser.first_name} {currentUser.last_name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
                           </div>
                         </>)}
