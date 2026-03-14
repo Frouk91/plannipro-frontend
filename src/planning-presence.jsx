@@ -2067,7 +2067,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           style={{
                             textAlign: "center", cursor: canClick ? "pointer" : "default",
                             background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
-                            borderLeft: isToday ? "2px solid " + teamPalette(teamName).border : "1px solid #f8fafc", height: 52, verticalAlign: "middle",
+                            borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
                             outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
                             opacity: (!eligible && !wk) ? 0.25 : 1
                           }}>
@@ -2259,7 +2259,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
                                     background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff"; })(),
-                                    borderLeft: (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? "2px solid " + teamPalette(teamName).border : "1px solid #f8fafc"; })(),
+                                    borderLeft: "1px solid #f8fafc",
                                     height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px"
                                   }}>
