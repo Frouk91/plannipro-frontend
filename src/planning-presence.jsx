@@ -598,7 +598,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
-  const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0] }); const [loading, setLoading] = useState(false);
+  const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0] }); const [showAddLTModal, setShowAddLTModal] = useState(false); const [loading, setLoading] = useState(false);
   const [teamModal, setTeamModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
 
@@ -811,15 +811,79 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       )}
       {tab === "leavetypes" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
-              <input value={newLT.label} onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))} placeholder="Nom du type de congé..." onKeyDown={e => e.key === "Enter" && handleAddLT()} style={{ flex: 1, minWidth: 160, padding: "8px 14px", borderRadius: 8, border: "1.5px solid #e2e8f0", fontSize: 13, outline: "none", color: "#1e293b", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#f59e0b"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
-              <button onClick={handleAddLT} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#f59e0b,#fbbf24)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(245,158,11,0.35)", whiteSpace: "nowrap", transition: "all 0.15s" }}>＋ Ajouter</button>
-            </div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              <ColorPicker selected={newLT.color} onChange={c => setNewLT(p => ({ ...p, color: c }))} />
-            </div>
+          {/* Bouton Ajouter */}
+          <div style={{ marginBottom: 14, display: "flex", justifyContent: "flex-end" }}>
+            <button onClick={() => { setNewLT({ label: "", color: COLORS[0] }); setShowAddLTModal(true); }} style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#f59e0b,#fbbf24)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 3px 12px rgba(245,158,11,0.4)", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 5px 18px rgba(245,158,11,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 3px 12px rgba(245,158,11,0.4)"; }}>
+              <span style={{ fontSize: 16, lineHeight: 1 }}>＋</span> Nouveau type de congé
+            </button>
           </div>
+
+          {/* POPUP AJOUT TYPE DE CONGÉ */}
+          {showAddLTModal && (
+            <div onClick={() => setShowAddLTModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", backdropFilter: "blur(6px)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: 420, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "modalPop 0.2s ease" }}>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${newLT.color},${newLT.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: `0 4px 16px ${newLT.color}60`, transition: "all 0.2s" }}>🏷</div>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-0.3px" }}>Nouveau type de congé</div>
+                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Donnez un nom et choisissez une couleur</div>
+                  </div>
+                  <button onClick={() => setShowAddLTModal(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#f1f5f9"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#64748b"; }}>✕</button>
+                </div>
+
+                {/* Champ nom */}
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: 8 }}>Nom du type</label>
+                  <input
+                    autoFocus
+                    value={newLT.label}
+                    onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))}
+                    onKeyDown={e => { if (e.key === "Enter" && newLT.label.trim()) { handleAddLT(); setShowAddLTModal(false); } }}
+                    placeholder="Ex : Congé exceptionnel..."
+                    style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#f1f5f9", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", transition: "border 0.15s", caretColor: newLT.color }}
+                    onFocus={e => e.target.style.borderColor = newLT.color}
+                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
+                  />
+                </div>
+
+                {/* Aperçu couleur choisie */}
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px" }}>Couleur</label>
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: newLT.color, boxShadow: `0 0 8px ${newLT.color}80` }} />
+                    <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>{newLT.color}</span>
+                  </div>
+                </div>
+
+                {/* Palette de couleurs */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", marginBottom: 28 }}>
+                  {COLORS.map(c => (
+                    <button key={c} onClick={() => setNewLT(p => ({ ...p, color: c }))} title={c} style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", background: c, border: newLT.color === c ? `3px solid #fff` : "3px solid transparent", cursor: "pointer", transition: "all 0.15s", boxShadow: newLT.color === c ? `0 0 0 2px ${c}, 0 4px 12px ${c}60` : "none", transform: newLT.color === c ? "scale(1.2)" : "scale(1)" }} />
+                  ))}
+                </div>
+
+                {/* Aperçu du badge */}
+                <div style={{ marginBottom: 24, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>Aperçu :</span>
+                  <span style={{ padding: "3px 10px", borderRadius: 6, background: newLT.color + "30", color: newLT.color, fontSize: 12, fontWeight: 700, border: `1px solid ${newLT.color}50` }}>{newLT.label || "Nom du type"}</span>
+                  <div style={{ width: 28, height: 22, borderRadius: 4, background: newLT.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>{newLT.label ? newLT.label.slice(0,3).toUpperCase() : "???"}</div>
+                </div>
+
+                {/* Boutons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => setShowAddLTModal(false)} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#f1f5f9"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#94a3b8"; }}>Annuler</button>
+                  <button onClick={() => { if (newLT.label.trim()) { handleAddLT(); setShowAddLTModal(false); } }} disabled={!newLT.label.trim()} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: newLT.label.trim() ? `linear-gradient(135deg,${newLT.color},${newLT.color}cc)` : "rgba(255,255,255,0.05)", color: newLT.label.trim() ? "#fff" : "#475569", cursor: newLT.label.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: newLT.label.trim() ? `0 4px 16px ${newLT.color}50` : "none", transition: "all 0.2s" }}>✓ Créer ce type de congé</button>
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
             {sortLeaveTypes(leaveTypes).map((lt, i) => (
               <div key={lt.id} style={{ borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none" }}>
