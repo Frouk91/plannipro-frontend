@@ -3043,7 +3043,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       const periodCurrent = `Juin ${todayPeriodYear} → Mai ${todayPeriodYear + 1}`;
                       const periodNext    = `Juin ${todayPeriodYear + 1} → Mai ${todayPeriodYear + 2}`;
                       return (
-                      <div key={s.key} style={{ background: "#fff", borderRadius: 0, border: "1px solid #f1f5f9", borderLeft: "3px solid " + s.color, padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default" }}
+                      <div key={s.key} style={{ background: "#fff", borderRadius: 0, border: "1px solid #f1f5f9", borderLeft: "3px solid " + s.color, padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default", minHeight: 110, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
                         onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                         onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}>
 
