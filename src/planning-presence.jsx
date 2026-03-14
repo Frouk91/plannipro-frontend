@@ -594,7 +594,7 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
 }
 
 
-function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif }) {
+function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement }) {
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
@@ -624,9 +624,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   async function handleDeleteLT(lt) { try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "DELETE" }); onLeaveTypeDeleted(lt.id); showNotif("Type supprimé", "error"); } catch { showNotif("Erreur", "error"); } }
 
   const TAB_CONFIG = [
-    { id: "agents",     label: "👥 Agents",          color: "#6366f1" },
-    { id: "teams",      label: "🏷 Équipes",          color: "#0d9488" },
-    { id: "leavetypes", label: "📋 Types de congés",  color: "#f59e0b" },
+    { id: "agents",       label: "👥 Agents",          color: "#6366f1" },
+    { id: "teams",        label: "🏷 Équipes",          color: "#0d9488" },
+    { id: "leavetypes",   label: "📋 Types de congés",  color: "#f59e0b" },
+    { id: "announcement", label: "📢 Annonce",           color: "#ec4899" },
   ];
   const adminStyle = { padding: 24, animation: "fadeIn 0.3s ease", maxWidth: 900 };
   return (
@@ -911,6 +912,111 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           </div>
         </div>
       )}
+
+      {/* ── ONGLET ANNONCE ── */}
+      {tab === "announcement" && (() => {
+        const levelStyle = {
+          info:    { bg: "#eff6ff", border: "#3b82f6", text: "#1d4ed8", light: "#dbeafe", icon: "ℹ️", label: "Info",      grad: "linear-gradient(135deg,#1d4ed8,#3b82f6)" },
+          warning: { bg: "#fffbeb", border: "#f59e0b", text: "#92400e", light: "#fde68a", icon: "⚠️", label: "Attention",  grad: "linear-gradient(135deg,#92400e,#f59e0b)" },
+          urgent:  { bg: "#fef2f2", border: "#ef4444", text: "#991b1b", light: "#fecaca", icon: "🚨", label: "Urgent",     grad: "linear-gradient(135deg,#991b1b,#ef4444)" },
+        };
+        const ls = levelStyle[announceLevel];
+        const currentLs = announcement ? (levelStyle[announcement.level] || levelStyle.info) : null;
+        return (
+          <div style={{ padding: "0 0 32px" }}>
+            {/* Annonce active */}
+            {announcement ? (
+              <div style={{ marginBottom: 24, borderRadius: 0, overflow: "hidden", border: `2px solid ${currentLs.border}`, boxShadow: `0 4px 20px ${currentLs.border}25` }}>
+                <div style={{ background: currentLs.grad, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 22 }}>{currentLs.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.5px" }}>{currentLs.label} — Annonce active</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 1 }}>
+                      Publiée par {announcement.author_name} · {new Date(announcement.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+                    </div>
+                  </div>
+                  <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                    <button onClick={() => { setShowAnnounceForm(true); setAnnounceMsg(announcement.message); setAnnounceLevel(announcement.level); }}
+                      style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.15)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600, backdropFilter: "blur(4px)" }}>✏️ Modifier</button>
+                    <button onClick={() => { if (window.confirm("Supprimer cette annonce ?")) handleDeleteAnnouncement(); }}
+                      style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.2)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>🗑 Supprimer</button>
+                  </div>
+                </div>
+                <div style={{ background: currentLs.bg, padding: "16px 20px" }}>
+                  <p style={{ margin: 0, fontSize: 14, color: currentLs.text, lineHeight: 1.6, fontWeight: 500, whiteSpace: "pre-wrap" }}>{announcement.message}</p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: 24, padding: "16px 20px", borderRadius: 0, border: "1.5px dashed #e2e8f0", background: "#f8fafc", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 24, opacity: 0.4 }}>📢</span>
+                <span style={{ fontSize: 13, color: "#94a3b8", fontStyle: "italic" }}>Aucune annonce active pour le moment.</span>
+              </div>
+            )}
+
+            {/* Formulaire création/édition */}
+            {(!announcement || showAnnounceForm) && (
+              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "24px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: ls.grad, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: `0 4px 12px ${ls.border}40` }}>{ls.icon}</div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#1e293b" }}>{showAnnounceForm ? "Modifier l'annonce" : "Nouvelle annonce"}</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>Sera affichée en bandeau pour tous les agents</div>
+                  </div>
+                </div>
+
+                {/* Sélecteur niveau */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Niveau d'urgence</label>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {["info", "warning", "urgent"].map(l => {
+                      const s = levelStyle[l];
+                      const active = announceLevel === l;
+                      return (
+                        <button key={l} onClick={() => setAnnounceLevel(l)} style={{
+                          flex: 1, padding: "10px 8px", borderRadius: 10, border: `2px solid ${active ? s.border : "#e2e8f0"}`,
+                          background: active ? s.bg : "#f8fafc", cursor: "pointer", transition: "all 0.15s",
+                          boxShadow: active ? `0 2px 12px ${s.border}30` : "none"
+                        }}>
+                          <div style={{ fontSize: 20, marginBottom: 4 }}>{s.icon}</div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: active ? s.text : "#64748b" }}>{s.label}</div>
+                          <div style={{ fontSize: 10, color: active ? s.border : "#94a3b8", marginTop: 2 }}>
+                            {l === "info" ? "Information générale" : l === "warning" ? "Mise en garde" : "Action requise"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Message</label>
+                  <textarea value={announceMsg} onChange={e => setAnnounceMsg(e.target.value)} placeholder="Rédigez votre annonce ici..."
+                    rows={4} style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${announceMsg ? ls.border : "#e2e8f0"}`, fontSize: 13, color: "#1e293b", resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", lineHeight: 1.6, transition: "border 0.15s", background: announceMsg ? ls.bg : "#fff" }}
+                    onFocus={e => e.target.style.borderColor = ls.border}
+                    onBlur={e => e.target.style.borderColor = announceMsg ? ls.border : "#e2e8f0"} />
+                  {announceMsg && (
+                    <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: ls.bg, border: `1px solid ${ls.border}50`, fontSize: 12, color: ls.text }}>
+                      <span style={{ fontWeight: 700, marginRight: 8 }}>Aperçu :</span>{ls.icon} {announceMsg}
+                    </div>
+                  )}
+                </div>
+
+                {/* Boutons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  {showAnnounceForm && <button onClick={() => setShowAnnounceForm(false)}
+                    style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Annuler</button>}
+                  <button onClick={handlePostAnnouncement} disabled={!announceMsg.trim()}
+                    style={{ flex: 3, padding: "11px", borderRadius: 10, border: "none", background: announceMsg.trim() ? ls.grad : "#f1f5f9", color: announceMsg.trim() ? "#fff" : "#94a3b8", cursor: announceMsg.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: announceMsg.trim() ? `0 4px 16px ${ls.border}50` : "none", transition: "all 0.2s" }}>
+                    📢 {showAnnounceForm ? "Mettre à jour" : "Publier l'annonce"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {addModal && <Modal title="➕ Ajouter un agent">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <Field label="Prénom" value={newAgent.first_name} onChange={v => setNewAgent(p => ({ ...p, first_name: v }))} placeholder="Jean" />
@@ -1872,6 +1978,10 @@ function PlanningApp({ currentUser, onLogout }) {
         </div>
 
         {view === "admin" && isManager && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
+          announcement={announcement} announceLevel={announceLevel} setAnnounceLevel={setAnnounceLevel}
+          announceMsg={announceMsg} setAnnounceMsg={setAnnounceMsg}
+          showAnnounceForm={showAnnounceForm} setShowAnnounceForm={setShowAnnounceForm}
+          handlePostAnnouncement={handlePostAnnouncement} handleDeleteAnnouncement={handleDeleteAnnouncement}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
           onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
@@ -1881,67 +1991,6 @@ function PlanningApp({ currentUser, onLogout }) {
           onLeaveTypeUpdated={(id, data) => setLeaveTypes(prev => prev.map(lt => lt.id === id ? { ...lt, ...data } : lt))}
           onLeaveTypeDeleted={id => setLeaveTypes(prev => prev.filter(lt => lt.id !== id))}
         />}
-
-        {/* ── PANNEAU ANNONCE (Admin) ── */}
-        {view === "admin" && isManager && (() => {
-          const levelStyle = {
-            info:    { bg: "#eff6ff", border: "#3b82f6", text: "#1d4ed8", icon: "ℹ️", label: "Info"     },
-            warning: { bg: "#fffbeb", border: "#f59e0b", text: "#92400e", icon: "⚠️", label: "Attention" },
-            urgent:  { bg: "#fef2f2", border: "#ef4444", text: "#991b1b", icon: "🚨", label: "Urgent"   },
-          };
-          return (
-            <div style={{ margin: "0 24px 24px", background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "20px 24px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>📢</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>Annonce</div>
-                    <div style={{ fontSize: 11, color: "#94a3b8" }}>Visible par tous les agents en haut de page</div>
-                  </div>
-                </div>
-                {announcement && !showAnnounceForm && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { setShowAnnounceForm(true); setAnnounceMsg(announcement.message); setAnnounceLevel(announcement.level); }}
-                      style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #6366f1", background: "#eef2ff", color: "#4338ca", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>✏️ Modifier</button>
-                    <button onClick={handleDeleteAnnouncement}
-                      style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fecaca", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>🗑 Supprimer</button>
-                  </div>
-                )}
-              </div>
-
-              {!showAnnounceForm && announcement && (
-                <div style={{ padding: "12px 16px", borderRadius: 8, background: levelStyle[announcement.level]?.bg || "#eff6ff", border: `1.5px solid ${levelStyle[announcement.level]?.border || "#3b82f6"}`, marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <span>{levelStyle[announcement.level]?.icon}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: levelStyle[announcement.level]?.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>{levelStyle[announcement.level]?.label}</span>
-                    <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: "auto" }}>Par {announcement.author_name} · {new Date(announcement.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}</span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "#1e293b", lineHeight: 1.5 }}>{announcement.message}</div>
-                </div>
-              )}
-
-              {(showAnnounceForm || !announcement) && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {["info", "warning", "urgent"].map(l => (
-                      <button key={l} onClick={() => setAnnounceLevel(l)} style={{
-                        flex: 1, padding: "8px 4px", borderRadius: 9, border: `2px solid ${announceLevel === l ? levelStyle[l].border : "#e2e8f0"}`,
-                        background: announceLevel === l ? levelStyle[l].bg : "#f8fafc", cursor: "pointer", fontSize: 12, fontWeight: 700,
-                        color: announceLevel === l ? levelStyle[l].text : "#64748b", transition: "all 0.15s"
-                      }}>{levelStyle[l].icon} {levelStyle[l].label}</button>
-                    ))}
-                  </div>
-                  <textarea value={announceMsg} onChange={e => setAnnounceMsg(e.target.value)} placeholder="Rédigez votre annonce..."
-                    rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 9, border: `1.5px solid ${levelStyle[announceLevel]?.border || "#e2e8f0"}`, fontSize: 13, color: "#1e293b", resize: "vertical", outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", background: levelStyle[announceLevel]?.bg || "#f8fafc" }} />
-                  <div style={{ display: "flex", gap: 10 }}>
-                    {showAnnounceForm && <button onClick={() => setShowAnnounceForm(false)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#fff", color: "#64748b", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Annuler</button>}
-                    <button onClick={handlePostAnnouncement} disabled={!announceMsg.trim()} style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: announceMsg.trim() ? `linear-gradient(135deg,${levelStyle[announceLevel]?.border},${levelStyle[announceLevel]?.border}cc)` : "#f1f5f9", color: announceMsg.trim() ? "#fff" : "#94a3b8", cursor: announceMsg.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: announceMsg.trim() ? `0 4px 12px ${levelStyle[announceLevel]?.border}50` : "none", transition: "all 0.2s" }}>📢 Publier l'annonce</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
 
         {view === "planning" && (
           <div style={{ padding: 24, animation: "fadeIn 0.3s ease" }}>
