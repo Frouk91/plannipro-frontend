@@ -3153,8 +3153,9 @@ function PlanningApp({ currentUser, onLogout }) {
       {requestModal && (() => {
         const allAvail = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
         // Séparer les types "groupés" (CP, RTT et leurs ½) des autres
-        const isCpFamily  = t => /^(cp|_cp|congé payé)$/i.test((t.code||"").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label||"").trim());
-        const isRttFamily = t => /^(rtt|_rtt)$/i.test((t.code||"").trim()) || /^(rtt|½ rtt)$/i.test((t.label||"").trim());
+        const isCpFamily     = t => /^(cp|_cp|congé payé)$/i.test((t.code||"").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label||"").trim());
+        const isRttFamily    = t => /^(rtt|_rtt)$/i.test((t.code||"").trim()) || /^(rtt|½ rtt)$/i.test((t.label||"").trim());
+        const isVeilleFamily = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code||"").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label||"").trim());
         const isHalfCp    = t => /^_cp$/i.test(t.code) || /^½ cp$/i.test(t.label);
         const isHalfRtt   = t => /^_rtt$/i.test(t.code) || /^½ rtt$/i.test(t.label);
         // Types affichés dans la liste (sans les ½ CP et ½ RTT)
@@ -3163,7 +3164,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const halfCpType  = allAvail.find(isHalfCp)  || allAvail.find(t => (t.code||"").includes("cp") && isHalfDay(t));
         const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code||"").includes("rtt") && isHalfDay(t));
         function handleTypeClick(t) {
-          if (isCpFamily(t) || isRttFamily(t)) {
+          if (isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t)) {
             setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
           } else if (isHalfDay(t)) {
             setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType({ ...t, _overrideModal: requestModal }); setHalfDayPeriod(null);
@@ -3175,6 +3176,9 @@ function PlanningApp({ currentUser, onLogout }) {
           setRequestModal(null);
           if (period === "journee") {
             submitRequest(t, requestReason);
+          } else if (isVeilleFamily(t)) {
+            const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
+            submitRequest(t, finalReason);
           } else {
             const halfType = isCpFamily(t) ? halfCpType : halfRttType;
             if (halfType) {
@@ -3201,7 +3205,7 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* Liste des types */}
             <div style={{ padding: "6px 0", background: "transparent" }}>
               {displayTypes.map(t => {
-                const isGrouped = isCpFamily(t) || isRttFamily(t);
+                const isGrouped = isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t);
                 const isOpen = expandedLeaveType === t.id;
                 return (
                   <div key={t.id}>
