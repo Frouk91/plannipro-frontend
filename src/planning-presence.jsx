@@ -3344,8 +3344,9 @@ function PlanningApp({ currentUser, onLogout }) {
                   </div>
                 </div>
                 {(() => {
-                  const isCpType   = t => /^(cp|congé payé)$/i.test((t.label||"").trim()) || (t.code === "cp");
-                  const isRttType  = t => /^rtt$/i.test((t.label||"").trim()) || (t.code === "rtt");
+                  const isCpType      = t => /^(cp|congé payé)$/i.test((t.label||"").trim()) || (t.code === "cp");
+                  const isRttType     = t => /^rtt$/i.test((t.label||"").trim()) || (t.code === "rtt");
+                  const isVeilleType  = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code||"").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label||"").trim());
                   const isHalfCpT  = t => /^½ cp$/i.test((t.label||"").trim()) || t.code === "_cp";
                   const isHalfRttT = t => /^½ rtt$/i.test((t.label||"").trim()) || t.code === "_rtt";
                   const halfCp  = availLTs.find(isHalfCpT);
@@ -3354,13 +3355,13 @@ function PlanningApp({ currentUser, onLogout }) {
                   const displayLTs = sortLeaveTypes(availLTs).filter(t => !isHalfCpT(t) && !isHalfRttT(t));
                   // Quel type "parent" est ouvert pour montrer Matin/AM/Journée
                   const openParentId = addLeaveForm.leaveTypeId &&
-                    displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t))) ? addLeaveForm.leaveTypeId : null;
+                    displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t) || isVeilleType(t))) ? addLeaveForm.leaveTypeId : null;
                   return (
                     <div>
                       <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {displayLTs.map(t => {
-                          const isGrouped = isCpType(t) || isRttType(t);
+                          const isGrouped = isCpType(t) || isRttType(t) || isVeilleType(t);
                           const isSelected = addLeaveForm.leaveTypeId === t.id;
                           return (
                             <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
@@ -3375,7 +3376,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       {/* Sous-menu période si CP ou RTT sélectionné */}
                       {openParentId && (() => {
                         const parentType = displayLTs.find(t => t.id === openParentId);
-                        const halfType = isCpType(parentType) ? halfCp : halfRtt;
+                        const halfType = isCpType(parentType) ? halfCp : isRttType(parentType) ? halfRtt : null;
                         return (
                           <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: hexToLight(parentType.color), border: `1.5px solid ${parentType.color}30` }}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: parentType.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Choisir la période</div>
@@ -3388,7 +3389,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 const isSelPeriod = addLeaveForm._period === opt.key;
                                 return (
                                   <button key={opt.key}
-                                    onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id) }))}
+                                    onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: isVeilleType(parentType) ? parentType.id : (opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id)) }))}
                                     style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : parentType.color + "40"}`, background: isSelPeriod ? parentType.color : "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
                                     <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#1e293b", lineHeight: 1.3 }}>{opt.label}</div>
                                     <span style={{ fontSize: 9, color: isSelPeriod ? "rgba(255,255,255,0.75)" : "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
