@@ -3057,7 +3057,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     <span style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                     <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
                                   </div>
-                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600, whiteSpace: "nowrap" }}>{periodCurrent}</span>
+                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodCurrent}</span>
                                 </div>
                                 <div style={{ height: 1, background: "#f1f5f9" }} />
                                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -3065,7 +3065,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     <span style={{ fontSize: 26, fontWeight: 800, color: s.color + "99", letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                     <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
                                   </div>
-                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600, whiteSpace: "nowrap" }}>{periodNext}</span>
+                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodNext}</span>
                                 </div>
                               </div>
                             ) : (
@@ -3210,11 +3210,11 @@ function PlanningApp({ currentUser, onLogout }) {
                       border: "none", background: isOpen ? t.color + "25" : "none", cursor: "pointer",
                       textAlign: "left", transition: "background 0.1s"
                     }}
-                      onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "#f8fafc"; }}
+                      onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                       onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
                       <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
                       <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9", flex: 1 }}>{t.label}</span>
-                      <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>{leaveAbbr(t.label)}</span>
+                      <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(t.label)}</span>
                       {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
                     </button>
                     {/* Sous-menu Matin / Après-midi / Journée */}
@@ -3232,7 +3232,7 @@ function PlanningApp({ currentUser, onLogout }) {
                               background: "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
                             }}
                               onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.style.color = "#fff"; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = "rgba(255,255,255,0.8)"); }}
-                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
+                              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
                               <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
                               <span style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
                             </button>
@@ -3245,10 +3245,10 @@ function PlanningApp({ currentUser, onLogout }) {
               })}
             </div>
             {/* Raison */}
-            <div style={{ padding: "8px 16px 14px", borderTop: "1px solid #f8fafc" }}>
-              <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
+            <div style={{ padding: "8px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+              <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
             </div>
-            <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid #f1f5f9", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
+            <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid rgba(255,255,255,0.08)", background: "none", cursor: "pointer", fontSize: 12, color: "#475569", fontWeight: 500 }}>✕ Annuler</button>
           </div>
         );
       })()}
@@ -3475,7 +3475,7 @@ function PlanningApp({ currentUser, onLogout }) {
             ))}
           </div>
           <div style={{ padding: "0 16px 12px" }}>
-            <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 12, color: "#374151", outline: "none", boxSizing: "border-box" }} />
+            <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
           </div>
           <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
             <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
