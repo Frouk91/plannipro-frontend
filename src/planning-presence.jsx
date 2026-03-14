@@ -511,7 +511,7 @@ function LoginPage({ onLogin }) {
 
 function Modal({ title, children }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(3px)" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(6px)" }}>
       <div style={{ background: "#fff", borderRadius: 20, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 25px 60px rgba(0,0,0,0.15)", maxHeight: "90vh", overflowY: "auto", animation: "slideIn 0.2s ease" }}>
         <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700, color: "#111827" }}>{title}</h2>
         {children}
@@ -776,7 +776,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
             </div>
           )}
           {teamModal && (
-            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(4px)" }}
+            <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(6px)" }}
               onClick={() => setTeamModal(false)}>
               <div style={{ background: "#fff", borderRadius: 18, padding: "28px 28px 24px", width: 360, boxShadow: "0 24px 60px rgba(0,0,0,0.18)", animation: "slideIn 0.2s ease" }}
                 onClick={e => e.stopPropagation()}>
@@ -3259,7 +3259,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const selectedAlAgent = addLeaveForm.agentId ? agents.find(a => a.id === addLeaveForm.agentId) : null;
         return (
           <>
-            <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 99998, backdropFilter: "blur(4px)" }} />
+            <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
             <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
               <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -3492,8 +3492,8 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
         </div>
       )}
-      {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99999 }} />}
-      {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99998 }} />}
+      {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99999, backdropFilter: "blur(4px)" }} />}
+      {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99998, backdropFilter: "blur(4px)" }} />}
 
       {rejectModal && <Modal title="❌ Refuser la demande">
         <textarea value={rejectComment} onChange={e => setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, boxSizing: "border-box", resize: "none", marginBottom: 20, transition: "all 0.2s" }} />
