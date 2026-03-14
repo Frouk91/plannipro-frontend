@@ -1516,7 +1516,7 @@ function PlanningApp({ currentUser, onLogout }) {
       const start = Math.min(selectionStart, day), end = Math.max(selectionStart, day);
       setSelectionStart(null); setSelectedAgent(null);
       // Toujours ouvrir la popup (agent ou manager)
-      setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end), x: null, y: null }); setRequestReason("");
+      setRequestModal({ agentId, start: dateKey(year, month, start), end: dateKey(year, month, end), x: null, y: null }); setRequestReason(""); setExpandedLeaveType(null);
     }
   }
 
@@ -1539,7 +1539,7 @@ function PlanningApp({ currentUser, onLogout }) {
       const end = weekSelStart < k ? k : weekSelStart;
       setWeekSelStart(null); setWeekSelAgent(null);
       // Mode présence + agent autorisé : dépôt direct sans modale, approuvé immédiatement
-      setRequestModal({ agentId, start, end, x: null, y: null }); setRequestReason("");
+      setRequestModal({ agentId, start, end, x: null, y: null }); setRequestReason(""); setExpandedLeaveType(null);
     }
   }
 
