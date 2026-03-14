@@ -2830,7 +2830,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                       </div>
                       <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "none", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#6366f1"), background: "#eef2ff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "0 1px 6px rgba(99,102,241,0.2)", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
                         {selAgent ? (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
