@@ -3230,7 +3230,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             { key: "journee",    label: "☀️ Journée",      sub: "complète"  },
                             { key: "matin",      label: "Matin",        sub: "½ journée" },
                             { key: "apres-midi", label: "Après-midi",   sub: "½ journée" },
-                          ].map(opt => (
+                          ].filter(opt => isVeilleFamily(t) ? opt.key !== "journee" : true).map(opt => (
                             <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
                               flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
                               background: "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
@@ -3385,7 +3385,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
                                 { key: "matin",      label: "Matin",      sub: "½ journée" },
                                 { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
-                              ].map(opt => {
+                              ].filter(opt => isVeilleType(parentType) ? opt.key !== "journee" : true).map(opt => {
                                 const isSelPeriod = addLeaveForm._period === opt.key;
                                 return (
                                   <button key={opt.key}
