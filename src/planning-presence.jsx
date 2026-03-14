@@ -899,7 +899,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <div style={{ width: 12, height: 12, borderRadius: "50%", background: lt.color, flexShrink: 0 }} />
                     <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{lt.label}</span>
-                    <div style={{ fontSize: 10, color: "#94a3b8", background: hexToLight(lt.color), padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(lt.label)}</div>
+                    <div style={{ fontSize: 10, color: "#64748b", background: hexToLight(lt.color), padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(lt.label)}</div>
                     <div style={{ display: "flex", gap: 4 }}>
                       <button type="button" onClick={() => setEditLT(lt.id)} style={{ padding: "4px 11px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
                       <button type="button" onClick={() => handleDeleteLT(lt)} style={{ padding: "4px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>
@@ -1790,7 +1790,7 @@ function PlanningApp({ currentUser, onLogout }) {
           ))}
         </nav>
         <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-          <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
           {leaveTypes.filter(t => !isPresenceType(t)).map(t => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
@@ -1798,7 +1798,7 @@ function PlanningApp({ currentUser, onLogout }) {
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-              <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🏢 Présences site</div>
+              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
@@ -1811,7 +1811,7 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
           {isManager && (
             <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-              <div style={{ fontSize: 10, color: "#94a3b8", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🔔 Astreintes vendredi</div>
+              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🔔 Astreintes vendredi</div>
               <div style={{ fontSize: 11, color: "#cbd5e1" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
             </div>
           )}
@@ -1994,7 +1994,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "2px 8px 2px 4px" }}>
                         <div style={{ width: 18, height: 18, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 7, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                         <span style={{ fontSize: 11, fontWeight: 600, color: "#374151" }}>{a.first_name || a.name.split(" ")[0]}</span>
-                        {leave?.leaveLabel && <span style={{ fontSize: 10, color: "#94a3b8" }}>· {leave.leaveLabel}</span>}
+                        {leave?.leaveLabel && <span style={{ fontSize: 10, color: "#64748b" }}>· {leave.leaveLabel}</span>}
                       </div>
                     );
                   })}
@@ -2095,14 +2095,14 @@ function PlanningApp({ currentUser, onLogout }) {
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                       <tr>
-                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
                         {weekDays.map((d, i) => {
                           const k = dKey(d), wk = d.getDay()===0||d.getDay()===6, isToday = k===dKey(now), isFriday = d.getDay()===5;
                           return (
                             <th key={i} style={{ padding: "10px 6px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isFriday && !wk ? "#fef3c7" : isToday ? "#fffbeb" : wk ? "#fafafa" : "#f8fafc", color: isFriday && !wk ? "#d97706" : isToday ? "#f59e0b" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#fbbf24" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 80 }}>
                               <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                               <div style={{ fontSize: 22, fontWeight: 800, color: isFriday && !wk ? "#d97706" : isToday ? "#f59e0b" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
-                              <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0,3)}</div>
+                              <div style={{ fontSize: 10, color: "#64748b" }}>{MONTHS_FR[d.getMonth()].slice(0,3)}</div>
                               {isFriday && !wk && <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, marginTop: 2 }}>🔔 Astreinte</div>}
                             </th>
                           );
@@ -2147,7 +2147,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     <colgroup><col style={{ width: 200 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                     <thead>
                       <tr>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
                         {Array.from({ length: daysInMonth }, (_, i) => {
                           const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day;
                           const isFriday = new Date(year, month, day).getDay() === 5;
@@ -2439,7 +2439,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <colgroup><col style={{ width: 160 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
                       {Array.from({ length: daysInMonth }, (_, i) => {
                         const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day, isFer = !!feries[k];
                         const absent = countAbsents(k);
@@ -2601,7 +2601,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#94a3b8", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
                       {weekDays.map((d, i) => {
                         const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now);
                         const feriesDay = getFeries(d.getFullYear());
@@ -2627,7 +2627,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           </div>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
-                          <div style={{ fontSize: 10, color: "#94a3b8" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
+                          <div style={{ fontSize: 10, color: "#64748b" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
                           {isFer && <div style={{ fontSize: 9, color: "#d97706", marginTop: 2 }} title={feriesDay[k]}>🗓 {feriesDay[k]}</div>}
                         </th>;
                       })}
@@ -2834,30 +2834,30 @@ function PlanningApp({ currentUser, onLogout }) {
                         {selAgent ? (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                           </div>
                         </>) : (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
                           </div>
                         </>)}
                         <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
                       </div>
                       {statsAgentDropOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
-                          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
+                          <div style={{ padding: "10px 12px", borderBottom: "1px solid #334155", position: "sticky", top: 0, background: "#1e293b", zIndex: 1 }}>
                             <div style={{ position: "relative" }}>
                               <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
                                 <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2"/>
                                 <path d="M13 13l3.5 3.5" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
                               </svg>
                               <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher un agent ou une équipe..."
-                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #e2e8f0", borderRadius: 10, background: "#f8fafc", fontSize: 12, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
+                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #475569", borderRadius: 10, background: "#0f172a", fontSize: 12, color: "#f1f5f9", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
                                 onFocus={e => e.target.style.borderColor = "#6366f1"}
-                                onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                                onBlur={e => e.target.style.borderColor = "#475569"}
                               />
                               {statsAgentSearch && (
                                 <button onClick={() => setStatsAgentSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "rgba(148,163,184,0.15)", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", color: "#64748b", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>✕</button>
@@ -2867,26 +2867,26 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ maxHeight: 320, overflowY: "auto" }}>
                             {(!statsAgentSearch) && (
                               <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", borderBottom: "1px solid #f8fafc" }}
-                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer", borderBottom: "1px solid #334155" }}
+                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                                 onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                                 <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                                  <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                                  <div style={{ fontSize: 10, color: "#64748b" }}>Mon profil</div>
                                 </div>
                                 {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
                               </button>
                             )}
                             {filteredAgents ? filteredAgents.map(a => (
                               <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
+                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                 <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
-                                  <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</div>
+                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                                  <div style={{ fontSize: 10, color: "#64748b" }}>{a.team}</div>
                                 </div>
                                 {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
                               </button>
@@ -2894,15 +2894,15 @@ function PlanningApp({ currentUser, onLogout }) {
                               const tp = teamPalette(teamName);
                               return (
                                 <div key={teamName}>
-                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>{teamName}</div>
+                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.border, textTransform: "uppercase", letterSpacing: "0.6px", background: "rgba(255,255,255,0.04)", borderTop: "1px solid #334155" }}>{teamName}</div>
                                   {teamAgents.map(a => (
                                     <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
-                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
-                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
+                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
+                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
                                       <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                       <div style={{ flex: 1, textAlign: "left" }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
                                       </div>
                                       {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
                                     </button>
@@ -2943,7 +2943,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 <div key={yr}>
                                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
                                     <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
-                                    <span style={{ fontSize: 10, color: "#94a3b8" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
+                                    <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
                                   </div>
                                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
                                     {Array.from({ length: 12 }, (_, mi) => {
@@ -3058,7 +3058,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     <span style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                     <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
                                   </div>
-                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodCurrent}</span>
+                                  <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodCurrent}</span>
                                 </div>
                                 <div style={{ height: 1, background: "#f1f5f9" }} />
                                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -3066,7 +3066,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     <span style={{ fontSize: 26, fontWeight: 800, color: s.color + "99", letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                     <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
                                   </div>
-                                  <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodNext}</span>
+                                  <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodNext}</span>
                                 </div>
                               </div>
                             ) : (
@@ -3143,7 +3143,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                 <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
                 {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
-                {onAgentPicked && <span style={{ fontSize: 10, color: "#94a3b8" }}>→ puis glisser</span>}
+                {onAgentPicked && <span style={{ fontSize: 10, color: "#64748b" }}>→ puis glisser</span>}
               </button>
             ))}
             <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8" }}>✕ Annuler</button>
@@ -3219,7 +3219,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
                       <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
                       <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9", flex: 1 }}>{t.label}</span>
-                      <span style={{ fontSize: 10, color: "#94a3b8", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(t.label)}</span>
+                      <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(t.label)}</span>
                       {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
                     </button>
                     {/* Sous-menu Matin / Après-midi / Journée */}
@@ -3286,12 +3286,12 @@ function PlanningApp({ currentUser, onLogout }) {
                           <>
                             <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(selectedAlAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
                             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{selectedAlAgent.name}</span>
-                            <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
+                            <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
                           </>
                         ) : (
                           <span style={{ flex: 1, fontSize: 13, color: "#64748b" }}>Choisir un agent...</span>
                         )}
-                        <span style={{ fontSize: 10, color: "#94a3b8" }}>▾</span>
+                        <span style={{ fontSize: 10, color: "#64748b" }}>▾</span>
                       </div>
                       {alShowAgentDrop && (
                         <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
@@ -3306,7 +3306,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                 <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#f1f5f9", textAlign: "left" }}>{a.name}</span>
-                                <span style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</span>
+                                <span style={{ fontSize: 10, color: "#64748b" }}>{a.team}</span>
                                 {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
                               </button>
                             ))}
@@ -3529,7 +3529,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 3 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
-          {req.agentTeam && <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{req.agentTeam}</span>}
+          {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{req.agentTeam}</span>}
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block" }} />
             {meta.label}
