@@ -2998,7 +2998,7 @@ function PlanningApp({ currentUser, onLogout }) {
               );
             })()}
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
               {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
                 <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
