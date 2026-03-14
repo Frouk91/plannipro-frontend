@@ -512,8 +512,8 @@ function LoginPage({ onLogin }) {
 function Modal({ title, children }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(6px)" }}>
-      <div style={{ background: "#fff", borderRadius: 20, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 25px 60px rgba(0,0,0,0.15)", maxHeight: "90vh", overflowY: "auto", animation: "slideIn 0.2s ease" }}>
-        <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700, color: "#111827" }}>{title}</h2>
+      <div style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 30px 80px rgba(0,0,0,0.6)", maxHeight: "90vh", overflowY: "auto", animation: "slideIn 0.2s ease" }}>
+        <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700, color: "#f1f5f9" }}>{title}</h2>
         {children}
       </div>
     </div>
@@ -527,9 +527,9 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
   return (<div style={style}>
-    {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
+    {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
     <input value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }} />
+      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }} />
   </div>);
 }
 
@@ -541,13 +541,13 @@ function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   const safeY = Math.min(y, window.innerHeight - menuH - 8);
   return (
     <div onClick={e => e.stopPropagation()}
-      style={{ position: "fixed", top: safeY, left: safeX, background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-      <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#64748b", fontWeight: 600, background: "#f8fafc" }}>
+      style={{ position: "fixed", top: safeY, left: safeX, background: "linear-gradient(145deg,#0f172a,#1e293b)", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+      <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#94a3b8", fontWeight: 600, background: "rgba(255,255,255,0.04)" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
       <button onClick={e => { e.stopPropagation(); onDeleteDay(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>✂️ Supprimer ce jour seulement</button>
-      {isMultiDay && <button onClick={e => { e.stopPropagation(); onDeleteAll(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", borderTop: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 500 }}>🗑 Supprimer toute la période</button>}
-      <button onClick={e => { e.stopPropagation(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", borderTop: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 13, color: "#9ca3af" }}>✕ Annuler</button>
+      {isMultiDay && <button onClick={e => { e.stopPropagation(); onDeleteAll(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 500 }}>🗑 Supprimer toute la période</button>}
+      <button onClick={e => { e.stopPropagation(); onClose(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#475569" }}>✕ Annuler</button>
     </div>
   );
 }
@@ -587,7 +587,7 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
       </div>
       <div style={{ display: "flex", gap: 6 }}>
         <button type="button" onClick={() => onSave(label, color)} style={{ flex: 1, padding: "5px", borderRadius: 6, border: "none", background: "#1e293b", color: "#fff", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>Enregistrer</button>
-        <button type="button" onClick={onCancel} style={{ flex: 1, padding: "5px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b" }}>Annuler</button>
+        <button type="button" onClick={onCancel} style={{ flex: 1, padding: "5px", borderRadius: 6, border: "1px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#475569" }}>Annuler</button>
       </div>
     </div>
   );
@@ -765,7 +765,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                       {a.role === "manager" ? "Manager" : a.role === "coordinator" ? "Coordinateur" : "Agent"}
                     </span>
                     <button onClick={() => handleAssignAgentTeam(a.id, "")}
-                      style={{ padding: "4px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#64748b", fontWeight: 500, transition: "all 0.15s" }}
+                      style={{ padding: "4px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 11, color: "#475569", fontWeight: 500, transition: "all 0.15s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.background = "#fef2f2"; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; }}>
                       ↩ Retirer
@@ -778,12 +778,12 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           {teamModal && (
             <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(6px)" }}
               onClick={() => setTeamModal(false)}>
-              <div style={{ background: "#fff", borderRadius: 18, padding: "28px 28px 24px", width: 360, boxShadow: "0 24px 60px rgba(0,0,0,0.18)", animation: "slideIn 0.2s ease" }}
+              <div style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "28px 28px 24px", width: 360, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "slideIn 0.2s ease" }}
                 onClick={e => e.stopPropagation()}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#0d9488,#14b8a6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷</div>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: "#1e293b" }}>Nouvelle équipe</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#f1f5f9" }}>Nouvelle équipe</div>
                     <div style={{ fontSize: 11, color: "#94a3b8" }}>Saisissez le nom de l équipe</div>
                   </div>
                 </div>
@@ -796,7 +796,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 />
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={() => setTeamModal(false)}
-                    style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+                    style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>
                     Annuler
                   </button>
                   <button onClick={() => { handleAddTeam(); setTeamModal(false); }}
@@ -829,7 +829,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${newLT.color},${newLT.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: `0 4px 16px ${newLT.color}60`, transition: "all 0.2s" }}>🏷</div>
                   <div>
                     <div style={{ fontSize: 17, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-0.3px" }}>Nouveau type de congé</div>
-                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>Donnez un nom et choisissez une couleur</div>
+                    <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>Donnez un nom et choisissez une couleur</div>
                   </div>
                   <button onClick={() => setShowAddLTModal(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#f1f5f9"; }}
@@ -919,11 +919,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Email" value={newAgent.email} onChange={v => setNewAgent(p => ({ ...p, email: v }))} placeholder="jean@entreprise.fr" style={{ marginBottom: 12 }} />
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v => setNewAgent(p => ({ ...p, password: v }))} placeholder="motdepasse123" style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
             <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Choisir --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
             <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
@@ -937,18 +937,18 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         </div>
         <Field label="Email" value={editData.email} onChange={v => setEditData(p => ({ ...p, email: v }))} style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
-            <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
+          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+            <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Aucune équipe --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
-            <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
+          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+            <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
         </div>
         <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v => setEditData(p => ({ ...p, password: v }))} placeholder="••••••••" style={{ marginBottom: 12 }} />
         {editData.role === "agent" && (
-          <div style={{ background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8, padding: "12px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 8, padding: "12px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
             <input type="checkbox" id="presence_sites" checked={editData.can_book_presence_sites || false} onChange={e => setEditData(p => ({ ...p, can_book_presence_sites: e.target.checked }))} style={{ width: 18, height: 18, cursor: "pointer", accentColor: "#6366f1" }} />
             <label htmlFor="presence_sites" style={{ fontSize: 12, fontWeight: 500, color: "#4338ca", cursor: "pointer", flex: 1, margin: 0 }}>🏢 Autoriser cet agent à gérer ses présences site (Rueil/Paris)</label>
           </div>
@@ -1770,7 +1770,7 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "transparent", border: "1px solid transparent", color: "#94a3b8", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
+          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", background: "transparent", borderRadius: 8, background: "transparent", border: "1px solid transparent", color: "#94a3b8", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(59,130,246,0.15)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)"; e.currentTarget.style.color = "#cbd5e1"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}>🚪 Déconnexion</button>
         </div>
@@ -2998,7 +2998,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
                     <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                    <span style={{ fontSize: 12, color: "#4338ca", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
+                    <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
                   </div>
                 </div>
               )}
@@ -3188,18 +3188,18 @@ function PlanningApp({ currentUser, onLogout }) {
         return (
           <div onClick={e => e.stopPropagation()} style={{
             position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-            background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+            background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
             zIndex: 99999, width: 310, overflow: "hidden", animation: "slideIn 0.2s ease"
           }}>
             {/* Header */}
-            <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
-              <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>
+            <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>
                 {requestModal.start === requestModal.end ? formatDate(requestModal.start) : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
               </div>
             </div>
             {/* Liste des types */}
-            <div style={{ padding: "6px 0" }}>
+            <div style={{ padding: "6px 0", background: "transparent" }}>
               {displayTypes.map(t => {
                 const isGrouped = isCpFamily(t) || isRttFamily(t);
                 const isOpen = expandedLeaveType === t.id;
@@ -3207,7 +3207,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <div key={t.id}>
                     <button onClick={() => handleTypeClick(t)} style={{
                       display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
-                      border: "none", background: isOpen ? hexToLight(t.color) : "none", cursor: "pointer",
+                      border: "none", background: isOpen ? t.color + "25" : "none", cursor: "pointer",
                       textAlign: "left", transition: "background 0.1s"
                     }}
                       onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "#f8fafc"; }}
@@ -3219,7 +3219,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     </button>
                     {/* Sous-menu Matin / Après-midi / Journée */}
                     {isGrouped && isOpen && (
-                      <div style={{ background: hexToLight(t.color), borderTop: `1px solid ${t.color}25`, borderBottom: `1px solid ${t.color}25`, padding: "8px 16px 10px" }}>
+                      <div style={{ background: t.color + "20", borderTop: `1px solid ${t.color}40`, borderBottom: `1px solid ${t.color}40`, padding: "8px 16px 10px" }}>
                         <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
                         <div style={{ display: "flex", gap: 7 }}>
                           {[
@@ -3229,11 +3229,11 @@ function PlanningApp({ currentUser, onLogout }) {
                           ].map(opt => (
                             <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
                               flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
-                              background: "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
+                              background: "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
                             }}
                               onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.style.color = "#fff"; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = "rgba(255,255,255,0.8)"); }}
                               onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b", lineHeight: 1.3 }}>{opt.label}</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
                               <span style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
                             </button>
                           ))}
@@ -3455,10 +3455,10 @@ function PlanningApp({ currentUser, onLogout }) {
       })()}
 
       {halfDayPendingType && (
-        <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
-          <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#1e293b" }}>{halfDayPendingType.label} — quelle période ?</div>
+        <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+          <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>{halfDayPendingType.label} — quelle période ?</div>
           </div>
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             {["matin", "apres-midi"].map(period => (
@@ -3628,7 +3628,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
         )}
       </div>
       {!isManager && (
-        <div style={{ fontSize: 12, color: "#4338ca", background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 10, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ fontSize: 12, color: "#a5b4fc", background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 10, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 18 }}>💡</span>
           <span style={{ fontWeight: 500 }}>Sélectionnez des dates dans le planning pour déposer une demande de congé.</span>
         </div>
