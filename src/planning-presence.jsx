@@ -1813,12 +1813,6 @@ function PlanningApp({ currentUser, onLogout }) {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
             <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>Jour férié</span>
           </div>
-          {isManager && (
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🔔 Astreintes vendredi</div>
-              <div style={{ fontSize: 11, color: "#cbd5e1" }}>Cliquez sur 🔔 Astreintes puis sur un vendredi pour assigner</div>
-            </div>
-          )}
         </div>
       </aside>
 
