@@ -1795,7 +1795,7 @@ function PlanningApp({ currentUser, onLogout }) {
         </nav>
         <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ fontSize: 10, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
-          {leaveTypes.filter(t => !isPresenceType(t)).map(t => (
+          {leaveTypes.filter(t => !isPresenceType(t) && !/^(½ cp|½ rtt|_cp|_rtt)$/i.test((t.code||"").trim()) && !/^(½ cp|½ rtt)$/i.test((t.label||"").trim())).map(t => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
             </div>
