@@ -2066,8 +2066,8 @@ function PlanningApp({ currentUser, onLogout }) {
                           className={canClick ? "cell-hover" : ""}
                           style={{
                             textAlign: "center", cursor: canClick ? "pointer" : "default",
-                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isToday ? "#fffbeb" : wk ? "#fafafa" : "#fff",
-                            borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
+                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isToday ? "#fff8ed" : wk ? "#fafafa" : "#fff",
+                            borderLeft: isToday ? "2px solid #f59e0b" : "1px solid #f8fafc", height: 52, verticalAlign: "middle",
                             outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
                             opacity: (!eligible && !wk) ? 0.25 : 1
                           }}>
@@ -2258,8 +2258,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff",
-                                    borderLeft: "1px solid #f8fafc", height: 48, verticalAlign: "middle",
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? "#fffbeb" : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff"; })(),
+                                    borderLeft: (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? "2px solid #f59e0b" : "1px solid #f8fafc"; })(),
+                                    height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px"
                                   }}>
                                   {eligible && (aAgent ? (
