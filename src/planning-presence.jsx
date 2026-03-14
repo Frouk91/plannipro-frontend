@@ -1104,6 +1104,11 @@ function PlanningApp({ currentUser, onLogout }) {
     catch { return []; }
   });
 
+  const [announcement, setAnnouncement] = useState(null); // { id, message, level, author, created_at }
+  const [showAnnounceForm, setShowAnnounceForm] = useState(false);
+  const [announceMsg, setAnnounceMsg] = useState("");
+  const [announceLevel, setAnnounceLevel] = useState("info");
+
   const token = currentUser.token;
   const isManager = currentUser.role === "manager" || currentUser.role === "admin";
   const isAdmin = currentUser.role === "admin";
@@ -1368,6 +1373,29 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   function showNotif(msg, type = "success") { setNotification({ msg, type }); setTimeout(() => setNotification(null), 3500); }
+
+  // Chargement annonce
+  useEffect(() => {
+    apiFetch("/announcement", token).then(data => {
+      if (data && data.id) setAnnouncement(data);
+      else setAnnouncement(null);
+    }).catch(() => {});
+  }, [token]);
+
+  async function handlePostAnnouncement() {
+    if (!announceMsg.trim()) return;
+    try {
+      const data = await apiFetch("/announcement", token, { method: "POST", body: JSON.stringify({ message: announceMsg.trim(), level: announceLevel }) });
+      if (data && data.id) { setAnnouncement(data); setShowAnnounceForm(false); setAnnounceMsg(""); showNotif("Annonce publiée ✅"); }
+    } catch { showNotif("Erreur", "error"); }
+  }
+
+  async function handleDeleteAnnouncement() {
+    try {
+      await apiFetch("/announcement", token, { method: "DELETE" });
+      setAnnouncement(null); showNotif("Annonce supprimée ✅");
+    } catch { showNotif("Erreur", "error"); }
+  }
 
   useEffect(() => {
     try { localStorage.setItem("astreintes", JSON.stringify(astreintes)); } catch { }
@@ -1814,6 +1842,69 @@ function PlanningApp({ currentUser, onLogout }) {
             <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>Jour férié</span>
           </div>
         </div>
+
+        {/* ── ANNONCE ── */}
+        {(announcement || isManager) && (() => {
+          const levelStyle = {
+            info:    { bg: "rgba(59,130,246,0.15)",  border: "#3b82f6", icon: "ℹ️", label: "Info"    },
+            warning: { bg: "rgba(245,158,11,0.15)",  border: "#f59e0b", icon: "⚠️", label: "Attention" },
+            urgent:  { bg: "rgba(239,68,68,0.18)",   border: "#ef4444", icon: "🚨", label: "Urgent"  },
+          };
+          const ls = levelStyle[announcement?.level || "info"];
+          return (
+            <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(148,163,184,0.15)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>📢 Annonce</span>
+                {isManager && (
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {!showAnnounceForm && <button onClick={() => { setShowAnnounceForm(true); setAnnounceMsg(announcement?.message || ""); setAnnounceLevel(announcement?.level || "info"); }}
+                      style={{ fontSize: 10, padding: "2px 7px", borderRadius: 5, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#94a3b8", cursor: "pointer" }}>
+                      {announcement ? "✏️" : "＋"}
+                    </button>}
+                    {announcement && !showAnnounceForm && <button onClick={handleDeleteAnnouncement}
+                      style={{ fontSize: 10, padding: "2px 7px", borderRadius: 5, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.1)", color: "#f87171", cursor: "pointer" }}>🗑</button>}
+                  </div>
+                )}
+              </div>
+
+              {showAnnounceForm ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {["info", "warning", "urgent"].map(l => (
+                      <button key={l} onClick={() => setAnnounceLevel(l)} style={{
+                        flex: 1, padding: "4px 2px", borderRadius: 6, border: `1.5px solid ${announceLevel === l ? levelStyle[l].border : "rgba(255,255,255,0.1)"}`,
+                        background: announceLevel === l ? levelStyle[l].bg : "transparent", cursor: "pointer", fontSize: 9, fontWeight: 700,
+                        color: announceLevel === l ? levelStyle[l].border : "#64748b", transition: "all 0.15s"
+                      }}>{levelStyle[l].icon} {levelStyle[l].label}</button>
+                    ))}
+                  </div>
+                  <textarea value={announceMsg} onChange={e => setAnnounceMsg(e.target.value)} placeholder="Votre message..."
+                    rows={3} style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 11, resize: "none", outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif" }}
+                    onFocus={e => e.target.style.borderColor = levelStyle[announceLevel].border}
+                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => setShowAnnounceForm(false)} style={{ flex: 1, padding: "5px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "#64748b", cursor: "pointer", fontSize: 11 }}>Annuler</button>
+                    <button onClick={handlePostAnnouncement} disabled={!announceMsg.trim()} style={{ flex: 2, padding: "5px", borderRadius: 6, border: "none", background: announceMsg.trim() ? levelStyle[announceLevel].border : "rgba(255,255,255,0.05)", color: announceMsg.trim() ? "#fff" : "#475569", cursor: announceMsg.trim() ? "pointer" : "default", fontSize: 11, fontWeight: 700, transition: "all 0.15s" }}>Publier</button>
+                  </div>
+                </div>
+              ) : announcement ? (
+                <div style={{ padding: "10px 12px", borderRadius: 8, background: ls.bg, border: `1px solid ${ls.border}40` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                    <span style={{ fontSize: 13 }}>{ls.icon}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: ls.border, textTransform: "uppercase", letterSpacing: "0.5px" }}>{ls.label}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#e2e8f0", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{announcement.message}</div>
+                  <div style={{ fontSize: 9, color: "#475569", marginTop: 6 }}>
+                    {announcement.author_name && `Par ${announcement.author_name} · `}
+                    {new Date(announcement.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 11, color: "#475569", fontStyle: "italic" }}>Aucune annonce active</div>
+              )}
+            </div>
+          );
+        })()}
       </aside>
 
       {/* MAIN */}
