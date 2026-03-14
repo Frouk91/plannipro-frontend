@@ -1909,6 +1909,26 @@ function PlanningApp({ currentUser, onLogout }) {
 
       {/* MAIN */}
       <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
+
+        {/* ── BANDEAU ANNONCE ── */}
+        {announcement && (() => {
+          const ls = {
+            info:    { bg: "linear-gradient(135deg,#1d4ed8,#2563eb)", border: "#3b82f6", icon: "ℹ️" },
+            warning: { bg: "linear-gradient(135deg,#92400e,#b45309)", border: "#f59e0b", icon: "⚠️" },
+            urgent:  { bg: "linear-gradient(135deg,#991b1b,#dc2626)", border: "#ef4444", icon: "🚨" },
+          }[announcement.level] || { bg: "linear-gradient(135deg,#1d4ed8,#2563eb)", border: "#3b82f6", icon: "ℹ️" };
+          return (
+            <div style={{ background: ls.bg, borderBottom: `2px solid ${ls.border}`, padding: "10px 24px", display: "flex", alignItems: "center", gap: 12, boxShadow: `0 4px 20px ${ls.border}40` }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{ls.icon}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", flex: 1, lineHeight: 1.4 }}>{announcement.message}</span>
+              {announcement.author_name && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", flexShrink: 0 }}>— {announcement.author_name}</span>}
+              {isManager && <button onClick={handleDeleteAnnouncement} style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, color: "#fff", cursor: "pointer", fontSize: 12, padding: "3px 8px", flexShrink: 0, transition: "all 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.25)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}>✕</button>}
+            </div>
+          );
+        })()}
+
         <div style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(10px)", border: "1px solid rgba(148,163,184,0.1)", borderBottom: "2px solid rgba(59,130,246,0.2)", padding: "11px 24px", display: "flex", alignItems: "center", gap: 10 }}>
           <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Bilan congés" : "Administration"}</h1>
           {view === "validations" && <span style={{ fontSize: 12, color: "#94a3b8" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
