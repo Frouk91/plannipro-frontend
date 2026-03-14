@@ -3425,7 +3425,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 );
               })()}
               <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
-                <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid #e2e8f0", background: "#fff", cursor: "pointer", fontSize: 13, color: "#64748b", fontWeight: 500 }}>Annuler</button>
+                <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>Annuler</button>
                 <button onClick={async () => {
                   const agentId = addLeaveForm.agentId || currentUser.id;
                   const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
