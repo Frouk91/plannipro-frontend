@@ -521,8 +521,8 @@ function Modal({ title, children }) {
 }
 function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disabled }) {
   return (<div style={{ display: "flex", gap: 10 }}>
-    <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1.5px solid #e5e7eb", background: "#fff", cursor: "pointer", fontSize: 14, color: "#6b7280", fontWeight: 500 }}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: confirmColor || "linear-gradient(135deg,#667eea,#764ba2)", color: "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, opacity: disabled ? 0.5 : 1 }}>{confirmLabel}</button>
+    <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 14, color: "#94a3b8", fontWeight: 500 }}>Annuler</button>
+    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: disabled ? "rgba(255,255,255,0.05)" : (confirmColor || "linear-gradient(135deg,#6366f1,#818cf8)"), color: disabled ? "#475569" : "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600 }}>{confirmLabel}</button>
   </div>);
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
@@ -758,7 +758,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <div style={{ width: 34, height: 34, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
                       <div style={{ fontSize: 11, color: "#94a3b8" }}>{a.email}</div>
                     </div>
                     <span style={{ background: a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "2px 8px", borderRadius: 5, fontSize: 10, fontWeight: 600 }}>
@@ -2500,7 +2500,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
                                   style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
+                                  {isAdmin && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
@@ -2661,7 +2661,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
                                   style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 13, color: "#94a3b8", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
+                                  {isAdmin && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, color: agent.id === currentUser.id ? "#6366f1" : selectedAgentRow === agent.id ? "#3b82f6" : "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
@@ -3213,7 +3213,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "#f8fafc"; }}
                       onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
                       <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#1e293b", flex: 1 }}>{t.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9", flex: 1 }}>{t.label}</span>
                       <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "2px 7px", borderRadius: 4, fontWeight: 600 }}>{leaveAbbr(t.label)}</span>
                       {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
                     </button>
@@ -3260,7 +3260,7 @@ function PlanningApp({ currentUser, onLogout }) {
         return (
           <>
             <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 20, boxShadow: "0 25px 60px rgba(0,0,0,0.2)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
               <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
@@ -3270,37 +3270,37 @@ function PlanningApp({ currentUser, onLogout }) {
                   <button onClick={() => setAddLeaveModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 16, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                 </div>
               </div>
-              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, background: "transparent" }}>
                 {isManager && (
                   <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
                     <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                       <div onClick={() => { setAlShowAgentDrop(p => !p); setAlSearchQuery(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowAgentDrop ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer" }}>
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: "`1.5px solid ${alShowAgentDrop ? \"#6366f1\" : \"rgba(255,255,255,0.12)\"}`", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}>
                         {selectedAlAgent ? (
                           <>
                             <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(selectedAlAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
-                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{selectedAlAgent.name}</span>
+                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{selectedAlAgent.name}</span>
                             <span style={{ fontSize: 10, color: "#94a3b8", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
                           </>
                         ) : (
-                          <span style={{ flex: 1, fontSize: 13, color: "#94a3b8" }}>Choisir un agent...</span>
+                          <span style={{ flex: 1, fontSize: 13, color: "#64748b" }}>Choisir un agent...</span>
                         )}
                         <span style={{ fontSize: 10, color: "#94a3b8" }}>▾</span>
                       </div>
                       {alShowAgentDrop && (
-                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                          <div style={{ padding: "8px 10px", borderBottom: "1px solid #f1f5f9" }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                          <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                             <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                           </div>
                           <div style={{ maxHeight: 220, overflowY: "auto" }}>
                             {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
                               <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
                                 onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
                                 onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#1e293b", textAlign: "left" }}>{a.name}</span>
+                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#f1f5f9", textAlign: "left" }}>{a.name}</span>
                                 <span style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</span>
                                 {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
                               </button>
@@ -3313,9 +3313,9 @@ function PlanningApp({ currentUser, onLogout }) {
                 )}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                   <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
                     <button onClick={() => { setAlShowStartCal(p => !p); setAlShowEndCal(false); }}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowStartCal ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", fontSize: 13, color: addLeaveForm.startDate ? "#1e293b" : "#94a3b8", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowStartCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.startDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span>{addLeaveForm.startDate ? new Date(addLeaveForm.startDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
                       <span style={{ fontSize: 14 }}>📅</span>
                     </button>
@@ -3326,9 +3326,9 @@ function PlanningApp({ currentUser, onLogout }) {
                     )}
                   </div>
                   <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
                     <button onClick={() => { setAlShowEndCal(p => !p); setAlShowStartCal(false); }}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowEndCal ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", fontSize: 13, color: addLeaveForm.endDate ? "#1e293b" : "#94a3b8", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowEndCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.endDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span>{addLeaveForm.endDate ? new Date(addLeaveForm.endDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
                       <span style={{ fontSize: 14 }}>📅</span>
                     </button>
@@ -3353,14 +3353,14 @@ function PlanningApp({ currentUser, onLogout }) {
                     displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t))) ? addLeaveForm.leaveTypeId : null;
                   return (
                     <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                         {displayLTs.map(t => {
                           const isGrouped = isCpType(t) || isRttType(t);
                           const isSelected = addLeaveForm.leaveTypeId === t.id;
                           return (
                             <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
-                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "#e2e8f0"}`, background: isSelected ? hexToLight(t.color) : "#fff", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#475569", transition: "all 0.15s" }}>
+                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "rgba(255,255,255,0.1)"}`, background: isSelected ? t.color + "30" : "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#94a3b8", transition: "all 0.15s" }}>
                               <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
                               {t.label}
                               {isGrouped && <span style={{ fontSize: 9, opacity: 0.55, marginLeft: 1 }}>▾</span>}
@@ -3399,9 +3399,9 @@ function PlanningApp({ currentUser, onLogout }) {
                   );
                 })()}
                 <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#94a3b8", textTransform: "none" }}>(optionnel)</span></label>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#475569", textTransform: "none" }}>(optionnel)</span></label>
                   <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.12)", fontSize: 13, color: "#f1f5f9", background: "rgba(255,255,255,0.05)", outline: "none", boxSizing: "border-box" }}
                     onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
                 </div>
               </div>
@@ -3411,9 +3411,9 @@ function PlanningApp({ currentUser, onLogout }) {
                 const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
                 if (!startWE && !endWE) return null;
                 return (
-                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "#fef2f2", border: "1.5px solid #fecaca", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "rgba(220,38,38,0.15)", border: "1.5px solid rgba(220,38,38,0.4)", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 16 }}>⚠️</span>
-                    <span style={{ fontSize: 12, color: "#dc2626", fontWeight: 600 }}>
+                    <span style={{ fontSize: 12, color: "#fca5a5", fontWeight: 600 }}>
                       {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}{" "}Veuillez choisir des jours ouvrés.
                     </span>
                   </div>
