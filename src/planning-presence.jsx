@@ -1646,7 +1646,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const navItems = [
     { id: "planning", icon: "📆", label: "Planning" },
     { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
-    { id: "stats", icon: "📊", label: "Statistiques" },
+    { id: "stats", icon: "📊", label: "Bilan congés" },
     ...(isManager ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
   ];
 
@@ -1821,7 +1821,7 @@ function PlanningApp({ currentUser, onLogout }) {
       {/* MAIN */}
       <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
         <div style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(10px)", border: "1px solid rgba(148,163,184,0.1)", borderBottom: "2px solid rgba(59,130,246,0.2)", padding: "11px 24px", display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Statistiques" : "Administration"}</h1>
+          <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Bilan congés" : "Administration"}</h1>
           {view === "validations" && <span style={{ fontSize: 12, color: "#94a3b8" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
         </div>
 
