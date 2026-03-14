@@ -1408,7 +1408,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const validationBadge = isManager ? pendingRequests.length : myRequests.filter(r => r.status === "pending" || (r.status === "rejected" && !seenRejected.includes(r.id))).length;
 
   useEffect(() => {
-    document.title = validationBadge > 0 ? `(${validationBadge}) PlaniPro` : "PlaniPro";
+    document.title = validationBadge > 0 ? `🔔 PlaniPro` : "PlaniPro";
   }, [validationBadge]);
 
   const weekDays = getWeekDays(weekAnchor.getFullYear(), weekAnchor.getMonth(), weekAnchor.getDate());
