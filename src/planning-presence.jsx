@@ -3301,7 +3301,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team||"").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
                               <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
                                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
                                 onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                 <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#f1f5f9", textAlign: "left" }}>{a.name}</span>
@@ -3365,7 +3365,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           const isSelected = addLeaveForm.leaveTypeId === t.id;
                           return (
                             <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
-                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "rgba(255,255,255,0.1)"}`, background: isSelected ? t.color + "30" : "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#94a3b8", transition: "all 0.15s" }}>
+                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "rgba(255,255,255,0.1)"}`, background: isSelected ? t.color + "30" : "rgba(255,255,255,0.04)", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#64748b", transition: "all 0.15s" }}>
                               <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
                               {t.label}
                               {isGrouped && <span style={{ fontSize: 9, opacity: 0.55, marginLeft: 1 }}>▾</span>}
@@ -3378,8 +3378,8 @@ function PlanningApp({ currentUser, onLogout }) {
                         const parentType = displayLTs.find(t => t.id === openParentId);
                         const halfType = isCpType(parentType) ? halfCp : isRttType(parentType) ? halfRtt : null;
                         return (
-                          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: hexToLight(parentType.color), border: `1.5px solid ${parentType.color}30` }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: parentType.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Choisir la période</div>
+                          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: parentType.color + "15", border: `1.5px solid ${parentType.color}40` }}>
+                            <div style={{ fontSize: 10, fontWeight: 800, color: parentType.color, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Choisir la période</div>
                             <div style={{ display: "flex", gap: 7 }}>
                               {[
                                 { key: "journee",    label: "☀️ Journée",    sub: "complète"  },
@@ -3390,8 +3390,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                 return (
                                   <button key={opt.key}
                                     onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: isVeilleType(parentType) ? parentType.id : (opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id)) }))}
-                                    style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : parentType.color + "40"}`, background: isSelPeriod ? parentType.color : "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#1e293b", lineHeight: 1.3 }}>{opt.label}</div>
+                                    style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : "rgba(255,255,255,0.12)"}`, background: isSelPeriod ? parentType.color : "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
                                     <span style={{ fontSize: 9, color: isSelPeriod ? "rgba(255,255,255,0.75)" : "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
                                   </button>
                                 );
@@ -3407,7 +3407,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#475569", textTransform: "none" }}>(optionnel)</span></label>
                   <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
                     style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.12)", fontSize: 13, color: "#f1f5f9", background: "rgba(255,255,255,0.05)", outline: "none", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
                 </div>
               </div>
               {(() => {
