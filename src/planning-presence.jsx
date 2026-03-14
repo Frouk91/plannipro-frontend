@@ -2830,34 +2830,34 @@ function PlanningApp({ currentUser, onLogout }) {
                         <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                       </div>
                       <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "rgba(255,255,255,0.25)"), background: "rgba(255,255,255,0.08)", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "none", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#e2e8f0"), background: "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "none", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
                         {selAgent ? (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#e2e8f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                           </div>
                         </>) : (<>
                           <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
                             <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
                           </div>
                         </>)}
                         <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
                       </div>
                       {statsAgentDropOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "linear-gradient(145deg,#0f172a,#1e293b)", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
-                          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", position: "sticky", top: 0, background: "#0f172a", zIndex: 1 }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.14)", border: "1px solid #e2e8f0", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
+                          <div style={{ padding: "10px 12px", borderBottom: "1px solid #f1f5f9", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
                             <div style={{ position: "relative" }}>
                               <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
                                 <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2"/>
                                 <path d="M13 13l3.5 3.5" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round"/>
                               </svg>
                               <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher un agent ou une équipe..."
-                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid rgba(255,255,255,0.1)", borderRadius: 10, background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#f1f5f9", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
+                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #e2e8f0", borderRadius: 10, background: "#f8fafc", fontSize: 12, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
                                 onFocus={e => e.target.style.borderColor = "#6366f1"}
-                                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.1)"}
+                                onBlur={e => e.target.style.borderColor = "#e2e8f0"}
                               />
                               {statsAgentSearch && (
                                 <button onClick={() => setStatsAgentSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "rgba(148,163,184,0.15)", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", color: "#64748b", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>✕</button>
@@ -2867,12 +2867,12 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ maxHeight: 320, overflowY: "auto" }}>
                             {(!statsAgentSearch) && (
                               <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "#eef2ff" : "none", cursor: "pointer", borderBottom: "1px solid #f8fafc" }}
+                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "#f8fafc"; }}
                                 onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
                                 <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{currentUser.first_name} {currentUser.last_name}</div>
                                   <div style={{ fontSize: 10, color: "#94a3b8" }}>Mon profil</div>
                                 </div>
                                 {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
@@ -2880,12 +2880,12 @@ function PlanningApp({ currentUser, onLogout }) {
                             )}
                             {filteredAgents ? filteredAgents.map(a => (
                               <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.2)" : "none"; }}>
+                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
                                 <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                 <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
                                   <div style={{ fontSize: 10, color: "#94a3b8" }}>{a.team}</div>
                                 </div>
                                 {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
@@ -2894,15 +2894,15 @@ function PlanningApp({ currentUser, onLogout }) {
                               const tp = teamPalette(teamName);
                               return (
                                 <div key={teamName}>
-                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: "rgba(255,255,255,0.04)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>{teamName}</div>
+                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "0.6px", background: tp.header, borderTop: "1px solid " + tp.border + "40" }}>{teamName}</div>
                                   {teamAgents.map(a => (
                                     <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
-                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.2)" : "none"; }}>
+                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "#eef2ff" : "none", cursor: "pointer" }}
+                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "#f8fafc"; }}
+                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "#eef2ff" : "none"; }}>
                                       <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                                       <div style={{ flex: 1, textAlign: "left" }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>{a.name}</div>
                                       </div>
                                       {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
                                     </button>
