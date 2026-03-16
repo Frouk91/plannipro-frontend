@@ -47,6 +47,7 @@ const GLOBAL_STYLE = `
   .card { transition: all 0.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
+  select option { background: #1e293b; color: #f1f5f9; }
   .half-tooltip { position: relative; }
   .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
   .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
@@ -1100,14 +1101,14 @@ function MiniCalendarPicker({ value, onChange, minDate }) {
   const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y+1); } else setViewMonth(m => m+1); };
   const fmt = (y,m,d) => `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
   return (
-    <div style={{ background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:14, boxShadow:"0 8px 30px rgba(0,0,0,0.12)", padding:"14px", width:280, userSelect:"none" }}>
+    <div style={{ background:"#1e293b", border:"1px solid rgba(255,255,255,0.1)", borderRadius:14, boxShadow:"0 20px 50px rgba(0,0,0,0.5)", padding:"14px", width:280, userSelect:"none" }}>
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:12 }}>
-        <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid #e2e8f0", background:"#f8fafc", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#64748b" }}>‹</button>
-        <span style={{ fontSize:13, fontWeight:700, color:"#1e293b" }}>{MONTHS[viewMonth]} {viewYear}</span>
-        <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid #e2e8f0", background:"#f8fafc", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#64748b" }}>›</button>
+        <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#94a3b8" }}>‹</button>
+        <span style={{ fontSize:13, fontWeight:700, color:"#f1f5f9" }}>{MONTHS[viewMonth]} {viewYear}</span>
+        <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:8, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, color:"#94a3b8" }}>›</button>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:6 }}>
-        {DAYS.map(d => <div key={d} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:"#94a3b8", padding:"2px 0" }}>{d}</div>)}
+        {DAYS.map(d => <div key={d} style={{ textAlign:"center", fontSize:10, fontWeight:700, color:"#475569", padding:"2px 0" }}>{d}</div>)}
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
         {cells.map((d, i) => {
@@ -1121,20 +1122,20 @@ function MiniCalendarPicker({ value, onChange, minDate }) {
           return (
             <button key={i} onClick={() => !isDisabled && onChange(dateStr)}
               style={{ width:"100%", aspectRatio:"1", borderRadius:8, border:"none", cursor: isDisabled ? "not-allowed" : "pointer", fontSize:12, fontWeight: isSelected ? 700 : 400,
-                background: isSelected ? "#6366f1" : isToday ? "#eef2ff" : "transparent",
-                color: isDisabled ? "#d1d5db" : isSelected ? "#fff" : isWe ? "#94a3b8" : "#1e293b",
+                background: isSelected ? "#6366f1" : isToday ? "rgba(99,102,241,0.2)" : "transparent",
+                color: isDisabled ? "#334155" : isSelected ? "#fff" : isWe ? "#475569" : "#e2e8f0",
                 outline: isToday && !isSelected ? "1.5px solid #6366f1" : "none",
                 transition:"all 0.1s" }}
-              onMouseEnter={e => { if (!isDisabled && !isSelected) e.currentTarget.style.background="#f1f5f9"; }}
-              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background= isToday ? "#eef2ff" : "transparent"; }}>
+              onMouseEnter={e => { if (!isDisabled && !isSelected) e.currentTarget.style.background="rgba(255,255,255,0.08)"; }}
+              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background= isToday ? "rgba(99,102,241,0.2)" : "transparent"; }}>
               {d}
             </button>
           );
         })}
       </div>
-      <div style={{ display:"flex", justifyContent:"space-between", marginTop:10, paddingTop:8, borderTop:"1px solid #f1f5f9" }}>
-        <button onClick={() => onChange("")} style={{ fontSize:11, color:"#94a3b8", background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6 }}>Effacer</button>
-        <button onClick={() => onChange(fmt(today.getFullYear(), today.getMonth(), today.getDate()))} style={{ fontSize:11, color:"#6366f1", background:"none", border:"none", cursor:"pointer", fontWeight:600, padding:"2px 6px", borderRadius:6 }}>Aujourd'hui</button>
+      <div style={{ display:"flex", justifyContent:"space-between", marginTop:10, paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.08)" }}>
+        <button onClick={() => onChange("")} style={{ fontSize:11, color:"#475569", background:"none", border:"none", cursor:"pointer", padding:"2px 6px", borderRadius:6 }}>Effacer</button>
+        <button onClick={() => onChange(fmt(today.getFullYear(), today.getMonth(), today.getDate()))} style={{ fontSize:11, color:"#818cf8", background:"none", border:"none", cursor:"pointer", fontWeight:600, padding:"2px 6px", borderRadius:6 }}>Aujourd'hui</button>
       </div>
     </div>
   );
