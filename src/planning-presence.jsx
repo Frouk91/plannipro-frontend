@@ -589,8 +589,8 @@ function Modal({ title, children }) {
 }
 function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disabled }) {
   return (<div style={{ display: "flex", gap: 10 }}>
-    <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 14, color: "#94a3b8", fontWeight: 500, transition: "all 0.2s ease" }} onMouseEnter={e => { e.target.style.background = "rgba(255,255,255,0.1)"; e.target.style.borderColor = "rgba(255,255,255,0.2)"; }} onMouseLeave={e => { e.target.style.background = "rgba(255,255,255,0.05)"; e.target.style.borderColor = "rgba(255,255,255,0.1)"; }}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: disabled ? "rgba(255,255,255,0.05)" : (confirmColor || "linear-gradient(135deg,#6366f1,#818cf8)"), color: disabled ? "#475569" : "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1 }} onMouseEnter={e => !disabled && (e.target.style.transform = "translateY(-2px)")} onMouseLeave={e => !disabled && (e.target.style.transform = "translateY(0)")}>{confirmLabel}</button>
+    <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 14, color: "#94a3b8", fontWeight: 500, transition: "all 0.2s ease" }}>Annuler</button>
+    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: disabled ? "rgba(255,255,255,0.05)" : (confirmColor || "linear-gradient(135deg,#6366f1,#818cf8)"), color: disabled ? "#475569" : "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1 }}>{confirmLabel}</button>
   </div>);
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
