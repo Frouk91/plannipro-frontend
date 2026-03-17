@@ -39,6 +39,18 @@ const GLOBAL_STYLE = `
   @keyframes modalPop { from { opacity:0; } to { opacity:1; } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInLeft { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes fadeInRight { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes slideInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  @keyframes popIn { 0% { opacity:0; transform:scale(0.8); } 50% { transform:scale(1.05); } to { opacity:1; transform:scale(1); } }
+  @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+  @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
   .cell-hover { transition: all 0.3s ease; }
   .cell-hover:hover { background: rgba(59,130,246,0.15) !important; box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 4px 12px rgba(99,102,241,0.15) !important; }
   .btn-primary { transition: all 0.2s ease; }
@@ -516,9 +528,9 @@ function LoginPage({ onLogin }) {
 
 function Modal({ title, children }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(6px)" }}>
-      <div style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 30px 80px rgba(0,0,0,0.6)", maxHeight: "90vh", overflowY: "auto", animation: "slideIn 0.2s ease" }}>
-        <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700, color: "#f1f5f9" }}>{title}</h2>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease" }}>
+      <div style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 32, width: 480, maxWidth: "95vw", boxShadow: "0 30px 80px rgba(0,0,0,0.6)", maxHeight: "90vh", overflowY: "auto", animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>
+        <h2 style={{ margin: "0 0 20px", fontSize: 18, fontWeight: 700, color: "#f1f5f9", animation: "fadeInUp 0.4s ease 0.1s both" }}>{title}</h2>
         {children}
       </div>
     </div>
@@ -758,7 +770,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
     { id: "leavetypes",   label: "📋 Types de congés",  color: "#f59e0b" },
     { id: "announcement", label: "📢 Annonce",           color: "#ec4899" },
   ];
-  const adminStyle = { padding: 24, animation: "fadeIn 0.3s ease", maxWidth: 900 };
+  const adminStyle = { padding: 24, animation: "fadeInUp 0.5s ease", maxWidth: 900 };
   return (
     <div style={adminStyle}>
       {/* ── Onglets ── */}
@@ -1059,8 +1071,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
 
           {/* POPUP AJOUT TYPE DE CONGÉ */}
           {showAddLTModal && (
-            <div onClick={() => setShowAddLTModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", backdropFilter: "blur(6px)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
-              <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: 420, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "modalPop 0.2s ease" }}>
+            <div onClick={() => setShowAddLTModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", backdropFilter: "blur(6px)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.2s ease" }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: 420, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "popIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
                   <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${newLT.color},${newLT.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: `0 4px 16px ${newLT.color}60`, transition: "all 0.2s" }}>🏷</div>
@@ -1074,7 +1086,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 </div>
 
                 {/* Champ nom */}
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 24, animation: "fadeInUp 0.4s ease 0.05s both" }}>
                   <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: 8 }}>Nom du type</label>
                   <input
                     autoFocus
@@ -1082,41 +1094,43 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onChange={e => setNewLT(p => ({ ...p, label: e.target.value }))}
                     onKeyDown={e => { if (e.key === "Enter" && newLT.label.trim()) { handleAddLT(); setShowAddLTModal(false); } }}
                     placeholder="Ex : Congé exceptionnel..."
-                    style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#f1f5f9", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", transition: "border 0.15s", caretColor: newLT.color }}
-                    onFocus={e => e.target.style.borderColor = newLT.color}
-                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
+                    style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#f1f5f9", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", transition: "all 0.2s ease", caretColor: newLT.color }}
+                    onFocus={e => { e.target.style.borderColor = newLT.color; e.target.style.boxShadow = `0 0 0 3px ${newLT.color}30`; }}
+                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; e.target.style.boxShadow = "none"; }}
                   />
                 </div>
 
                 {/* Aperçu couleur choisie */}
-                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, animation: "fadeInUp 0.4s ease 0.1s both" }}>
                   <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px" }}>Couleur</label>
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: newLT.color, boxShadow: `0 0 8px ${newLT.color}80` }} />
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.06)", transition: "all 0.2s ease" }}>
+                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: newLT.color, boxShadow: `0 0 8px ${newLT.color}80`, animation: "pulse 2s ease-in-out infinite" }} />
                     <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>{newLT.color}</span>
                   </div>
                 </div>
 
                 {/* Palette de couleurs */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", marginBottom: 28 }}>
-                  {COLORS.map(c => (
-                    <button key={c} onClick={() => setNewLT(p => ({ ...p, color: c }))} title={c} style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", background: c, border: newLT.color === c ? `3px solid #fff` : "3px solid transparent", cursor: "pointer", transition: "all 0.15s", boxShadow: newLT.color === c ? `0 0 0 2px ${c}, 0 4px 12px ${c}60` : "none", transform: newLT.color === c ? "scale(1.2)" : "scale(1)" }} />
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", marginBottom: 28, animation: "fadeInUp 0.4s ease 0.15s both" }}>
+                  {COLORS.map((c, idx) => (
+                    <button key={c} onClick={() => setNewLT(p => ({ ...p, color: c }))} title={c} style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", background: c, border: newLT.color === c ? `3px solid #fff` : "3px solid transparent", cursor: "pointer", transition: "all 0.2s ease", boxShadow: newLT.color === c ? `0 0 0 2px ${c}, 0 4px 12px ${c}60` : "none", transform: newLT.color === c ? "scale(1.2)" : "scale(1)", animation: `fadeInUp 0.3s ease ${0.15 + idx * 0.02}s both` }} />
                   ))}
                 </div>
 
                 {/* Aperçu du badge */}
-                <div style={{ marginBottom: 24, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ marginBottom: 24, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10, animation: "fadeInUp 0.4s ease 0.35s both" }}>
                   <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>Aperçu :</span>
-                  <span style={{ padding: "3px 10px", borderRadius: 6, background: newLT.color + "30", color: newLT.color, fontSize: 12, fontWeight: 700, border: `1px solid ${newLT.color}50` }}>{newLT.label || "Nom du type"}</span>
-                  <div style={{ width: 28, height: 22, borderRadius: 4, background: newLT.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>{newLT.label ? newLT.label.slice(0,3).toUpperCase() : "???"}</div>
+                  <span style={{ padding: "3px 10px", borderRadius: 6, background: newLT.color + "30", color: newLT.color, fontSize: 12, fontWeight: 700, border: `1px solid ${newLT.color}50`, transition: "all 0.2s ease" }}>{newLT.label || "Nom du type"}</span>
+                  <div style={{ width: 28, height: 22, borderRadius: 4, background: newLT.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800, transition: "all 0.2s ease" }}>{newLT.label ? newLT.label.slice(0,3).toUpperCase() : "???"}</div>
                 </div>
 
                 {/* Boutons */}
-                <div style={{ display: "flex", gap: 10 }}>
-                  <button onClick={() => setShowAddLTModal(false)} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#f1f5f9"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#94a3b8"; }}>Annuler</button>
-                  <button onClick={() => { if (newLT.label.trim()) { handleAddLT(); setShowAddLTModal(false); } }} disabled={!newLT.label.trim()} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: newLT.label.trim() ? `linear-gradient(135deg,${newLT.color},${newLT.color}cc)` : "rgba(255,255,255,0.05)", color: newLT.label.trim() ? "#fff" : "#475569", cursor: newLT.label.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: newLT.label.trim() ? `0 4px 16px ${newLT.color}50` : "none", transition: "all 0.2s" }}>✓ Créer ce type de congé</button>
+                <div style={{ display: "flex", gap: 10, animation: "fadeInUp 0.4s ease 0.4s both" }}>
+                  <button onClick={() => setShowAddLTModal(false)} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.2s ease" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#f1f5f9"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.transform = "none"; }}>Annuler</button>
+                  <button onClick={() => { if (newLT.label.trim()) { handleAddLT(); setShowAddLTModal(false); } }} disabled={!newLT.label.trim()} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: newLT.label.trim() ? `linear-gradient(135deg,${newLT.color},${newLT.color}cc)` : "rgba(255,255,255,0.05)", color: newLT.label.trim() ? "#fff" : "#475569", cursor: newLT.label.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: newLT.label.trim() ? `0 4px 16px ${newLT.color}50` : "none", transition: "all 0.2s ease" }}
+                    onMouseEnter={e => { if (newLT.label.trim()) { e.currentTarget.style.boxShadow = `0 6px 20px ${newLT.color}70`; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                    onMouseLeave={e => { if (newLT.label.trim()) { e.currentTarget.style.boxShadow = `0 4px 16px ${newLT.color}50`; e.currentTarget.style.transform = "none"; } }}>✓ Créer ce type de congé</button>
                 </div>
               </div>
             </div>
@@ -2176,7 +2190,7 @@ function PlanningApp({ currentUser, onLogout }) {
       {/* Grille */}
       <div style={{position:"fixed",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)",backgroundSize:"48px 48px",pointerEvents:"none",zIndex:0}} />
 
-      {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideIn 0.3s ease" }}>{notification.msg}</div>}
+      {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1), pulse 2s ease-in-out 0.4s infinite" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
 
       {/* SIDEBAR */}
@@ -2284,7 +2298,7 @@ function PlanningApp({ currentUser, onLogout }) {
         />}
 
         {view === "planning" && (
-          <div style={{ padding: 24, animation: "fadeIn 0.3s ease" }}>
+          <div style={{ padding: 24, animation: "fadeInUp 0.5s ease" }}>
             {/* BANDE COLORÉE INDICATEUR MODE */}
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
@@ -3222,7 +3236,7 @@ function PlanningApp({ currentUser, onLogout }) {
         )}
 
         {view === "stats" && (
-          <div style={{ padding: 24, animation: "fadeIn 0.3s ease" }}>
+          <div style={{ padding: 24, animation: "fadeInUp 0.5s ease" }}>
             {(() => {
               /* ── Calculs agent ── */
               const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
@@ -4018,7 +4032,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const filtered = statusFilter === "all" ? sourceList : statusFilter === "pending" ? pending : history.filter(r => r.status === statusFilter);
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
-    <div style={{ padding: 24, maxWidth: 820, animation: "fadeIn 0.3s ease" }}>
+    <div style={{ padding: 24, maxWidth: 820, animation: "fadeInUp 0.5s ease" }}>
       <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         {/* Ligne 1 : filtres statut */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: isManager ? 10 : 0 }}>
