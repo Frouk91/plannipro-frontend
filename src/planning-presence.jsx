@@ -108,6 +108,33 @@ const GLOBAL_STYLE = `
     animation: badgeShimmer 3s linear infinite;
   }
   
+  /* VIEW TRANSITIONS - Étape 7 */
+  @keyframes viewFadeIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes viewFadeOut {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-8px); }
+  }
+  
+  @keyframes viewSlideIn {
+    0% { opacity: 0; transform: translateX(-20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes viewSlideOut {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(20px); }
+  }
+  
+  /* View transitions */
+  .view-container { animation: viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  .view-container.exit { animation: viewFadeOut 0.3s ease-out forwards; }
+  .subview-container { animation: viewSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  .month-transition { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  
   .cell-hover { transition: all 0.3s ease; }
   @keyframes cascadeIn { 
     0% { opacity: 0; transform: translateY(16px); } 
@@ -2403,7 +2430,7 @@ function PlanningApp({ currentUser, onLogout }) {
     />}
 
     {view === "planning" && (
-      <div style={{ padding: 24, animation: "fadeInUp 0.5s ease" }}>
+      <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
         {/* BANDE COLORÉE INDICATEUR MODE */}
         <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
         {/* BARRE DE CONTRÔLES */}
@@ -3347,7 +3374,7 @@ function PlanningApp({ currentUser, onLogout }) {
     )}
 
     {view === "stats" && (
-      <div style={{ padding: 24, animation: "fadeInUp 0.5s ease" }}>
+      <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
         {(() => {
           /* ── Calculs agent ── */
           const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
@@ -4143,7 +4170,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const filtered = statusFilter === "all" ? sourceList : statusFilter === "pending" ? pending : history.filter(r => r.status === statusFilter);
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
-    <div style={{ padding: 24, maxWidth: 820, animation: "fadeInUp 0.5s ease" }}>
+    <div style={{ padding: 24, maxWidth: 820, animation: "viewSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
       <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         {/* Ligne 1 : filtres statut */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: isManager ? 10 : 0 }}>
