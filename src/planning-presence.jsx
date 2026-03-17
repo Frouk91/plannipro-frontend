@@ -76,20 +76,56 @@ const GLOBAL_STYLE = `
   @keyframes popIn { 0% { opacity:0; transform:scale(0.8); } 50% { transform:scale(1.05); } to { opacity:1; transform:scale(1); } }
   @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
   @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
+  
+  /* SCROLL ANIMATIONS - Cascade effect */
+  @keyframes cascadeIn { 
+    0% { opacity: 0; transform: translateY(16px); } 
+    100% { opacity: 1; transform: translateY(0); } 
+  }
+  @keyframes slideInLeft2 { 
+    0% { opacity: 0; transform: translateX(-20px); } 
+    100% { opacity: 1; transform: translateX(0); } 
+  }
+  @keyframes slideInRight2 { 
+    0% { opacity: 0; transform: translateX(20px); } 
+    100% { opacity: 1; transform: translateX(0); } 
+  }
+  
+  /* Row animations with stagger */
+  .row-animate { animation: cascadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
+  .row-animate.visible { animation: cascadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  
+  .request-animate { animation: slideInLeft2 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
+  .request-animate.visible { animation: slideInLeft2 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  
+  .card-animate { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
+  .card-animate.visible { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  
   .cell-hover { transition: all 0.3s ease; }
   .cell-hover:hover { background: rgba(59,130,246,0.15) !important; box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 4px 12px rgba(99,102,241,0.15) !important; }
   .btn-primary { transition: all 0.2s ease; }
   .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.4) !important; }
   .nav-btn { transition: all 0.15s ease; }
   .nav-btn:hover { background: rgba(59,130,246,0.1) !important; }
-  .card { transition: all 0.2s ease; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
-  /* Transitions fluides globales */
-  button { transition: all 0.2s ease; }
-  button:hover { filter: brightness(1.05); }
-  /* Inputs améliorés */
-  input, textarea { transition: all 0.2s ease; }
-  input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
+  
+  /* MICRO-INTERACTIONS */
+  button { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  button:hover { filter: brightness(1.05); transform: translateY(-2px); }
+  button:active { transform: translateY(0); }
+  
+  /* Boutons avec dégradés améliorés */
+  button[style*="gradient"] { position: relative; overflow: hidden; }
+  button[style*="gradient"]::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.3), transparent); opacity: 0; transition: opacity 0.3s ease; }
+  button[style*="gradient"]:hover::before { opacity: 1; }
+  
+  /* Inputs avec focus glow */
+  input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important; }
+  
+  /* Cards avec hover scale */
+  .card { transform: scale(1); }
+  .card:hover { transform: scale(1.02); }
+  
+  .cell-hover { transition: all 0.3s ease; }
   select { appearance: none; background-color: #ffffff; }
   select option { background: #1e293b; color: #f1f5f9; padding: 8px; border: none; margin: 4px 0; }
   select option:checked { background: #6366f1; color: #ffffff; }
@@ -2516,7 +2552,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
           function AstreinteWeekRow({ teamName, rowId, rowLabel, fridayOnly, color, bg, border, textColor, teamAgentsList }) {
             return (
-              <tr style={{ borderBottom: "1px solid #f1f5f9", height: 52 }}>
+              <tr style={{ borderBottom: "1px solid #f1f5f9", height: 52, animation: "cascadeIn 0.5s ease-out forwards", opacity: 0 }}>
                 <td style={{ padding: "4px 12px", background: "#fff", fontSize: 11, fontWeight: 600, color: textColor, whiteSpace: "nowrap", minWidth: 160 }}>
                   <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: color, marginRight: 6 }} />
                   {rowLabel}
@@ -4027,7 +4063,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
   const meta = STATUS_META[req.status] || { label: req.status, dot: "#94a3b8", text: "#64748b", bg: "#f8fafc" };
   const period = req.start === req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "all 0.15s" }}
+    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "all 0.15s", animation: "slideInLeft2 0.4s ease-out forwards", opacity: 0 }}
       onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
       {/* Avatar */}
