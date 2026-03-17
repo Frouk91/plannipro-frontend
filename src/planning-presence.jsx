@@ -47,7 +47,10 @@ const GLOBAL_STYLE = `
   .card { transition: all 0.2s ease; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
-  select option { background: #1e293b; color: #f1f5f9; }
+  select { appearance: none; background-color: #ffffff; }
+  select option { background: #ffffff; color: #1e293b; padding: 8px; border: none; margin: 4px 0; }
+  select option:checked { background: linear-gradient(135deg, #6366f1, #818cf8); color: #ffffff; }
+  select option:hover { background: #f0f4ff; color: #1e293b; }
   .half-tooltip { position: relative; }
   .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
   .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
@@ -686,24 +689,31 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {/* Filtre Équipe */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Équipe</label>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>Équipe</label>
                     <select
                       value={filterTeam}
                       onChange={e => setFilterTeam(e.target.value)}
                       style={{
                         width: "100%",
-                        padding: "8px 12px",
-                        borderRadius: 7,
+                        padding: "10px 14px",
+                        borderRadius: 10,
                         border: "1.5px solid #e2e8f0",
-                        fontSize: 12,
+                        fontSize: 13,
+                        fontWeight: 500,
                         color: "#1e293b",
-                        background: "#fff",
+                        background: "linear-gradient(135deg, #ffffff, #f8fafc)",
                         cursor: "pointer",
                         outline: "none",
-                        transition: "border 0.15s"
+                        transition: "all 0.2s ease",
+                        boxSizing: "border-box",
+                        appearance: "none",
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234338ca' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "right 12px center",
+                        paddingRight: "36px"
                       }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"}
-                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                      onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)"; }}
+                      onBlur={e => { e.target.style.borderColor = "#e2e8f0"; e.target.style.boxShadow = "none"; }}
                     >
                       <option value="all">Toutes les équipes</option>
                       {[...new Set(agents.map(a => a.team).filter(Boolean))].map(team => (
@@ -713,24 +723,31 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   </div>
                   {/* Filtre Rôle */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Rôle</label>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>Rôle</label>
                     <select
                       value={filterRole}
                       onChange={e => setFilterRole(e.target.value)}
                       style={{
                         width: "100%",
-                        padding: "8px 12px",
-                        borderRadius: 7,
+                        padding: "10px 14px",
+                        borderRadius: 10,
                         border: "1.5px solid #e2e8f0",
-                        fontSize: 12,
+                        fontSize: 13,
+                        fontWeight: 500,
                         color: "#1e293b",
-                        background: "#fff",
+                        background: "linear-gradient(135deg, #ffffff, #f8fafc)",
                         cursor: "pointer",
                         outline: "none",
-                        transition: "border 0.15s"
+                        transition: "all 0.2s ease",
+                        boxSizing: "border-box",
+                        appearance: "none",
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234338ca' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "right 12px center",
+                        paddingRight: "36px"
                       }}
-                      onFocus={e => e.target.style.borderColor = "#6366f1"}
-                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                      onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)"; }}
+                      onBlur={e => { e.target.style.borderColor = "#e2e8f0"; e.target.style.boxShadow = "none"; }}
                     >
                       <option value="all">Tous les rôles</option>
                       <option value="admin">Admin</option>
