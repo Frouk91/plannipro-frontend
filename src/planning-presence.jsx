@@ -86,24 +86,9 @@ const GLOBAL_STYLE = `
   .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,0.2) !important; }
   /* Transitions fluides globales */
   button { transition: all 0.2s ease; }
-  button:not(:disabled):hover { filter: brightness(1.05); }
-  button:not(:disabled):active { transform: scale(0.98); }
+  button:hover { filter: brightness(1.05); }
   /* Inputs améliorés */
   input, textarea { transition: all 0.2s ease; }
-  /* Labels animés */
-  label { transition: all 0.2s ease; }
-  /* Divs hovers fluides */
-  [role="button"] { transition: all 0.2s ease; cursor: pointer; }
-  [role="button"]:hover { opacity: 0.9; }
-  /* Transitions sur les spans importantes */
-  span[role="status"] { transition: all 0.2s ease; }
-  /* Amélioration des listes */
-  li { transition: all 0.15s ease; }
-  li:hover { transform: translateX(2px); }
-  /* Badge animations */
-  .badge { animation: fadeInUp 0.4s ease; }
-  /* Loader améloré */
-  [class*="load"] { animation: fadeIn 0.3s ease; }
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
   select { appearance: none; background-color: #ffffff; }
   select option { background: #1e293b; color: #f1f5f9; padding: 8px; border: none; margin: 4px 0; }
@@ -4159,7 +4144,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
       ) : (
         <>
           {(statusFilter === "all" || statusFilter === "pending") && pending.length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 0, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s", animation: "pulse 3s ease-in-out infinite" }}
+            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 0, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s" }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(245,158,11,0.15)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(245,158,11,0.1)"}>
               <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#fffbeb,#fef9ec)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 10 }}>
