@@ -1,5 +1,48 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 
+// Custom hook pour détecter si un élément est visible au scroll
+function useInView(ref, options = {}) {
+  const [isVisible, setIsVisible] = useState(false);
+  const hasTriggered = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasTriggered.current) {
+        setIsVisible(true);
+        hasTriggered.current = true;
+        observer.unobserve(entry.target);
+      }
+    }, { threshold: 0.1, ...options });
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, [ref, options]);
+
+  return isVisible;
+}
+
+// Fonction pour créer le ripple effect au clic
+function createRipple(event) {
+  const button = event.currentTarget;
+  const rect = button.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.left = x + 'px';
+  ripple.style.top = y + 'px';
+  ripple.style.background = 'rgba(255,255,255,0.7)';
+  
+  button.appendChild(ripple);
+  
+  setTimeout(() => ripple.remove(), 600);
+}
+
+
 const API = "https://plannipro-backend.onrender.com/api";
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const MONTHS_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -68,6 +111,27 @@ const GLOBAL_STYLE = `
   .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
   .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
   .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
+  .scroll-animate-row { opacity: 0; transform: translateY(15px); }
+  .scroll-animate-row.visible { animation: fadeInUp 0.5s ease forwards; }
+  .scroll-animate-row:nth-child(2) { animation-delay: 0.05s; }
+  .scroll-animate-row:nth-child(3) { animation-delay: 0.1s; }
+  .scroll-animate-row:nth-child(4) { animation-delay: 0.15s; }
+  .scroll-animate-row:nth-child(5) { animation-delay: 0.2s; }
+  .scroll-animate-row:nth-child(6) { animation-delay: 0.25s; }
+  .scroll-animate-row:nth-child(7) { animation-delay: 0.3s; }
+  .scroll-animate-row:nth-child(8) { animation-delay: 0.35s; }
+  .scroll-animate-row:nth-child(9) { animation-delay: 0.4s; }
+  .scroll-animate-row:nth-child(10) { animation-delay: 0.45s; }
+  /* Ripple effect */
+  @keyframes ripple { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(3); opacity: 0; } }
+  .ripple { position: absolute; pointer-events: none; border-radius: 50%; animation: ripple 0.6s ease-out; }
+  .btn-ripple { position: relative; overflow: hidden; }
+  /* Glow effect */
+  @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 20px rgba(99,102,241,0.6); } }
+  .glow { animation: glow 2s ease-in-out infinite; }
+  /* Glow orange pour pending */
+  .pending-glow { animation: glowOrange 2s ease-in-out infinite; }
+  @keyframes glowOrange { 0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 16px rgba(245,158,11,0.8); } }
   .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:30px; height:30px; padding:0 8px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:15px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
   .btn-conge-expand svg { flex-shrink:0; width:14px; height:14px; }
   .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
@@ -2177,6 +2241,40 @@ function PlanningApp({ currentUser, onLogout }) {
     </div>
   );
 
+  // Scroll animations pour les lignes du tableau
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const rows = document.querySelectorAll('.scroll-animate-row');
+    rows.forEach(row => observer.observe(row));
+
+    return () => observer.disconnect();
+  }, [view]); // Re-run quand la vue change
+
+  // Ripple effect sur les boutons
+  useEffect(() => {
+    const buttons = document.querySelectorAll('.btn-primary, .btn-ripple, button[style*="gradient"]');
+    const handleClick = (e) => createRipple(e);
+    
+    buttons.forEach(button => {
+      if (!button.style.position || button.style.position === 'static') {
+        button.style.position = 'relative';
+      }
+      button.addEventListener('click', handleClick, { passive: true });
+    });
+
+    return () => {
+      buttons.forEach(button => button.removeEventListener('click', handleClick));
+    };
+  }, []);
+
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "#060818", display: "flex", position: "relative" }}
       onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
@@ -2848,7 +2946,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           const total = rows.reduce((s, r) => s + (agentCounts[agent.id]?.[r] || 0), 0);
                                           const maxTotal = Math.max(...tAgents.map(a => rows.reduce((s, r) => s + (agentCounts[a.id]?.[r] || 0), 0)), 1);
                                           return (
-                                            <tr key={agent.id} style={{ borderBottom: "1px solid #f8fafc", transition: "all 0.15s" }}
+                                            <tr key={agent.id} className="scroll-animate-row" style={{ borderBottom: "1px solid #f8fafc", transition: "all 0.15s" }}
                                               onMouseEnter={e => { e.currentTarget.style.background = "#fafafa"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "#fafafa"; }); }}
                                               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; Array.from(e.currentTarget.querySelectorAll("td")).forEach((td, idx) => { if (idx === 0) td.style.background = "transparent"; }); }}>
                                               <td style={{ padding: "8px 16px", display: "flex", alignItems: "center", gap: 8, background: "transparent" }}>
@@ -2954,7 +3052,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} className="scroll-animate-row" style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -3005,7 +3103,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                           width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, overflow: "hidden", position: "relative",
                                           background: leave.status === "pending" ? "#fff" : leave.color,
                                           border: `1.5px solid ${leave.color}`,
-                                          boxShadow: leave.status === "pending" ? "none" : `0 1px 3px ${leave.color}50`
+                                          boxShadow: leave.status === "pending" ? "0 0 8px rgba(255,255,255,0.5)" : `0 1px 3px ${leave.color}50`,
+                                          animation: leave.status === "pending" ? "pulse 2s ease-in-out infinite" : "none",
+                                          transition: "all 0.3s ease"
                                         }}>
                                           {leave.status !== "pending" && <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.15)" }} />}
                                           <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -3015,7 +3115,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}`, animation: "pulse 2s ease-in-out infinite", transition: "all 0.3s ease" }}>
                                           <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
@@ -3115,7 +3215,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
+                              <tr key={agent.id} className="scroll-animate-row" style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin}
@@ -3983,7 +4083,7 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
   const meta = STATUS_META[req.status] || { label: req.status, dot: "#94a3b8", text: "#64748b", bg: "#f8fafc" };
   const period = req.start === req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "background 0.15s" }}
+    <div className="scroll-animate-row" style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "all 0.15s" }}
       onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
       {/* Avatar */}
@@ -3993,8 +4093,8 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 3 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
           {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{req.agentTeam}</span>}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block" }} />
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700, animation: req.status === "pending" ? "pulse 2s ease-in-out infinite" : "none", transition: "all 0.3s ease" }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block", animation: req.status === "pending" ? "pulse 2s ease-in-out infinite" : "none" }} />
             {meta.label}
           </span>
         </div>
@@ -4054,7 +4154,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             onMouseEnter={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = f.color; e.currentTarget.style.color = f.color; e.currentTarget.style.background = f.bg; }}}
             onMouseLeave={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#f8fafc"; }}}>
               {f.label}
-              {counts[f.id] > 0 && <span style={{ background: statusFilter === f.id ? f.color : "#e2e8f0", color: statusFilter === f.id ? "#fff" : "#64748b", borderRadius: 10, padding: "0 6px", fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center" }}>{counts[f.id]}</span>}
+              {counts[f.id] > 0 && <span className={f.id === "pending" && counts[f.id] > 0 ? "pending-glow" : ""} style={{ background: statusFilter === f.id ? f.color : "#e2e8f0", color: statusFilter === f.id ? "#fff" : "#64748b", borderRadius: 10, padding: "0 6px", fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center" }}>{counts[f.id]}</span>}
             </button>
           ))}
 
