@@ -572,6 +572,98 @@ function ColorPicker({ selected, onChange }) {
   );
 }
 
+function CustomSelect({ label, value, onChange, options, placeholder = "Sélectionner..." }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div style={{ position: "relative" }}>
+      {label && (
+        <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>
+          {label}
+        </label>
+      )}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: "100%",
+          padding: "10px 14px",
+          borderRadius: 10,
+          border: isOpen ? "1.5px solid #6366f1" : "1.5px solid #e2e8f0",
+          fontSize: 13,
+          fontWeight: 500,
+          color: "#1e293b",
+          background: "linear-gradient(135deg, #ffffff, #f8fafc)",
+          cursor: "pointer",
+          outline: "none",
+          transition: "all 0.2s ease",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          boxShadow: isOpen ? "0 0 0 3px rgba(99, 102, 241, 0.1)" : "none"
+        }}
+      >
+        <span>{selectedOption?.label || placeholder}</span>
+        <span style={{ fontSize: 12, transition: "transform 0.2s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▼</span>
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
+          left: 0,
+          right: 0,
+          background: "#1e293b",
+          border: "1.5px solid #334155",
+          borderRadius: 10,
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4)",
+          zIndex: 1000,
+          overflow: "hidden",
+          animation: "slideIn 0.15s ease"
+        }}>
+          {options.map((option, idx) => (
+            <button
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              onMouseEnter={() => setHighlightedIndex(idx)}
+              onMouseLeave={() => setHighlightedIndex(-1)}
+              style={{
+                width: "100%",
+                padding: "11px 14px",
+                border: "none",
+                background: value === option.value
+                  ? "linear-gradient(135deg, #6366f1, #818cf8)"
+                  : highlightedIndex === idx
+                  ? "#334155"
+                  : "#1e293b",
+                color: "#f1f5f9",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 500,
+                textAlign: "left",
+                transition: "all 0.15s ease",
+                borderBottom: idx < options.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 8
+              }}
+            >
+              {value === option.value && <span style={{ fontSize: 12, color: "#fff" }}>✓</span>}
+              <span>{option.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LeaveTypeEditRow({ lt, onSave, onCancel }) {
   const [label, setLabel] = useState(lt.label);
   const [color, setColor] = useState(lt.color);
@@ -689,72 +781,30 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {/* Filtre Équipe */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>Équipe</label>
-                    <select
+                    <CustomSelect
+                      label="Équipe"
                       value={filterTeam}
-                      onChange={e => setFilterTeam(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        borderRadius: 10,
-                        border: "1.5px solid #e2e8f0",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: "#1e293b",
-                        background: "linear-gradient(135deg, #ffffff, #f8fafc)",
-                        cursor: "pointer",
-                        outline: "none",
-                        transition: "all 0.2s ease",
-                        boxSizing: "border-box",
-                        appearance: "none",
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234338ca' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 12px center",
-                        paddingRight: "36px"
-                      }}
-                      onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)"; }}
-                      onBlur={e => { e.target.style.borderColor = "#e2e8f0"; e.target.style.boxShadow = "none"; }}
-                    >
-                      <option value="all">Toutes les équipes</option>
-                      {[...new Set(agents.map(a => a.team).filter(Boolean))].map(team => (
-                        <option key={team} value={team}>{team}</option>
-                      ))}
-                    </select>
+                      onChange={setFilterTeam}
+                      options={[
+                        { value: "all", label: "Toutes les équipes" },
+                        ...[...new Set(agents.map(a => a.team).filter(Boolean))].map(team => ({ value: team, label: team }))
+                      ]}
+                    />
                   </div>
                   {/* Filtre Rôle */}
                   <div style={{ flex: 1, minWidth: 200 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>Rôle</label>
-                    <select
+                    <CustomSelect
+                      label="Rôle"
                       value={filterRole}
-                      onChange={e => setFilterRole(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        borderRadius: 10,
-                        border: "1.5px solid #e2e8f0",
-                        fontSize: 13,
-                        fontWeight: 500,
-                        color: "#1e293b",
-                        background: "linear-gradient(135deg, #ffffff, #f8fafc)",
-                        cursor: "pointer",
-                        outline: "none",
-                        transition: "all 0.2s ease",
-                        boxSizing: "border-box",
-                        appearance: "none",
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234338ca' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 12px center",
-                        paddingRight: "36px"
-                      }}
-                      onFocus={e => { e.target.style.borderColor = "#6366f1"; e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.1)"; }}
-                      onBlur={e => { e.target.style.borderColor = "#e2e8f0"; e.target.style.boxShadow = "none"; }}
-                    >
-                      <option value="all">Tous les rôles</option>
-                      <option value="admin">Admin</option>
-                      <option value="manager">Manager</option>
-                      <option value="coordinator">Coordinateur</option>
-                      <option value="agent">Agent</option>
-                    </select>
+                      onChange={setFilterRole}
+                      options={[
+                        { value: "all", label: "Tous les rôles" },
+                        { value: "admin", label: "Admin" },
+                        { value: "manager", label: "Manager" },
+                        { value: "coordinator", label: "Coordinateur" },
+                        { value: "agent", label: "Agent" }
+                      ]}
+                    />
                   </div>
                   {/* Bouton Réinitialiser */}
                   {(searchQuery || filterTeam !== "all" || filterRole !== "all") && (
