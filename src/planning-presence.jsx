@@ -27,7 +27,7 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Outfit', sans-serif; background: #060818; }
+  body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg, #060818 0%, #0a0e27 50%, #060818 100%); min-height: 100vh; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
   ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
@@ -2180,7 +2180,7 @@ function PlanningApp({ currentUser, onLogout }) {
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
 
       {/* SIDEBAR */}
-      <aside style={{ width: 230, background: "rgba(15,23,42,0.4)", backdropFilter: "blur(20px)", border: "1px solid rgba(148,163,184,0.1)", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
+      <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.3) 100%)", backdropFilter: "blur(20px)", border: "1px solid rgba(148,163,184,0.1)", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div><div style={{ fontSize: 16, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.3px" }}>Planning {new Date().getFullYear()}</div></div>
