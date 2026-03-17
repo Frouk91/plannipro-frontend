@@ -12,6 +12,49 @@ const COLORS = [
 ];
 const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail", "pont", "veille_de_cp", "veille_de_ferie"];
 const PRESENCE_CODES = ["rueil", "paris"];
+
+// Fonction pour obtenir les couleurs selon le thème
+function getThemeColors(theme = "dark") {
+  if (theme === "light") {
+    return {
+      bg: {
+        primary: "#f8fafc",
+        secondary: "#ffffff",
+        tertiary: "#f1f5f9",
+        hover: "#eff6ff",
+        dark: "#e2e8f0"
+      },
+      text: {
+        primary: "#1e293b",
+        secondary: "#64748b",
+        light: "#94a3b8",
+        inverse: "#f1f5f9"
+      },
+      border: "rgba(100,116,139,0.15)",
+      borderLight: "#e2e8f0",
+      accent: "#6366f1"
+    };
+  }
+  // Mode sombre (défaut)
+  return {
+    bg: {
+      primary: "#060818",
+      secondary: "#0f172a",
+      tertiary: "#1e293b",
+      hover: "#1e293b",
+      dark: "#334155"
+    },
+    text: {
+      primary: "#f1f5f9",
+      secondary: "#cbd5e1",
+      light: "#94a3b8",
+      inverse: "#1e293b"
+    },
+    border: "rgba(148,163,184,0.15)",
+    borderLight: "rgba(255,255,255,0.1)",
+    accent: "#6366f1"
+  };
+}
 function isPresenceType(t) { return PRESENCE_CODES.includes((t.code || "").toLowerCase()) || ["rueil", "paris"].includes((t.label || "").toLowerCase()); }
 function isPresenceCode(code, label) { return PRESENCE_CODES.includes((code || "").toLowerCase()) || ["rueil", "paris"].includes((label || "").toLowerCase()); }
 const PRESENCE_COLORS = { rueil: "#0d9488", paris: "#7c3aed" };
@@ -27,12 +70,9 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg-primary: #060818; --bg-secondary: #0f172a; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --border-color: rgba(148,163,184,0.15); }
-  body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
-  body.theme-light { --bg-primary: #f8fafc; --bg-secondary: #ffffff; --text-primary: #1e293b; --text-secondary: #64748b; --border-color: rgba(100,116,139,0.15); }
+  body { font-family: 'Outfit', sans-serif; background: #060818; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
-  body.theme-light ::-webkit-scrollbar-track { background: rgba(100,116,139,0.2); }
   ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
@@ -1655,25 +1695,34 @@ function PlanningApp({ currentUser, onLogout }) {
     const isDark = theme === "dark";
     const root = document.documentElement;
     const body = document.body;
+    const style = document.getElementById("theme-style") || document.createElement("style");
+    style.id = "theme-style";
     
     if (isDark) {
       // Mode sombre (par défaut)
       body.classList.remove("theme-light");
       document.body.style.background = "#060818";
-      root.style.setProperty("--bg-primary", "#060818");
-      root.style.setProperty("--bg-secondary", "#0f172a");
-      root.style.setProperty("--text-primary", "#f1f5f9");
-      root.style.setProperty("--text-secondary", "#94a3b8");
-      root.style.setProperty("--border-color", "rgba(148,163,184,0.15)");
+      style.textContent = "";
     } else {
       // Mode clair
       body.classList.add("theme-light");
       document.body.style.background = "#f8fafc";
-      root.style.setProperty("--bg-primary", "#f8fafc");
-      root.style.setProperty("--bg-secondary", "#ffffff");
-      root.style.setProperty("--text-primary", "#1e293b");
-      root.style.setProperty("--text-secondary", "#64748b");
-      root.style.setProperty("--border-color", "rgba(100,116,139,0.15)");
+      // Appliquer un filtre CSS global pour inverser les couleurs
+      style.textContent = `
+        body.theme-light {
+          filter: invert(1) hue-rotate(180deg);
+        }
+        body.theme-light img,
+        body.theme-light video,
+        body.theme-light iframe,
+        body.theme-light svg {
+          filter: invert(1) hue-rotate(180deg);
+        }
+      `;
+    }
+    
+    if (!document.head.contains(style)) {
+      document.head.appendChild(style);
     }
   }, [theme]);
 
