@@ -27,9 +27,12 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Outfit', sans-serif; background: #060818; }
+  :root { --bg-primary: #060818; --bg-secondary: #0f172a; --text-primary: #f1f5f9; --text-secondary: #94a3b8; --border-color: rgba(148,163,184,0.15); }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+  body.theme-light { --bg-primary: #f8fafc; --bg-secondary: #ffffff; --text-primary: #1e293b; --text-secondary: #64748b; --border-color: rgba(100,116,139,0.15); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
+  body.theme-light ::-webkit-scrollbar-track { background: rgba(100,116,139,0.2); }
   ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
   ::-webkit-scrollbar-corner { background: transparent; }
@@ -1478,6 +1481,10 @@ function PlanningApp({ currentUser, onLogout }) {
   const [statsAgentSearch, setStatsAgentSearch] = useState("");
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    try { return localStorage.getItem("plannipro_theme") || "dark"; }
+    catch { return "dark"; }
+  });
   const [astreintes, setAstreintes] = useState(() => {
     try { return JSON.parse(localStorage.getItem("astreintes") || "{}"); }
     catch { return {}; }
@@ -1640,6 +1647,35 @@ function PlanningApp({ currentUser, onLogout }) {
     });
     return grouped;
   }
+
+  // Appliquer le thème
+  useEffect(() => {
+    try { localStorage.setItem("plannipro_theme", theme); } catch { }
+    
+    const isDark = theme === "dark";
+    const root = document.documentElement;
+    const body = document.body;
+    
+    if (isDark) {
+      // Mode sombre (par défaut)
+      body.classList.remove("theme-light");
+      document.body.style.background = "#060818";
+      root.style.setProperty("--bg-primary", "#060818");
+      root.style.setProperty("--bg-secondary", "#0f172a");
+      root.style.setProperty("--text-primary", "#f1f5f9");
+      root.style.setProperty("--text-secondary", "#94a3b8");
+      root.style.setProperty("--border-color", "rgba(148,163,184,0.15)");
+    } else {
+      // Mode clair
+      body.classList.add("theme-light");
+      document.body.style.background = "#f8fafc";
+      root.style.setProperty("--bg-primary", "#f8fafc");
+      root.style.setProperty("--bg-secondary", "#ffffff");
+      root.style.setProperty("--text-primary", "#1e293b");
+      root.style.setProperty("--text-secondary", "#64748b");
+      root.style.setProperty("--border-color", "rgba(100,116,139,0.15)");
+    }
+  }, [theme]);
 
   useEffect(() => {
     async function loadAll() {
@@ -2197,6 +2233,29 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ fontSize: 13, fontWeight: 700, color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.first_name} {currentUser.last_name}</div>
               <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
             </div>
+            {/* Toggle Thème */}
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                border: "1px solid rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.05)",
+                color: "#f8fafc",
+                cursor: "pointer",
+                fontSize: 18,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s ease"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+              title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+            >
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
           </div>
           <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", background: "transparent", borderRadius: 8, background: "transparent", border: "1px solid transparent", color: "#94a3b8", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(59,130,246,0.15)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)"; e.currentTarget.style.color = "#cbd5e1"; }}
