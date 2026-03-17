@@ -760,7 +760,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <div style={{ width: 34, height: 34, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>{a.name}</div>
                       <div style={{ fontSize: 11, color: "#94a3b8" }}>{a.email}</div>
                     </div>
                     <span style={{ background: a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "2px 8px", borderRadius: 5, fontSize: 10, fontWeight: 600 }}>
