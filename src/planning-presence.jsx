@@ -605,6 +605,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTeam, setFilterTeam] = useState("all");
   const [filterRole, setFilterRole] = useState("all");
+  const [editLTModal, setEditLTModal] = useState(null); // { lt, label, color }
 
   async function handleAddAgent() {
     if (!newAgent.first_name || !newAgent.email || !newAgent.password) return; setLoading(true);
@@ -1024,28 +1025,83 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               </div>
             </div>
           )}
+
+          {/* POPUP ÉDITION TYPE DE CONGÉ */}
+          {editLTModal && (
+            <div onClick={() => setEditLTModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", backdropFilter: "blur(6px)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.15s ease" }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "32px 28px", width: 420, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "modalPop 0.2s ease" }}>
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: `linear-gradient(135deg,${editLTModal.color},${editLTModal.color}99)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: `0 4px 16px ${editLTModal.color}60`, transition: "all 0.2s" }}>✏️</div>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#f1f5f9", fontFamily: "'Space Grotesk',sans-serif", letterSpacing: "-0.3px" }}>Modifier le type de congé</div>
+                    <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>Mettez à jour le nom et la couleur</div>
+                  </div>
+                  <button onClick={() => setEditLTModal(null)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#64748b", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#f1f5f9"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#64748b"; }}>✕</button>
+                </div>
+
+                {/* Champ nom */}
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: 8 }}>Nom du type</label>
+                  <input
+                    autoFocus
+                    value={editLTModal.label}
+                    onChange={e => setEditLTModal(p => ({ ...p, label: e.target.value }))}
+                    onKeyDown={e => { if (e.key === "Enter" && editLTModal.label.trim()) { handleUpdateLT(editLTModal.lt, editLTModal.label, editLTModal.color); setEditLTModal(null); } }}
+                    placeholder="Ex : Congé exceptionnel..."
+                    style={{ width: "100%", padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#f1f5f9", fontSize: 14, outline: "none", boxSizing: "border-box", fontFamily: "'Outfit',sans-serif", transition: "border 0.15s", caretColor: editLTModal.color }}
+                    onFocus={e => e.target.style.borderColor = editLTModal.color}
+                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
+                  />
+                </div>
+
+                {/* Aperçu couleur choisie */}
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "1px" }}>Couleur</label>
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: editLTModal.color, boxShadow: `0 0 8px ${editLTModal.color}80` }} />
+                    <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>{editLTModal.color}</span>
+                  </div>
+                </div>
+
+                {/* Palette de couleurs */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(9, 1fr)", gap: 8, padding: "14px", background: "rgba(255,255,255,0.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.06)", marginBottom: 28 }}>
+                  {COLORS.map(c => (
+                    <button key={c} onClick={() => setEditLTModal(p => ({ ...p, color: c }))} title={c} style={{ width: "100%", aspectRatio: "1", borderRadius: "50%", background: c, border: editLTModal.color === c ? `3px solid #fff` : "3px solid transparent", cursor: "pointer", transition: "all 0.15s", boxShadow: editLTModal.color === c ? `0 0 0 2px ${c}, 0 4px 12px ${c}60` : "none", transform: editLTModal.color === c ? "scale(1.2)" : "scale(1)" }} />
+                  ))}
+                </div>
+
+                {/* Aperçu du badge */}
+                <div style={{ marginBottom: 24, padding: "10px 14px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>Aperçu :</span>
+                  <span style={{ padding: "3px 10px", borderRadius: 6, background: editLTModal.color + "30", color: editLTModal.color, fontSize: 12, fontWeight: 700, border: `1px solid ${editLTModal.color}50` }}>{editLTModal.label || "Nom du type"}</span>
+                  <div style={{ width: 28, height: 22, borderRadius: 4, background: editLTModal.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>{editLTModal.label ? editLTModal.label.slice(0,3).toUpperCase() : "???"}</div>
+                </div>
+
+                {/* Boutons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => setEditLTModal(null)} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: 600, transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "#f1f5f9"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#94a3b8"; }}>Annuler</button>
+                  <button onClick={() => { if (editLTModal.label.trim()) { handleUpdateLT(editLTModal.lt, editLTModal.label, editLTModal.color); setEditLTModal(null); } }} disabled={!editLTModal.label.trim()} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: editLTModal.label.trim() ? `linear-gradient(135deg,${editLTModal.color},${editLTModal.color}cc)` : "rgba(255,255,255,0.05)", color: editLTModal.label.trim() ? "#fff" : "#475569", cursor: editLTModal.label.trim() ? "pointer" : "default", fontSize: 13, fontWeight: 700, boxShadow: editLTModal.label.trim() ? `0 4px 16px ${editLTModal.color}50` : "none", transition: "all 0.2s" }}>✓ Enregistrer les modifications</button>
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
             {sortLeaveTypes(leaveTypes).map((lt, i) => (
-              <div key={lt.id} style={{ borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none" }}>
-                {editLT === lt.id ? (
-                  <LeaveTypeEditRow
-                    lt={lt}
-                    onSave={(label, color) => { handleUpdateLT(lt, label, color); setEditLT(null); }}
-                    onCancel={() => setEditLT(null)}
-                  />
-                ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px" }}
-                    onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <div style={{ width: 12, height: 12, borderRadius: "50%", background: lt.color, flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{lt.label}</span>
-                    <div style={{ fontSize: 10, color: "#64748b", background: hexToLight(lt.color), padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(lt.label)}</div>
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button type="button" onClick={() => setEditLT(lt.id)} style={{ padding: "4px 11px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
-                      <button type="button" onClick={() => handleDeleteLT(lt)} style={{ padding: "4px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>
-                    </div>
-                  </div>
-                )}
+              <div key={lt.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <div style={{ width: 12, height: 12, borderRadius: "50%", background: lt.color, flexShrink: 0 }} />
+                <span style={{ flex: 1, fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{lt.label}</span>
+                <div style={{ fontSize: 10, color: "#64748b", background: hexToLight(lt.color), padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(lt.label)}</div>
+                <div style={{ display: "flex", gap: 4 }}>
+                  <button type="button" onClick={() => setEditLTModal({ lt, label: lt.label, color: lt.color })} style={{ padding: "4px 11px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
+                  <button type="button" onClick={() => handleDeleteLT(lt)} style={{ padding: "4px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>
+                </div>
               </div>
             ))}
           </div>
