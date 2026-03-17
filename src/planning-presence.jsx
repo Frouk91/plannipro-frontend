@@ -575,18 +575,44 @@ function ColorPicker({ selected, onChange }) {
 function CustomSelect({ label, value, onChange, options, placeholder = "Sélectionner..." }) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  const containerRef = useRef(null);
+  const buttonRef = useRef(null);
 
   const selectedOption = options.find(opt => opt.value === value);
 
+  const handleOpen = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target) && buttonRef.current && !buttonRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative" }} ref={containerRef}>
       {label && (
         <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8 }}>
           {label}
         </label>
       )}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={handleOpen}
         style={{
           width: "100%",
           padding: "10px 14px",
@@ -612,17 +638,19 @@ function CustomSelect({ label, value, onChange, options, placeholder = "Sélecti
 
       {isOpen && (
         <div style={{
-          position: "absolute",
-          top: "calc(100% + 6px)",
-          left: 0,
-          right: 0,
+          position: "fixed",
+          top: dropdownPos.top,
+          left: dropdownPos.left,
+          width: dropdownPos.width,
           background: "#1e293b",
           border: "1.5px solid #334155",
           borderRadius: 10,
-          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.4)",
-          zIndex: 1000,
+          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6)",
+          zIndex: 99999,
           overflow: "hidden",
-          animation: "slideIn 0.15s ease"
+          animation: "slideIn 0.15s ease",
+          maxHeight: "300px",
+          overflowY: "auto"
         }}>
           {options.map((option, idx) => (
             <button
