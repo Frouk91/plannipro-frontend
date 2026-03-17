@@ -49,7 +49,7 @@ const GLOBAL_STYLE = `
   input:focus, textarea:focus, select:focus { border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important; outline: none; }
   select { appearance: none; background-color: #ffffff; }
   select option { background: #1e293b; color: #f1f5f9; padding: 8px; border: none; margin: 4px 0; }
-  select option:checked { background: linear-gradient(135deg, #6366f1, #818cf8); color: #ffffff; }
+  select option:checked { background: #6366f1; color: #ffffff; }
   select option:hover { background: #334155; color: #f1f5f9; }
   .half-tooltip { position: relative; }
   .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
