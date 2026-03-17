@@ -602,6 +602,9 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0] }); const [showAddLTModal, setShowAddLTModal] = useState(false); const [loading, setLoading] = useState(false);
   const [teamModal, setTeamModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterTeam, setFilterTeam] = useState("all");
+  const [filterRole, setFilterRole] = useState("all");
 
   async function handleAddAgent() {
     if (!newAgent.first_name || !newAgent.email || !newAgent.password) return; setLoading(true);
@@ -654,30 +657,165 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       </div>
       {tab === "agents" && (
         <div>
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
-            <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#4338ca" }}>👥 {agents.length} agent{agents.length > 1 ? "s" : ""}</span>
-              <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
-            </div>
-            {agents.map((a, i) => (
-              <div key={a.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < agents.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
-                onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{a.name}</span>
-                    <span style={{ background: a.role === "admin" ? "#fef3c7" : a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "admin" ? "#92400e" : a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{a.role === "admin" ? "Admin" : a.role === "manager" ? "Manager" : a.role === "coordinator" ? "Coordinateur" : "Agent"}</span>
-                    {a.role === "agent" && a.can_book_presence_sites && <span style={{ background: "#dbeafe", color: "#0369a1", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>🏢 Présences</span>}
+          {/* Barre de recherche et filtres */}
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)", marginBottom: 16 }}>
+            <div style={{ padding: "14px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Champ Rechercher */}
+                <input
+                  type="text"
+                  placeholder="🔍 Rechercher un agent (nom, email)..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    border: "1.5px solid #e2e8f0",
+                    fontSize: 13,
+                    color: "#1e293b",
+                    outline: "none",
+                    boxSizing: "border-box",
+                    transition: "border 0.15s"
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#6366f1"}
+                  onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                />
+                {/* Filtres */}
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  {/* Filtre Équipe */}
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Équipe</label>
+                    <select
+                      value={filterTeam}
+                      onChange={e => setFilterTeam(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: 7,
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: 12,
+                        color: "#1e293b",
+                        background: "#fff",
+                        cursor: "pointer",
+                        outline: "none",
+                        transition: "border 0.15s"
+                      }}
+                      onFocus={e => e.target.style.borderColor = "#6366f1"}
+                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                    >
+                      <option value="all">Toutes les équipes</option>
+                      {[...new Set(agents.map(a => a.team).filter(Boolean))].map(team => (
+                        <option key={team} value={team}>{team}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{a.email}{a.team && <span style={{ marginLeft: 8, color: "#64748b" }}>· {a.team}</span>}</div>
-                </div>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
-                  {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} style={{ padding: "5px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>}
+                  {/* Filtre Rôle */}
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <label style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 6 }}>Rôle</label>
+                    <select
+                      value={filterRole}
+                      onChange={e => setFilterRole(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        borderRadius: 7,
+                        border: "1.5px solid #e2e8f0",
+                        fontSize: 12,
+                        color: "#1e293b",
+                        background: "#fff",
+                        cursor: "pointer",
+                        outline: "none",
+                        transition: "border 0.15s"
+                      }}
+                      onFocus={e => e.target.style.borderColor = "#6366f1"}
+                      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+                    >
+                      <option value="all">Tous les rôles</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="coordinator">Coordinateur</option>
+                      <option value="agent">Agent</option>
+                    </select>
+                  </div>
+                  {/* Bouton Réinitialiser */}
+                  {(searchQuery || filterTeam !== "all" || filterRole !== "all") && (
+                    <button
+                      onClick={() => { setSearchQuery(""); setFilterTeam("all"); setFilterRole("all"); }}
+                      style={{
+                        alignSelf: "flex-end",
+                        padding: "8px 14px",
+                        borderRadius: 7,
+                        border: "1.5px solid #e2e8f0",
+                        background: "#f8fafc",
+                        color: "#64748b",
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        transition: "all 0.15s"
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#e2e8f0"; e.currentTarget.style.borderColor = "#cbd5e1"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
+                    >
+                      ✕ Réinitialiser
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Liste des agents filtrée */}
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+            <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#4338ca" }}>👥 {agents.filter(a => {
+                const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchTeam = filterTeam === "all" || a.team === filterTeam;
+                const matchRole = filterRole === "all" || a.role === filterRole;
+                return matchSearch && matchTeam && matchRole;
+              }).length} agent{agents.filter(a => {
+                const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchTeam = filterTeam === "all" || a.team === filterTeam;
+                const matchRole = filterRole === "all" || a.role === filterRole;
+                return matchSearch && matchTeam && matchRole;
+              }).length > 1 ? "s" : ""}</span>
+              <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
+            </div>
+            {agents.filter(a => {
+              const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
+              const matchTeam = filterTeam === "all" || a.team === filterTeam;
+              const matchRole = filterRole === "all" || a.role === filterRole;
+              return matchSearch && matchTeam && matchRole;
+            }).length === 0 ? (
+              <div style={{ padding: "40px 16px", textAlign: "center", color: "#94a3b8", fontSize: 12 }}>
+                Aucun agent ne correspond à vos critères
+              </div>
+            ) : (
+              agents.filter(a => {
+                const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchTeam = filterTeam === "all" || a.team === filterTeam;
+                const matchRole = filterRole === "all" || a.role === filterRole;
+                return matchSearch && matchTeam && matchRole;
+              }).map((a, i, filtered) => (
+                <div key={a.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "11px 16px", borderBottom: i < filtered.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{a.name}</span>
+                      <span style={{ background: a.role === "admin" ? "#fef3c7" : a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "admin" ? "#92400e" : a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{a.role === "admin" ? "Admin" : a.role === "manager" ? "Manager" : a.role === "coordinator" ? "Coordinateur" : "Agent"}</span>
+                      {a.role === "agent" && a.can_book_presence_sites && <span style={{ background: "#dbeafe", color: "#0369a1", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>🏢 Présences</span>}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{a.email}{a.team && <span style={{ marginLeft: 8, color: "#64748b" }}>· {a.team}</span>}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
+                    {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} style={{ padding: "5px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
