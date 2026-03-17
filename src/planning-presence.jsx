@@ -4037,14 +4037,55 @@ export default function App() {
     try { const saved = localStorage.getItem("plannipro_user"); return saved ? JSON.parse(saved) : null; }
     catch { return null; }
   });
+
+  // Déconnexion automatique après 60 minutes d'inactivité
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const SESSION_TIMEOUT = 60 * 60 * 1000; // 60 minutes
+    let timeoutId;
+
+    const resetTimeout = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        handleLogout();
+      }, SESSION_TIMEOUT);
+    };
+
+    // Réinitialiser le timeout à chaque interaction utilisateur
+    window.addEventListener('mousemove', resetTimeout);
+    window.addEventListener('keypress', resetTimeout);
+    window.addEventListener('click', resetTimeout);
+    window.addEventListener('scroll', resetTimeout);
+    window.addEventListener('touchstart', resetTimeout);
+
+    resetTimeout(); // Initialiser le timer
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('mousemove', resetTimeout);
+      window.removeEventListener('keypress', resetTimeout);
+      window.removeEventListener('click', resetTimeout);
+      window.removeEventListener('scroll', resetTimeout);
+      window.removeEventListener('touchstart', resetTimeout);
+    };
+  }, [currentUser]);
+
   function handleLogin(user) {
     try { localStorage.setItem("plannipro_user", JSON.stringify(user)); } catch { }
     setCurrentUser(user);
   }
+
   function handleLogout() {
     try { localStorage.removeItem("plannipro_user"); } catch { }
     setCurrentUser(null);
+    
+    // Refresh du cache (Ctrl+F5)
+    setTimeout(() => {
+      window.location.href = window.location.pathname + '?t=' + Date.now();
+    }, 300);
   }
+
   if (!currentUser) return <LoginPage onLogin={handleLogin} />;
   return <PlanningApp currentUser={currentUser} onLogout={handleLogout} />;
 }
