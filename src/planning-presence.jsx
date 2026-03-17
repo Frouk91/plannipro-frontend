@@ -203,6 +203,69 @@ const GLOBAL_STYLE = `
   .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
   .btn-conge-expand:hover { width:175px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
   .btn-conge-expand:hover .btn-label { opacity:1; }
+  
+  /* OPTIMISATIONS C - Performance + Accessibility + Responsive */
+  
+  /* Reduce motion respect - Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* GPU acceleration for better performance */
+  .view-container, .subview-container, .row-animate, .request-animate, .card-animate, button {
+    will-change: opacity, transform;
+  }
+  
+  /* Accessibility: Focus visible outline */
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Accessibility: High contrast mode */
+  @media (prefers-contrast: more) {
+    button, input, select, textarea {
+      border-width: 2px !important;
+    }
+    .btn-primary { text-decoration: underline; }
+  }
+  
+  /* Responsive: Tablet (max 1024px) */
+  @media (max-width: 1024px) {
+    body { font-size: 14px; }
+  }
+  
+  /* Responsive: Mobile (max 768px) */
+  @media (max-width: 768px) {
+    body { font-size: 13px; }
+    button { padding: 8px 12px; font-size: 12px; }
+    input, textarea, select { font-size: 16px; }
+    table { font-size: 11px; }
+    .view-container { padding: 12px !important; }
+  }
+  
+  /* Responsive: Small mobile (max 480px) */
+  @media (max-width: 480px) {
+    body { font-size: 12px; }
+    button { padding: 6px 10px; font-size: 11px; }
+    .view-container { padding: 8px !important; }
+    h1 { font-size: 13px !important; }
+  }
+  
+  /* Performance: Image lazy loading + async decode */
+  img { loading: lazy; decoding: async; }
+  
+  /* Accessibility: Respect prefers-reduced-motion for animations */
+  @media (prefers-reduced-motion: reduce) {
+    .view-container, .view-container.exit, .subview-container, .row-animate, .request-animate {
+      animation: none !important;
+      transition: opacity 0.1s linear !important;
+    }
+  }
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -673,9 +736,10 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
   </div>);
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
+  const fieldId = `field-${label ? label.toLowerCase().replace(/\s+/g, "-") : Math.random()}`;
   return (<div style={style}>
-    {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
-    <input value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+    {label && <label htmlFor={fieldId} style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
+    <input id={fieldId} value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder} aria-label={label || placeholder}
       style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }} />
   </div>);
 }
@@ -2358,7 +2422,7 @@ function PlanningApp({ currentUser, onLogout }) {
             setSeenRejected(newSeen);
             localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
           }
-        }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2))" : "transparent", color: view === item.id ? "#f1f5f9" : "#94a3b8", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(59,130,246,0.3)" : "none", transition: "all 0.2s" }}>
+        }} aria-label={item.label} aria-current={view === item.id ? "page" : undefined} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2))" : "transparent", color: view === item.id ? "#f1f5f9" : "#94a3b8", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(59,130,246,0.3)" : "none", transition: "all 0.2s" }}>
           <span style={{ fontSize: 16 }}>{item.icon}</span><span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
           {item.badge > 0 && <span style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", borderRadius: 20, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>{item.badge}</span>}
         </button>
