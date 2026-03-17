@@ -77,7 +77,38 @@ const GLOBAL_STYLE = `
   @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
   @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
   
-  /* SCROLL ANIMATIONS - Cascade effect */
+  /* BADGE ANIMATIONS - Étape 6 */
+  @keyframes badgePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.05); }
+  }
+  
+  @keyframes badgeGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.4), inset 0 0 8px rgba(245, 158, 11, 0.1); }
+    50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.7), inset 0 0 12px rgba(245, 158, 11, 0.2); }
+  }
+  
+  @keyframes badgeBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  
+  @keyframes badgeShimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+  
+  /* Classes pour badges */
+  .badge-pending { animation: badgePulse 2s ease-in-out infinite; }
+  .badge-glow { animation: badgeGlow 2.5s ease-in-out infinite; }
+  .badge-bounce { animation: badgeBounce 1.5s ease-in-out infinite; }
+  .badge-shimmer { 
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    background-size: 1000px 100%;
+    animation: badgeShimmer 3s linear infinite;
+  }
+  
+  .cell-hover { transition: all 0.3s ease; }
   @keyframes cascadeIn { 
     0% { opacity: 0; transform: translateY(16px); } 
     100% { opacity: 1; transform: translateY(0); } 
@@ -4072,16 +4103,16 @@ function RequestRow({ req, isManager, onApprove, onReject }) {
       <div style={{ minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 3 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
-          {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500 }}>{req.agentTeam}</span>}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700, animation: req.status === "pending" ? "pulse 2s ease-in-out infinite" : "none", transition: "all 0.3s ease" }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block", animation: req.status === "pending" ? "pulse 2s ease-in-out infinite" : "none" }} />
+          {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500, transition: "all 0.3s ease", boxShadow: "0 2px 6px rgba(100, 116, 139, 0.2)" }}>{req.agentTeam}</span>}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700, animation: req.status === "pending" ? "badgePulse 2s ease-in-out infinite, badgeGlow 2.5s ease-in-out infinite" : "none", transition: "all 0.3s ease", boxShadow: req.status === "pending" ? "0 0 8px rgba(245, 158, 11, 0.4)" : "none" }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block", animation: req.status === "pending" ? "badgeBounce 1.5s ease-in-out infinite" : "none" }} />
             {meta.label}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>📅 {period}</span>
           <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: req.leaveType?.color || "#6366f1", background: req.leaveType?.color ? req.leaveType.color + "18" : "#eef2ff", padding: "1px 8px", borderRadius: 5 }}>{req.leaveType?.label}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: req.leaveType?.color || "#6366f1", background: req.leaveType?.color ? req.leaveType.color + "18" : "#eef2ff", padding: "1px 8px", borderRadius: 5, transition: "all 0.3s ease", boxShadow: `0 2px 8px ${req.leaveType?.color ? req.leaveType.color + "30" : "rgba(99, 102, 241, 0.2)"}` }}>{req.leaveType?.label}</span>
           {req.reason && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>"{req.reason}"</span>}
           {req.comment && <span style={{ fontSize: 11, color: "#ef4444", background: "#fef2f2", padding: "1px 7px", borderRadius: 5, fontWeight: 600 }}>↳ {req.comment}</span>}
         </div>
@@ -4191,7 +4222,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(245,158,11,0.15)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(245,158,11,0.1)"}>
               <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#fffbeb,#fef9ec)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(245,158,11,0.3)" }}>⏳</div>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(245,158,11,0.3)", animation: "badgeBounce 1.5s ease-in-out infinite" }}>⏳</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>En attente de validation</div>
                   <div style={{ fontSize: 11, color: "#b45309" }}>{pending.length} demande{pending.length > 1 ? "s" : ""} à traiter</div>
@@ -4207,7 +4238,7 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
               onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
               onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
               <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#64748b,#94a3b8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(100,116,139,0.25)" }}>📋</div>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#64748b,#94a3b8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(100,116,139,0.25)", animation: "badgeBounce 1.5s ease-in-out infinite" }}>📋</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#374151" }}>Historique</div>
                   <div style={{ fontSize: 11, color: "#94a3b8" }}>{history.filter(r => statusFilter === "all" || r.status === statusFilter).length} demande{history.length > 1 ? "s" : ""}</div>
