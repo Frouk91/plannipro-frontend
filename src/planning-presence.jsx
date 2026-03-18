@@ -245,6 +245,17 @@ const GLOBAL_STYLE = `
   /* Context Menu */
   .context-menu { background: linear-gradient(145deg,#0f172a,#1e293b); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
   
+  /* Bouton Edit */
+  .btn-edit { padding: 5px 12px; border-radius: 7px; border: 1.5px solid #c7d2fe; background: #eef2ff; cursor: pointer; font-size: 11px; color: #4338ca; font-weight: 600; transition: all 150ms; }
+  .btn-edit:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
+  
+  /* Bouton Delete */
+  .btn-delete { padding: 5px 9px; border-radius: 7px; border: 1.5px solid #fca5a5; background: #fef2f2; cursor: pointer; font-size: 12px; color: #ef4444; font-weight: 700; transition: all 150ms; }
+  .btn-delete:hover { background: #ef4444; color: #fff; }
+  
+  /* Context Menu Item */
+  .context-menu-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #94a3b8; font-weight: 600; background: rgba(255,255,255,0.04); }
+  
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -731,7 +742,7 @@ function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   return (
     <div onClick={e => e.stopPropagation()}
       className="context-menu" style={{ position: "fixed", top: safeY, left: safeX, zIndex: 99999, minWidth: menuW, overflow: "hidden" }}>
-      <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#94a3b8", fontWeight: 600, background: "rgba(255,255,255,0.04)" }}>
+      <div className="context-menu-item">
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
       <button onClick={e => { e.stopPropagation(); onDeleteDay(); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>✂️ Supprimer ce jour seulement</button>
@@ -1060,7 +1071,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 const matchRole = filterRole === "all" || a.role === filterRole;
                 return matchSearch && matchTeam && matchRole;
               }).length > 1 ? "s" : ""}</span>
-              <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
+              <button onClick={() => setAddModal(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 5 }}>＋ Ajouter un agent</button>
             </div>
             {agents.filter(a => {
               const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1091,8 +1102,8 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{a.email}{a.team && <span style={{ marginLeft: 8, color: "#64748b" }}>· {a.team}</span>}</div>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 11, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }} onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>✏️ Modifier</button>
-                    {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} style={{ padding: "5px 9px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 700, transition: "all 0.15s" }} onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }} onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>✕</button>}
+                    <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} className="btn-edit">✏️ Modifier</button>
+                    {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} className="btn-delete">✕</button>}
                   </div>
                 </div>
               ))
