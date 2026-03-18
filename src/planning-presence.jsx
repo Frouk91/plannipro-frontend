@@ -258,11 +258,11 @@ const GLOBAL_STYLE = `
   
   /* ===== STATS CARDS - MODERN DESIGN ===== */
   .stats-card { 
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+    border: 1.5px solid #e2e8f0;
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     position: relative;
     overflow: hidden;
     transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -275,9 +275,9 @@ const GLOBAL_STYLE = `
   
   .stats-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-    border-color: rgba(255,255,255,0.2);
-    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    border-color: #cbd5e1;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   }
   
   .stats-card::before {
@@ -321,7 +321,7 @@ const GLOBAL_STYLE = `
   .stats-card-label {
     font-size: 11px;
     font-weight: 700;
-    color: rgba(255,255,255,0.6);
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.7px;
     margin-bottom: 12px;
@@ -337,13 +337,13 @@ const GLOBAL_STYLE = `
   .stats-card-unit {
     font-size: 14px;
     font-weight: 500;
-    color: rgba(255,255,255,0.5);
+    color: #94a3b8;
     margin-left: 6px;
   }
   
   .stats-card-divider {
     height: 1px;
-    background: rgba(255,255,255,0.1);
+    background: #e2e8f0;
     margin: 12px 0;
   }
   
@@ -357,8 +357,8 @@ const GLOBAL_STYLE = `
   
   .stats-card-period {
     font-size: 10px;
-    color: rgba(255,255,255,0.5);
-    background: rgba(255,255,255,0.05);
+    color: #64748b;
+    background: #f1f5f9;
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: 700;
@@ -372,7 +372,7 @@ const GLOBAL_STYLE = `
   
   .stats-card-progress-bar {
     height: 4px;
-    background: rgba(255,255,255,0.1);
+    background: #e2e8f0;
     border-radius: 2px;
     overflow: hidden;
   }
@@ -385,7 +385,7 @@ const GLOBAL_STYLE = `
   
   .stats-card-progress-label {
     font-size: 10px;
-    color: rgba(255,255,255,0.4);
+    color: #94a3b8;
     margin-top: 8px;
     text-align: right;
   }
