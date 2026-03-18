@@ -713,7 +713,7 @@ function Field({ label, value, onChange, placeholder, style = {} }) {
   return (<div style={style}>
     {label && <label className="label">{label}</label>}
     <input value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }} />
+      className="input-field" />
   </div>);
 }
 
@@ -725,7 +725,7 @@ function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   const safeY = Math.min(y, window.innerHeight - menuH - 8);
   return (
     <div onClick={e => e.stopPropagation()}
-      style={{ position: "fixed", top: safeY, left: safeX, background: "linear-gradient(145deg,#0f172a,#1e293b)", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+      className="context-menu" style={{ position: "fixed", top: safeY, left: safeX, zIndex: 99999, minWidth: menuW, overflow: "hidden" }}>
       <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#94a3b8", fontWeight: 600, background: "rgba(255,255,255,0.04)" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
@@ -3904,7 +3904,7 @@ function PlanningApp({ currentUser, onLogout }) {
       <>
         <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
         <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
-          <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
+          <div className="modal-header">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
