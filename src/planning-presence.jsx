@@ -49,15 +49,497 @@ const DEMO_USERS = [
 ];
 
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+  
+  /* ===== DESIGN SYSTEM v7 - PALETTE RICHE ===== */
+  :root {
+    /* Primaire - Bleu */
+    --color-primary-50: #f0f4ff;
+    --color-primary-100: #e0e9ff;
+    --color-primary-200: #c7d2fe;
+    --color-primary-300: #a5b4fc;
+    --color-primary-400: #818cf8;
+    --color-primary-500: #6366f1;
+    --color-primary-600: #4f46e5;
+    --color-primary-700: #4338ca;
+    --color-primary-800: #3730a3;
+    --color-primary-900: #312e81;
+    
+    /* Secondaire - Gris */
+    --color-secondary-50: #f8fafc;
+    --color-secondary-100: #f1f5f9;
+    --color-secondary-200: #e2e8f0;
+    --color-secondary-300: #cbd5e1;
+    --color-secondary-400: #94a3b8;
+    --color-secondary-500: #64748b;
+    --color-secondary-600: #475569;
+    --color-secondary-700: #334155;
+    --color-secondary-800: #1e293b;
+    --color-secondary-900: #0f172a;
+    
+    /* Danger - Rouge */
+    --color-danger-50: #fef2f2;
+    --color-danger-100: #fee2e2;
+    --color-danger-200: #fecaca;
+    --color-danger-300: #fca5a5;
+    --color-danger-400: #f87171;
+    --color-danger-500: #ef4444;
+    --color-danger-600: #dc2626;
+    --color-danger-700: #b91c1c;
+    
+    /* Success - Vert */
+    --color-success-50: #f0fdf4;
+    --color-success-100: #dcfce7;
+    --color-success-200: #bbf7d0;
+    --color-success-300: #86efac;
+    --color-success-400: #4ade80;
+    --color-success-500: #22c55e;
+    --color-success-600: #16a34a;
+    --color-success-700: #15803d;
+    
+    /* Warning - Orange */
+    --color-warning-50: #fffbeb;
+    --color-warning-100: #fef3c7;
+    --color-warning-200: #fde68a;
+    --color-warning-300: #fcd34d;
+    --color-warning-400: #fbbf24;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-warning-700: #b45309;
+    
+    /* Info - Cyan */
+    --color-info-50: #f0f9ff;
+    --color-info-100: #e0f2fe;
+    --color-info-200: #bae6fd;
+    --color-info-300: #7dd3fc;
+    --color-info-400: #38bdf8;
+    --color-info-500: #06b6d4;
+    --color-info-600: #0891b2;
+    --color-info-700: #0e7490;
+    
+    /* Spacing - 4px Grid */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-full: 9999px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg, #060818 0%, #0a0e27 50%, #060818 100%); min-height: 100vh; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
-  ::-webkit-scrollbar-corner { background: transparent; }
+  body { 
+    font-family: 'Outfit', sans-serif; 
+    background: linear-gradient(135deg, #060818 0%, #0a0e27 50%, #060818 100%); 
+    min-height: 100vh;
+    color: var(--color-secondary-700);
+  }
+  
+  /* ===== BUTTONS - 4 VARIANTES ===== */
+  .btn, button {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  
+  /* Primary Button */
+  .btn-primary, .btn-primary:not(:disabled) {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    background: var(--color-secondary-100);
+    color: var(--color-secondary-700);
+    border: 1px solid var(--color-secondary-200);
+  }
+  .btn-secondary:hover {
+    background: var(--color-secondary-200);
+    border-color: var(--color-secondary-300);
+  }
+  
+  /* Danger Button */
+  .btn-danger {
+    background: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-600));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+  }
+  .btn-danger:hover {
+    background: linear-gradient(135deg, var(--color-danger-600), var(--color-danger-700));
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5);
+    transform: translateY(-2px);
+  }
+  
+  /* Ghost Button */
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-primary-600);
+    border: 1.5px solid var(--color-primary-300);
+  }
+  .btn-ghost:hover {
+    background: var(--color-primary-50);
+    border-color: var(--color-primary-400);
+  }
+  
+  /* ===== MODALES ===== */
+  .modal, [class*="modal"] {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-secondary-200);
+    box-shadow: var(--shadow-modal);
+    padding: var(--space-6);
+  }
+  
+  /* ===== INPUTS ===== */
+  input, textarea, select {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--color-secondary-200);
+    background: #fff;
+    color: var(--color-secondary-700);
+    font-size: 14px;
+    transition: all var(--transition-base);
+  }
+  
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px var(--color-primary-50);
+  }
+  
+  /* ===== DROPDOWNS ===== */
+  .dropdown, select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234f46e5' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-4) center;
+    padding-right: var(--space-8);
+  }
+  
+  /* ===== ANIMATIONS UNIFIÉES ===== */
+  @keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(4px); } 
+    to { opacity: 1; transform: translateY(0); } 
+  }
+  @keyframes slideIn { 
+    from { opacity: 0; transform: translateX(-8px); } 
+    to { opacity: 1; transform: translateX(0); } 
+  }
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ===== SCROLLBAR UNIFIÉE ===== */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--color-secondary-50); }
+  ::-webkit-scrollbar-thumb { 
+    background: var(--color-primary-400); 
+    border-radius: var(--radius-full);
+  }
+  ::-webkit-scrollbar-thumb:hover { 
+    background: var(--color-primary-500); 
+  }
+  
+  /* ===== ACCESSIBILITY ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+  
+  /* ===== COMPOSANTS SPÉCIALISÉS ===== */
+  
+  /* Bouton Login */
+  .btn-login {
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-login:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.5);
+  }
+  .btn-login:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+  
+  /* Bouton Ajouter */
+  .btn-add {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-add:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+  
+  /* Bouton Modal Confirm */
+  .btn-modal-confirm {
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-modal-confirm:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  }
+  .btn-modal-confirm:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  
+  /* Modal Dialog */
+  .modal-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--color-secondary-200);
+    z-index: 9999;
+    animation: slideInUp var(--transition-base);
+  }
+  
+  .modal-header {
+    padding: 20px 24px 16px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid var(--color-secondary-200);
+  }
+  
+  .modal-body {
+    padding: 20px 24px;
+  }
+  
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-secondary-200);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  
+  /* Context Menu */
+  .context-menu {
+    position: fixed;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 99999;
+    min-width: 240px;
+    overflow: hidden;
+    animation: slideIn 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .context-menu-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  
+  /* Input Field */
+  .input-field {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #f1f5f9;
+    font-size: 14px;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px var(--color-primary-100);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  /* Select Dropdown */
+  .select-field {
+    appearance: none;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236366f1' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    color: #f1f5f9;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .select-field:hover {
+    border-color: var(--color-primary-400);
+  }
+  .select-field:focus {
+    outline: none;
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px var(--color-primary-100);
+  }
+  
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
+  }
+  
+  .badge-primary {
+    background: var(--color-primary-100);
+    color: var(--color-primary-700);
+  }
+  
+  .badge-danger {
+    background: var(--color-danger-100);
+    color: var(--color-danger-700);
+  }
+  
+  .badge-success {
+    background: var(--color-success-100);
+    color: var(--color-success-700);
+  }
+  
+  .badge-warning {
+    background: var(--color-warning-100);
+    color: var(--color-warning-700);
+  }
+  
+  /* Label */
+  .label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  
+  /* Card */
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-secondary-200);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Loading Bar */
+  @keyframes loadBar {
+    0%, 100% { width: 0%; }
+    50% { width: 100%; }
+  }
+  
+  .loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #06b6d4);
+    border-radius: 99px;
+    animation: loadBar 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  
+  /* View Container */
+  .view-container {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    animation: fadeIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+`;
 
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
   @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
@@ -675,7 +1157,7 @@ function LoginPage({ onLogin }) {
             <button
               onClick={handleLogin}
               disabled={loading}
-              style={{ width: "100%", padding: "14px 0", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#6366f1 0%,#06b6d4 100%)", color: "#fff", fontSize: "15px", fontWeight: "700", cursor: loading ? "default" : "pointer", transition: "all 0.3s", boxShadow: "0 8px 32px rgba(99,102,241,0.4)", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", letterSpacing: "0.3px", position: "relative", overflow: "hidden" }}
+              className="btn-login" style={{ opacity: loading ? 0.7 : 1, cursor: loading ? "default" : "pointer" }}
               onMouseEnter={e => !loading && (e.target.style.boxShadow = "0 15px 40px rgba(59, 130, 246, 0.4)")}
               onMouseLeave={e => !loading && (e.target.style.boxShadow = "0 10px 30px rgba(59, 130, 246, 0.3)")}
             >
@@ -732,15 +1214,15 @@ function Modal({ title, children }) {
 function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disabled }) {
   return (<div style={{ display: "flex", gap: 10 }}>
     <button onClick={onCancel} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 14, color: "#94a3b8", fontWeight: 500, transition: "all 0.2s ease" }}>Annuler</button>
-    <button onClick={onConfirm} disabled={disabled} className="btn-primary" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: disabled ? "rgba(255,255,255,0.05)" : (confirmColor || "linear-gradient(135deg,#6366f1,#818cf8)"), color: disabled ? "#475569" : "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1 }}>{confirmLabel}</button>
+    <button onClick={onConfirm} disabled={disabled} className="btn-primary" className="btn-modal-confirm" style={{ flex: 1, padding: 10, borderRadius: 8, border: "none", background: disabled ? "rgba(255,255,255,0.05)" : (confirmColor || "linear-gradient(135deg,#6366f1,#818cf8)"), color: disabled ? "#475569" : "#fff", cursor: disabled ? "default" : "pointer", fontSize: 14, fontWeight: 600, transition: "all 0.2s ease", opacity: disabled ? 0.6 : 1 }}>{confirmLabel}</button>
   </div>);
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
   const fieldId = `field-${label ? label.toLowerCase().replace(/\s+/g, "-") : Math.random()}`;
   return (<div style={style}>
-    {label && <label htmlFor={fieldId} style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
+    {label && <label htmlFor={fieldId} className="label">{label}</label>}
     <input id={fieldId} value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder} aria-label={label || placeholder}
-      style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }} />
+      className="input-field" />
   </div>);
 }
 
@@ -752,7 +1234,7 @@ function ContextMenu({ x, y, leave, onDeleteDay, onDeleteAll, onClose }) {
   const safeY = Math.min(y, window.innerHeight - menuH - 8);
   return (
     <div onClick={e => e.stopPropagation()}
-      style={{ position: "fixed", top: safeY, left: safeX, background: "linear-gradient(145deg,#0f172a,#1e293b)", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 99999, minWidth: menuW, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+      className="context-menu" style={{ position: "fixed", top: safeY, left: safeX, zIndex: 99999, minWidth: menuW, overflow: "hidden" }}>
       <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#94a3b8", fontWeight: 600, background: "rgba(255,255,255,0.04)" }}>
         <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: leave.color, marginRight: 8 }}></span>{leave.label}
       </div>
@@ -1082,7 +1564,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 const matchRole = filterRole === "all" || a.role === filterRole;
                 return matchSearch && matchTeam && matchRole;
               }).length > 1 ? "s" : ""}</span>
-              <button onClick={() => setAddModal(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.35)", display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s" }}>＋ Ajouter un agent</button>
+              <button onClick={() => setAddModal(true)} className="btn-add">＋ Ajouter un agent</button>
             </div>
             {agents.filter(a => {
               const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1524,11 +2006,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Email" value={newAgent.email} onChange={v => setNewAgent(p => ({ ...p, email: v }))} placeholder="jean@entreprise.fr" style={{ marginBottom: 12 }} />
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v => setNewAgent(p => ({ ...p, password: v }))} placeholder="motdepasse123" style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+          <div><label className="label">Équipe</label>
             <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Choisir --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+          <div><label className="label">Rôle</label>
             <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
@@ -1542,11 +2024,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         </div>
         <Field label="Email" value={editData.email} onChange={v => setEditData(p => ({ ...p, email: v }))} style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+          <div><label className="label">Équipe</label>
             <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Aucune équipe --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+          <div><label className="label">Rôle</label>
             <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
@@ -2360,7 +2842,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
         {/* Barre de progression */}
         <div style={{ width: 200, height: 3, background: "rgba(255,255,255,0.08)", borderRadius: 99, margin: "0 auto 20px", overflow: "hidden", animation: "fadeUp 0.7s ease 0.35s both" }}>
-          <div style={{ height: "100%", background: "linear-gradient(90deg,#6366f1,#06b6d4)", borderRadius: 99, animation: "loadBar 2.5s cubic-bezier(0.4,0,0.2,1) infinite" }} />
+          <div className="loading-bar" />
         </div>
 
         {/* Points */}
@@ -2424,7 +2906,7 @@ function PlanningApp({ currentUser, onLogout }) {
           }
         }} aria-label={item.label} aria-current={view === item.id ? "page" : undefined} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2))" : "transparent", color: view === item.id ? "#f1f5f9" : "#94a3b8", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(59,130,246,0.3)" : "none", transition: "all 0.2s" }}>
           <span style={{ fontSize: 16 }}>{item.icon}</span><span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
-          {item.badge > 0 && <span style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", borderRadius: 20, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>{item.badge}</span>}
+          {item.badge > 0 && <span className="badge badge-danger">{item.badge}</span>}
         </button>
       ))}
     </nav>
@@ -3931,7 +4413,7 @@ function PlanningApp({ currentUser, onLogout }) {
       <>
         <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
         <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
-          <div style={{ padding: "20px 24px 16px", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff" }}>
+          <div className="modal-header">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
