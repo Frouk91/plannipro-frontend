@@ -396,6 +396,41 @@ const GLOBAL_STYLE = `
     text-align: right;
   }
   
+  /* ===== STATS TOOLBAR - MODERN DARK DESIGN ===== */
+  .stats-toolbar {
+    background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
+    border: 1px solid rgba(148,163,184,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    backdrop-filter: blur(10px);
+  }
+  
+  .stats-toolbar-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(148,163,184,0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .stats-toolbar-bar {
+    width: 1px;
+    height: 36px;
+    background: rgba(148,163,184,0.2);
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -3615,12 +3650,12 @@ function PlanningApp({ currentUser, onLogout }) {
           }
 
           return (
-            <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+            <div className="stats-toolbar" onClick={e => e.stopPropagation()}>
 
               {/* ── Sélecteur agent (managers uniquement) ── */}
               {isManager && (<>
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                  <div className="stats-toolbar-label">
                     <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                   </div>
                   <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
@@ -3710,12 +3745,12 @@ function PlanningApp({ currentUser, onLogout }) {
                 </div>
 
                 {/* ── Séparateur vertical ── */}
-                <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
+                <div className="stats-toolbar-bar" />
               </>)}
 
               {/* ── Navigateur mois ‹ / label / › ── */}
               <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
+                <div className="stats-toolbar-label">
                   <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
