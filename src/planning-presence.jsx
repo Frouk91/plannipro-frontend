@@ -3845,7 +3845,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {isCp ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                               <div>
-                                <span className="stats-card-value">{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                <span className="stats-card-value" style={{ color: s.color }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                 <span className="stats-card-unit">j</span>
                                 <div className="stats-card-period">{periodCurrent}</div>
                               </div>
