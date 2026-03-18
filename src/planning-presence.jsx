@@ -203,6 +203,43 @@ const GLOBAL_STYLE = `
   .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
   .btn-conge-expand:hover { width:175px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
   .btn-conge-expand:hover .btn-label { opacity:1; }
+  
+  /* ===== DESIGN SYSTEM v7 - CLASSES CSS ===== */
+  
+  /* Button Styles */
+  .btn { padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s ease; }
+  .btn-primary { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
+  .btn-secondary { background: rgba(255,255,255,0.05); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.1); }
+  .btn-secondary:hover { background: rgba(255,255,255,0.08); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
+  .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
+  
+  /* Input Styles */
+  .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #f1f5f9; font-size: 14px; transition: all 0.2s; }
+  .input-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+  
+  /* Label Styles */
+  .label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  
+  /* Badge Styles */
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-primary { background: rgba(99,102,241,0.1); color: #a5b4fc; }
+  .badge-danger { background: rgba(239,68,68,0.1); color: #fca5a5; }
+  .badge-success { background: rgba(34,197,94,0.1); color: #86efac; }
+  
+  /* Modal Styles */
+  .modal-header { padding: 20px 24px 16px; background: linear-gradient(135deg,#6366f1,#818cf8); color: #fff; border-radius: 12px 12px 0 0; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; justify-content: flex-end; }
+  
+  /* Card Styles */
+  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; transition: all 0.2s; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  
+  /* Context Menu */
+  .context-menu { background: linear-gradient(145deg,#0f172a,#1e293b); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -674,7 +711,7 @@ function ModalButtons({ onCancel, onConfirm, confirmLabel, confirmColor, disable
 }
 function Field({ label, value, onChange, placeholder, style = {} }) {
   return (<div style={style}>
-    {label && <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</label>}
+    {label && <label className="label">{label}</label>}
     <input value={value || ""} onChange={e => onChange(e.target.value)} placeholder={placeholder}
       style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }} />
   </div>);
@@ -1460,11 +1497,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Email" value={newAgent.email} onChange={v => setNewAgent(p => ({ ...p, email: v }))} placeholder="jean@entreprise.fr" style={{ marginBottom: 12 }} />
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v => setNewAgent(p => ({ ...p, password: v }))} placeholder="motdepasse123" style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+          <div><label className="label">Équipe</label>
             <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Choisir --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+          <div><label className="label">Rôle</label>
             <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
@@ -1478,11 +1515,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         </div>
         <Field label="Email" value={editData.email} onChange={v => setEditData(p => ({ ...p, email: v }))} style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Équipe</label>
+          <div><label className="label">Équipe</label>
             <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="">-- Aucune équipe --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
-          <div><label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#64748b", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.4px" }}>Rôle</label>
+          <div><label className="label">Rôle</label>
             <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
