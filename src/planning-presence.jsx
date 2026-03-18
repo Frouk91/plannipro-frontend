@@ -332,6 +332,12 @@ const GLOBAL_STYLE = `
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1;
+    opacity: 1;
+  }
+  
+  .stats-card-value[style*="color"] {
+    filter: brightness(1.4) saturate(1.3);
+    opacity: 1;
   }
   
   .stats-card-unit {
