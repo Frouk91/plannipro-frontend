@@ -332,12 +332,6 @@ const GLOBAL_STYLE = `
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1;
-    opacity: 1;
-  }
-  
-  .stats-card-value[style*="color"] {
-    filter: brightness(1.4) saturate(1.3);
-    opacity: 1;
   }
   
   .stats-card-unit {
@@ -394,41 +388,6 @@ const GLOBAL_STYLE = `
     color: rgba(255,255,255,0.4);
     margin-top: 8px;
     text-align: right;
-  }
-  
-  /* ===== STATS TOOLBAR - MODERN DARK DESIGN ===== */
-  .stats-toolbar {
-    background: linear-gradient(135deg, rgba(30,41,59,0.8) 0%, rgba(15,23,42,0.9) 100%);
-    border: 1px solid rgba(148,163,184,0.2);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    backdrop-filter: blur(10px);
-  }
-  
-  .stats-toolbar-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: rgba(148,163,184,0.8);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  
-  .stats-toolbar-bar {
-    width: 1px;
-    height: 36px;
-    background: rgba(148,163,184,0.2);
-    border-radius: 1px;
-    flex-shrink: 0;
   }
   
 `;
@@ -3650,12 +3609,12 @@ function PlanningApp({ currentUser, onLogout }) {
           }
 
           return (
-            <div className="stats-toolbar" onClick={e => e.stopPropagation()}>
+            <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
               {/* ── Sélecteur agent (managers uniquement) ── */}
               {isManager && (<>
                 <div style={{ position: "relative", flexShrink: 0 }}>
-                  <div className="stats-toolbar-label">
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
                     <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                   </div>
                   <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
@@ -3745,12 +3704,12 @@ function PlanningApp({ currentUser, onLogout }) {
                 </div>
 
                 {/* ── Séparateur vertical ── */}
-                <div className="stats-toolbar-bar" />
+                <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
               </>)}
 
               {/* ── Navigateur mois ‹ / label / › ── */}
               <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
-                <div className="stats-toolbar-label">
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
                   <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -3767,11 +3726,11 @@ function PlanningApp({ currentUser, onLogout }) {
                         {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
                       </button>
                       {statsPickerOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
                           {yearsAvailable.map(yr => (
                             <div key={yr}>
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #334155", background: "#0f172a", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
-                                <span style={{ fontSize: 12, fontWeight: 800, color: "#f1f5f9" }}>{yr}</span>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
+                                <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
                                 <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
                               </div>
                               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
@@ -3786,8 +3745,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                         else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
                                         setStatsPickerOpen(false);
                                       }}
-                                      style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #4f46e5" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "rgba(99,102,241,0.15)" : "none", color: isAct ? "#fff" : isCurrMth ? "#818cf8" : hasLeave ? "#f1f5f9" : "#64748b", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
-                                      onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "rgba(99,102,241,0.2)"; e.currentTarget.style.color = "#818cf8"; }}
+                                      style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
+                                      onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
                                       onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
                                       {MONTHS_FR[mi].slice(0, 3)}
                                     </button>
@@ -3880,7 +3839,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {isCp ? (
                             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                               <div>
-                                <span className="stats-card-value" style={{ color: s.color }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                <span className="stats-card-value">{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
                                 <span className="stats-card-unit">j</span>
                                 <div className="stats-card-period">{periodCurrent}</div>
                               </div>
