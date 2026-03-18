@@ -219,6 +219,11 @@ const GLOBAL_STYLE = `
   .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #f1f5f9; font-size: 14px; transition: all 0.2s; }
   .input-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
   
+  /* Select Styles */
+  .select-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #f1f5f9; font-size: 14px; transition: all 0.2s; cursor: pointer; }
+  .select-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+  .select-field option { background: #1e293b; color: #f1f5f9; }
+  
   /* Label Styles */
   .label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
   
@@ -1498,11 +1503,11 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v => setNewAgent(p => ({ ...p, password: v }))} placeholder="motdepasse123" style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
           <div><label className="label">Équipe</label>
-            <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
+            <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} className="select-field">
               <option value="">-- Choisir --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
             </select></div>
           <div><label className="label">Rôle</label>
-            <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, transition: "all 0.2s" }}>
+            <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} className="select-field">
               <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
             </select></div>
         </div>
