@@ -161,8 +161,7 @@ const GLOBAL_STYLE = `
   
   .cell-hover { transition: all 0.3s ease; }
   .cell-hover:hover { background: rgba(59,130,246,0.15) !important; box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 4px 12px rgba(99,102,241,0.15) !important; }
-  .btn-primary { transition: all 0.2s ease; }
-  .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(59,130,246,0.4) !important; }
+
   .nav-btn { transition: all 0.15s ease; }
   .nav-btn:hover { background: rgba(59,130,246,0.1) !important; }
   
@@ -208,7 +207,23 @@ const GLOBAL_STYLE = `
   
   /* Button Styles */
   .btn { padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s ease; }
-  .btn-primary { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
+  .btn-primary { 
+    background: linear-gradient(135deg, #6366f1, #818cf8); 
+    color: #fff; 
+    box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 200ms ease;
+  }
+  .btn-primary:hover { 
+    filter: brightness(1.08); 
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+  }
   .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
   .btn-secondary { background: rgba(255,255,255,0.05); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.1); }
   .btn-secondary:hover { background: rgba(255,255,255,0.08); }
@@ -1205,7 +1220,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 const matchRole = filterRole === "all" || a.role === filterRole;
                 return matchSearch && matchTeam && matchRole;
               }).length > 1 ? "s" : ""}</span>
-              <button onClick={() => setAddModal(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 5 }}>＋ Ajouter un agent</button>
+              <button onClick={() => setAddModal(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 8 }}>＋ Ajouter un agent</button>
             </div>
             {agents.filter(a => {
               const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
