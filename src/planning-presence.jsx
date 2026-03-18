@@ -3767,11 +3767,11 @@ function PlanningApp({ currentUser, onLogout }) {
                         {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
                       </button>
                       {statsPickerOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                        <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
                           {yearsAvailable.map(yr => (
                             <div key={yr}>
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
-                                <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #334155", background: "#0f172a", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
+                                <span style={{ fontSize: 12, fontWeight: 800, color: "#f1f5f9" }}>{yr}</span>
                                 <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
                               </div>
                               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
@@ -3786,8 +3786,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                         else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
                                         setStatsPickerOpen(false);
                                       }}
-                                      style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
-                                      onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
+                                      style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #4f46e5" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "rgba(99,102,241,0.15)" : "none", color: isAct ? "#fff" : isCurrMth ? "#818cf8" : hasLeave ? "#f1f5f9" : "#64748b", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
+                                      onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "rgba(99,102,241,0.2)"; e.currentTarget.style.color = "#818cf8"; }}
                                       onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
                                       {MONTHS_FR[mi].slice(0, 3)}
                                     </button>
