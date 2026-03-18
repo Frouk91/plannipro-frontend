@@ -256,6 +256,140 @@ const GLOBAL_STYLE = `
   /* Context Menu Item */
   .context-menu-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #94a3b8; font-weight: 600; background: rgba(255,255,255,0.04); }
   
+  /* ===== STATS CARDS - MODERN DESIGN ===== */
+  .stats-card { 
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: default;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    border-color: rgba(255,255,255,0.2);
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+  }
+  
+  .stats-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--card-color, #6366f1);
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .stats-card-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .stats-card:hover .stats-card-badge {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  
+  .stats-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .stats-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 12px;
+  }
+  
+  .stats-card-value {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  
+  .stats-card-unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    margin-left: 6px;
+  }
+  
+  .stats-card-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 12px 0;
+  }
+  
+  .stats-card-subvalue {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    opacity: 0.7;
+  }
+  
+  .stats-card-period {
+    font-size: 10px;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.05);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+    margin-top: 8px;
+  }
+  
+  .stats-card-progress {
+    margin-top: 16px;
+  }
+  
+  .stats-card-progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .stats-card-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  
+  .stats-card-progress-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 8px;
+    text-align: right;
+  }
+  
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -3697,51 +3831,44 @@ function PlanningApp({ currentUser, onLogout }) {
                   const periodCurrent = `Juin ${todayPeriodYear} → Mai ${todayPeriodYear + 1}`;
                   const periodNext = `Juin ${todayPeriodYear + 1} → Mai ${todayPeriodYear + 2}`;
                   return (
-                    <div key={s.key} style={{ background: "#fff", borderRadius: 0, border: "1px solid #f1f5f9", borderLeft: "3px solid " + s.color, padding: "20px 22px", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden", transition: "box-shadow 0.2s, transform 0.2s", cursor: "default", minHeight: 110, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
-                      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.09)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-
+                    <div key={s.key} className="stats-card" style={{ '--card-color': s.color }}>
                       {/* Label + valeur */}
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: 4 }}>
+                      <div className="stats-card-header">
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 8 }}>{s.label}</div>
+                          <div className="stats-card-label">{s.label}</div>
                           {isCp ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                                <div>
-                                  <span style={{ fontSize: 26, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
-                                  <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
-                                </div>
-                                <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodCurrent}</span>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                              <div>
+                                <span className="stats-card-value">{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                <span className="stats-card-unit">j</span>
+                                <div className="stats-card-period">{periodCurrent}</div>
                               </div>
-                              <div style={{ height: 1, background: "#f1f5f9" }} />
-                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-                                <div>
-                                  <span style={{ fontSize: 26, fontWeight: 800, color: s.color + "99", letterSpacing: "-0.5px", lineHeight: 1 }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
-                                  <span style={{ fontSize: 12, fontWeight: 500, color: "#94a3b8", marginLeft: 4 }}>j</span>
-                                </div>
-                                <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700, whiteSpace: "nowrap" }}>{periodNext}</span>
+                              <div className="stats-card-divider" />
+                              <div>
+                                <span className="stats-card-subvalue" style={{ color: s.color }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                <span className="stats-card-unit">j</span>
+                                <div className="stats-card-period">{periodNext}</div>
                               </div>
                             </div>
                           ) : (
-                            <div style={{ fontSize: 32, fontWeight: 800, color: s.color, letterSpacing: "-0.5px", lineHeight: 1 }}>
-                              {s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}
-                              <span style={{ fontSize: 14, fontWeight: 500, color: "#94a3b8", marginLeft: 5 }}>j</span>
+                            <div>
+                              <span className="stats-card-value" style={{ color: s.color }}>{s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                              <span className="stats-card-unit">j</span>
                             </div>
                           )}
                         </div>
-                        {/* Indicateur couleur */}
-                        <div style={{ width: 38, height: 38, borderRadius: 0, background: s.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 12 }}>
-                          <div style={{ width: 12, height: 12, borderRadius: "50%", background: s.color }} />
+                        {/* Badge moderne */}
+                        <div className="stats-card-badge" style={{ background: s.color + "20", color: s.color }}>
+                          {s.icon || "●"}
                         </div>
                       </div>
                       {/* Barre de progression */}
                       {!isCp && totalDays > 0 && (
-                        <div style={{ marginTop: 16 }}>
-                          <div style={{ height: 3, background: "#f1f5f9", borderRadius: 0, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: Math.round((s.days / totalDays) * 100) + "%", background: s.color, borderRadius: 0, transition: "width 0.6s ease" }} />
+                        <div className="stats-card-progress">
+                          <div className="stats-card-progress-bar">
+                            <div className="stats-card-progress-fill" style={{ width: Math.round((s.days / totalDays) * 100) + "%", background: s.color }} />
                           </div>
-                          <div style={{ fontSize: 10, color: "#cbd5e1", marginTop: 5, textAlign: "right" }}>{periodLabel}</div>
+                          <div className="stats-card-progress-label">{periodLabel}</div>
                         </div>
                       )}
                     </div>
