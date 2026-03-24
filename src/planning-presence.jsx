@@ -26,7 +26,7 @@ function useInView(ref, options = {}) {
 }
 
 
-const API = "https://plannipro-backend.onrender.com/api";
+const API = "http://localhost:3001/api";
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const MONTHS_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 const COLORS = [
@@ -1863,15 +1863,53 @@ function PlanningApp({ currentUser, onLogout }) {
   const canManageAstreintes = currentUser.role === "manager" || currentUser.role === "admin" || currentUser.role === "coordinator";
   const feries = getFeries(year);
 
+  // ========== AUTO-LOGOUT APRÈS 15 MIN D'INACTIVITÉ ==========
+  const inactivityTimeoutRef = useRef(null);
+
+  const handleInactivity = useCallback(() => {
+    if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
+
+    inactivityTimeoutRef.current = setTimeout(() => {
+      console.log('⏰ Inactivité détectée - Déconnexion');
+      onLogout();
+    }, 1 * 60 * 1000); // 15 minutes
+  }, [onLogout]);
+
+  const resetInactivityTimer = useCallback(() => {
+    handleInactivity();
+  }, [handleInactivity]);
+
+  useEffect(() => {
+    // Écoute l'activité de l'utilisateur
+    window.addEventListener('mousedown', resetInactivityTimer);
+    window.addEventListener('keydown', resetInactivityTimer);
+    window.addEventListener('scroll', resetInactivityTimer);
+    window.addEventListener('touchstart', resetInactivityTimer);
+
+    // Démarre le timer au montage
+    handleInactivity();
+
+    return () => {
+      window.removeEventListener('mousedown', resetInactivityTimer);
+      window.removeEventListener('keydown', resetInactivityTimer);
+      window.removeEventListener('scroll', resetInactivityTimer);
+      window.removeEventListener('touchstart', resetInactivityTimer);
+      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
+    };
+  }, [handleInactivity, resetInactivityTimer]);
+
   // ========== SOCKET.IO SETUP ==========
   useEffect(() => {
     // Détecte si c'est local ou production
     const isProduction = window.location.hostname !== 'localhost';
-    const socketUrl = isProduction 
+    const socketUrl = isProduction
       ? 'https://plannipro-backend.onrender.com'
       : 'http://localhost:3001';
 
     const socket = io(socketUrl, {
+      auth: {
+        token: currentUser.token
+      },
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
