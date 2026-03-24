@@ -26,7 +26,7 @@ function useInView(ref, options = {}) {
 }
 
 
-const API = "http://localhost:3001/api";
+const API = "https://plannipro-backend.onrender.com/api";
 const DAYS_FR = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const MONTHS_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 const COLORS = [
@@ -1901,10 +1901,7 @@ function PlanningApp({ currentUser, onLogout }) {
   // ========== SOCKET.IO SETUP ==========
   useEffect(() => {
     // Détecte si c'est local ou production
-    const isProduction = window.location.hostname !== 'localhost';
-    const socketUrl = isProduction
-      ? 'https://plannipro-backend.onrender.com'
-      : 'http://localhost:3001';
+    const socketUrl = 'https://plannipro-backend.onrender.com';
 
     const socket = io(socketUrl, {
       auth: {
