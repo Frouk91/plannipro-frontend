@@ -1872,7 +1872,7 @@ function PlanningApp({ currentUser, onLogout }) {
     inactivityTimeoutRef.current = setTimeout(() => {
       console.log('⏰ Inactivité détectée - Déconnexion');
       onLogout();
-    }, 1 * 60 * 1000); // 15 minutes
+    }, 15 * 60 * 1000); // 15 minutes
   }, [onLogout]);
 
   const resetInactivityTimer = useCallback(() => {
