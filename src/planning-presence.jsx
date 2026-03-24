@@ -2763,41 +2763,62 @@ function PlanningApp({ currentUser, onLogout }) {
             <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
             {/* BARRE DE CONTRÔLES */}
             <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
-              {/* ONGLETS Planning / Présences sur site / Astreintes */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
+              {/* ========== ONGLETS ÉLÉGANTS ========== */}
+              <div style={{
+                display: 'flex',
+                gap: '0px',
+                borderBottom: '2px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                padding: '0 0',
+                marginBottom: '24px',
+                borderRadius: '0px'
+              }}>
                 {[
-                  { mode: "all", label: "Planning", icon: "📅", activeColor: "#4f46e5", activeBg: "linear-gradient(145deg,#6366f1,#4f46e5)", shadow: "rgba(99,102,241,0.45)" },
-                  { mode: "presence", label: "Présences sur site", icon: "🏢", activeColor: "#0f766e", activeBg: "linear-gradient(145deg,#14b8a6,#0d9488)", shadow: "rgba(13,148,136,0.45)" },
-                  { mode: "astreinte", label: "Astreintes", icon: "🔔", activeColor: "#b45309", activeBg: "linear-gradient(145deg,#f59e0b,#d97706)", shadow: "rgba(245,158,11,0.45)" },
+                  { mode: 'all', label: 'Planning', icon: '📅' },
+                  { mode: 'presence', label: 'Présences sur site', icon: '👥' },
+                  { mode: 'astreinte', label: 'Astreintes', icon: '🔔' }
                 ].map(tab => {
                   const isActive = filterMode === tab.mode;
                   return (
-                    <button key={tab.mode} onClick={() => {
-                      setFilterMode(tab.mode);
-                      if (tab.mode === "presence") { const pt = leaveTypes.find(t => isPresenceType(t)); if (pt) setSelectedLTId(pt.id); }
-                    }} style={{
-                      display: "flex", alignItems: "center", gap: 7,
-                      padding: "6px 14px",
-                      borderRadius: 10,
-                      cursor: "pointer",
-                      fontSize: 12,
-                      fontWeight: isActive ? 700 : 500,
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      color: isActive ? "#fff" : "#64748b",
-                      background: isActive ? tab.activeBg : "#f8fafc",
-                      border: isActive ? "none" : "1.5px solid #e2e8f0",
-                      boxShadow: isActive
-                        ? `0 4px 0 0 ${tab.shadow.replace("0.45", "0.6")}, 0 6px 20px ${tab.shadow}, inset 0 1px 0 rgba(255,255,255,0.25)`
-                        : "0 2px 0 0 #d1d5db, 0 1px 3px rgba(0,0,0,0.06)",
-                      transform: isActive ? "translateY(-1px)" : "translateY(0px)",
-                      transition: "all 0.15s ease",
-                      letterSpacing: "0.1px",
-                      position: "relative",
-                      overflow: "hidden",
-                    }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#374151"; e.currentTarget.style.transform = "translateY(-1px)"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.transform = "translateY(0px)"; } }}>
-                      <span style={{ fontSize: 13 }}>{tab.icon}</span>
+                    <button
+                      key={tab.mode}
+                      onClick={() => {
+                        setFilterMode(tab.mode);
+                        if (tab.mode === 'presence') { 
+                          const pt = leaveTypes.find(t => isPresenceType(t)); 
+                          if (pt) setSelectedLTId(pt.id); 
+                        }
+                      }}
+                      style={{
+                        padding: '16px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: isActive ? '600' : '500',
+                        color: isActive ? '#4f46e5' : '#6b7280',
+                        position: 'relative',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        borderBottom: isActive ? '3px solid #4f46e5' : '3px solid transparent',
+                        fontFamily: "'Outfit', sans-serif",
+                      }}
+                      onMouseEnter={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.color = '#4b5563';
+                          e.currentTarget.style.background = 'rgba(79, 70, 229, 0.05)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if (!isActive) {
+                          e.currentTarget.style.color = '#6b7280';
+                          e.currentTarget.style.background = 'transparent';
+                        }
+                      }}
+                    >
+                      <span style={{ fontSize: '18px' }}>{tab.icon}</span>
                       {tab.label}
                     </button>
                   );
