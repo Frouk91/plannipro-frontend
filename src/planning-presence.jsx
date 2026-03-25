@@ -1872,7 +1872,7 @@ function PlanningApp({ currentUser, onLogout }) {
     inactivityTimeoutRef.current = setTimeout(() => {
       console.log('⏰ Inactivité détectée - Déconnexion');
       onLogout();
-    }, 15 * 60 * 1000); // 15 minutes
+    }, 5 * 60 * 1000); // 5 minutes
   }, [onLogout]);
 
   const resetInactivityTimer = useCallback(() => {
@@ -2784,9 +2784,9 @@ function PlanningApp({ currentUser, onLogout }) {
                       key={tab.mode}
                       onClick={() => {
                         setFilterMode(tab.mode);
-                        if (tab.mode === 'presence') { 
-                          const pt = leaveTypes.find(t => isPresenceType(t)); 
-                          if (pt) setSelectedLTId(pt.id); 
+                        if (tab.mode === 'presence') {
+                          const pt = leaveTypes.find(t => isPresenceType(t));
+                          if (pt) setSelectedLTId(pt.id);
                         }
                       }}
                       style={{
