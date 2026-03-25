@@ -1898,6 +1898,95 @@ function PlanningApp({ currentUser, onLogout }) {
     };
   }, [handleInactivity, resetInactivityTimer]);
 
+  // ========== SOCKET.IO SETUP ==========
+  useEffect(() => {
+    // Détecte si c'est local ou production
+    const socketUrl = 'https://plannipro-backend.onrender.com';
+
+    const socket = io(socketUrl, {
+      auth: {
+        token: currentUser.token
+      },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Connecté au serveur temps réel');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Déconnecté du serveur');
+    });
+
+    // ========== AGENT EVENTS ==========
+    socket.on('agent-added', (newAgent) => {
+      console.log('🆕 Agent ajouté:', newAgent);
+      setAgents(prev => [...prev, newAgent]);
+    });
+
+    socket.on('agent-updated', (updatedAgent) => {
+      console.log('✏️ Agent modifié:', updatedAgent);
+      setAgents(prev =>
+        prev.map(a => a.id === updatedAgent.id ? updatedAgent : a)
+      );
+    });
+
+    socket.on('agent-deleted', ({ id }) => {
+      console.log('🗑️ Agent supprimé:', id);
+      setAgents(prev => prev.filter(a => a.id !== id));
+    });
+
+    // ========== LEAVE EVENTS ==========
+    socket.on('leave-added', (data) => {
+      console.log('🆕 Congé ajouté:', data);
+      setLeaves(prev => ({
+        ...prev,
+        [data.userId]: {
+          ...(prev[data.userId] || {}),
+          [`${data.leave.start_date}__${data.leave.end_date}`]: data.leave
+        }
+      }));
+    });
+
+    socket.on('leave-updated', (data) => {
+      console.log('✏️ Congé modifié:', data);
+      setLeaves(prev => ({
+        ...prev,
+        [data.userId]: {
+          ...(prev[data.userId] || {}),
+          ...data.leave
+        }
+      }));
+    });
+
+    socket.on('leave-deleted', (data) => {
+      console.log('🗑️ Congé supprimé:', data);
+      setLeaves(prev => {
+        const updated = { ...prev };
+        if (updated[data.userId]) {
+          Object.keys(updated[data.userId]).forEach(key => {
+            if (updated[data.userId][key]?.id === data.id) {
+              delete updated[data.userId][key];
+            }
+          });
+        }
+        return updated;
+      });
+    });
+
+    // ========== ANNOUNCEMENT EVENTS ==========
+    socket.on('announcement-added', (announcement) => {
+      console.log('📢 Annonce ajoutée:', announcement);
+      setAnnouncement(announcement);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
