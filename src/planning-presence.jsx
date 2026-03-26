@@ -3613,7 +3613,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                     style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
                                     {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                       const aKey = dateKey(year, month, day);
-                                      const aAgentId = astreintes[aKey];
+                                      const astrData = astreintes[aKey];
+                                      const aAgentId = astrData?.agent_id ?? astrData;
                                       const aAgent = aAgentId ? agents.find(a => a.id === aAgentId) : null;
                                       return aAgent ? (
                                         <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#fef3c7", border: "1.5px solid #f59e0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -4222,6 +4223,9 @@ function PlanningApp({ currentUser, onLogout }) {
                   onAgentPicked(a.id);
                   setAstreinteDropdown(null);
                 } else {
+                  // Mise à jour optimiste immédiate pour l'affichage
+                  setAstreintes(prev => ({ ...prev, [aKey]: { agent_id: a.id } }));
+                  // Persistance en base
                   saveAstreinte(aTeamName, rowType || rowId, aDateKey, a.id);
                   setAstreinteDropdown(null);
                 }
