@@ -1828,10 +1828,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [statsAgentSearch, setStatsAgentSearch] = useState("");
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
-  const [astreintes, setAstreintes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("astreintes") || "{}"); }
-    catch { return {}; }
-  });
+  const [astreintes, setAstreintes] = useState({});
+  const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
   const ASTREINTE_TEAMS = ["Css Digital", "Mailing Solution"];
   const MAILING_EXTRA_ROWS = [
@@ -1872,7 +1870,7 @@ function PlanningApp({ currentUser, onLogout }) {
     inactivityTimeoutRef.current = setTimeout(() => {
       console.log('⏰ Inactivité détectée - Déconnexion');
       onLogout();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 15 * 60 * 1000); // 15 minutes
   }, [onLogout]);
 
   const resetInactivityTimer = useCallback(() => {
@@ -1898,6 +1896,220 @@ function PlanningApp({ currentUser, onLogout }) {
     };
   }, [handleInactivity, resetInactivityTimer]);
 
+  // ========== CHARGER ASTREINTES DEPUIS L'API ==========
+  useEffect(() => {
+    const loadAstreintes = async () => {
+      try {
+        setLoadingAstreintes(true);
+        const response = await fetch(`${API}/astreintes`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Convertir le tableau en objet pour compatibilité
+          const astreinteObj = {};
+          data.forEach(a => {
+            const key = `${a.team_name}|${a.row_type}|${a.date_key}`;
+            astreinteObj[key] = a;
+          });
+          setAstreintes(astreinteObj);
+          console.log('✅ Astreintes chargées depuis l\'API');
+        } else {
+          console.warn('⚠️ Erreur chargement astreintes:', response.status);
+        }
+      } catch (err) {
+        console.error('❌ Erreur chargement astreintes:', err);
+      } finally {
+        setLoadingAstreintes(false);
+      }
+    };
+
+    loadAstreintes();
+  }, [token]);
+
+  // ========== FONCTIONS HELPER ASTREINTES API ==========
+  const saveAstreinte = useCallback(async (teamName, rowType, dateKey, agentId) => {
+    try {
+      const response = await fetch(`${API}/astreintes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          team_name: teamName,
+          row_type: rowType,
+          date_key: dateKey,
+          agent_id: agentId || null
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const key = `${teamName}|${rowType}|${dateKey}`;
+        setAstreintes(prev => ({ ...prev, [key]: data }));
+        console.log('✅ Astreinte sauvegardée');
+        return data;
+      } else {
+        console.error('❌ Erreur sauvegarde astreinte:', response.status);
+      }
+    } catch (err) {
+      console.error('❌ Erreur saveAstreinte:', err);
+    }
+  }, [token]);
+
+  const deleteAstreinte = useCallback(async (id, teamName, rowType, dateKey) => {
+    try {
+      const response = await fetch(`${API}/astreintes/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const key = `${teamName}|${rowType}|${dateKey}`;
+        setAstreintes(prev => {
+          const n = { ...prev };
+          delete n[key];
+          return n;
+        });
+        console.log('🗑️ Astreinte supprimée');
+      } else {
+        console.error('❌ Erreur suppression astreinte:', response.status);
+      }
+    } catch (err) {
+      console.error('❌ Erreur deleteAstreinte:', err);
+    }
+  }, [token]);
+
+  const deleteAstreinteRange = useCallback(async (teamName, rowType, startDate, endDate) => {
+    try {
+      const response = await fetch(`${API}/astreintes/range/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          team_name: teamName,
+          row_type: rowType,
+          start_date: startDate,
+          end_date: endDate
+        })
+      });
+
+      if (response.ok) {
+        const reloadResponse = await fetch(`${API}/astreintes`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (reloadResponse.ok) {
+          const data = await reloadResponse.json();
+          const astreinteObj = {};
+          data.forEach(a => {
+            const key = `${a.team_name}|${a.row_type}|${a.date_key}`;
+            astreinteObj[key] = a;
+          });
+          setAstreintes(astreinteObj);
+          console.log('✅ Plage supprimée et rechargée');
+        }
+      } else {
+        console.error('❌ Erreur suppression plage:', response.status);
+      }
+    } catch (err) {
+      console.error('❌ Erreur deleteAstreinteRange:', err);
+    }
+  }, [token]);
+
+
+  useEffect(() => {
+    // Détecte si c'est local ou production
+    const socketUrl = 'https://plannipro-backend.onrender.com';
+
+    const socket = io(socketUrl, {
+      auth: {
+        token: currentUser.token
+      },
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Connecté au serveur temps réel');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Déconnecté du serveur');
+    });
+
+    // ========== AGENT EVENTS ==========
+    socket.on('agent-added', (newAgent) => {
+      console.log('🆕 Agent ajouté:', newAgent);
+      setAgents(prev => [...prev, newAgent]);
+    });
+
+    socket.on('agent-updated', (updatedAgent) => {
+      console.log('✏️ Agent modifié:', updatedAgent);
+      setAgents(prev =>
+        prev.map(a => a.id === updatedAgent.id ? updatedAgent : a)
+      );
+    });
+
+    socket.on('agent-deleted', ({ id }) => {
+      console.log('🗑️ Agent supprimé:', id);
+      setAgents(prev => prev.filter(a => a.id !== id));
+    });
+
+    // ========== LEAVE EVENTS ==========
+    socket.on('leave-added', (data) => {
+      console.log('🆕 Congé ajouté:', data);
+      setLeaves(prev => ({
+        ...prev,
+        [data.userId]: {
+          ...(prev[data.userId] || {}),
+          [`${data.leave.start_date}__${data.leave.end_date}`]: data.leave
+        }
+      }));
+    });
+
+    socket.on('leave-updated', (data) => {
+      console.log('✏️ Congé modifié:', data);
+      setLeaves(prev => ({
+        ...prev,
+        [data.userId]: {
+          ...(prev[data.userId] || {}),
+          ...data.leave
+        }
+      }));
+    });
+
+    socket.on('leave-deleted', (data) => {
+      console.log('🗑️ Congé supprimé:', data);
+      setLeaves(prev => {
+        const updated = { ...prev };
+        if (updated[data.userId]) {
+          Object.keys(updated[data.userId]).forEach(key => {
+            if (updated[data.userId][key]?.id === data.id) {
+              delete updated[data.userId][key];
+            }
+          });
+        }
+        return updated;
+      });
+    });
+
+    // ========== ANNOUNCEMENT EVENTS ==========
+    socket.on('announcement-added', (announcement) => {
+      console.log('📢 Annonce ajoutée:', announcement);
+      setAnnouncement(announcement);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
@@ -2695,9 +2907,9 @@ function PlanningApp({ currentUser, onLogout }) {
                       key={tab.mode}
                       onClick={() => {
                         setFilterMode(tab.mode);
-                        if (tab.mode === 'presence') {
-                          const pt = leaveTypes.find(t => isPresenceType(t));
-                          if (pt) setSelectedLTId(pt.id);
+                        if (tab.mode === 'presence') { 
+                          const pt = leaveTypes.find(t => isPresenceType(t)); 
+                          if (pt) setSelectedLTId(pt.id); 
                         }
                       }}
                       style={{
@@ -2894,13 +3106,24 @@ function PlanningApp({ currentUser, onLogout }) {
                             if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
                               const s = astreinteEraseStart.key, en = k;
                               const minK = s < en ? s : en, maxK = s < en ? en : s;
-                              setAstreintes(prev => { const n = { ...prev }; weekDays.forEach(dd => { const dk = dKey(dd); if (dk >= minK && dk <= maxK) delete n[`${teamName}|${rowId}|${dk}`]; }); return n; });
+                              // Convertir les clés de date en format DATE
+                              const minDate = new Date(minK.substring(0, 4), parseInt(minK.substring(5, 7)) - 1, minK.substring(8, 10)).toISOString().split('T')[0];
+                              const maxDate = new Date(maxK.substring(0, 4), parseInt(maxK.substring(5, 7)) - 1, maxK.substring(8, 10)).toISOString().split('T')[0];
+                              deleteAstreinteRange(teamName, rowType, minDate, maxDate);
                               setAstreinteEraseStart(null); setAstreinteHovered(null);
                             } else if (astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) {
                               const s = astreinteSelStart.key, en = k;
                               const minK = s < en ? s : en, maxK = s < en ? en : s;
                               if (astreinteSelStart.agentId) {
-                                setAstreintes(prev => { const n = { ...prev }; weekDays.forEach(dd => { const dk = dKey(dd), dow2 = dd.getDay(), wk2 = dow2 === 0 || dow2 === 6, isFri2 = dow2 === 5; if (dk >= minK && dk <= maxK && !wk2 && (fridayOnly ? isFri2 : true)) n[`${teamName}|${rowId}|${dk}`] = astreinteSelStart.agentId; }); return n; });
+                                weekDays.forEach(dd => {
+                                  const dk = dKey(dd);
+                                  const dow2 = dd.getDay();
+                                  const wk2 = dow2 === 0 || dow2 === 6;
+                                  const isFri2 = dow2 === 5;
+                                  if (dk >= minK && dk <= maxK && !wk2 && (fridayOnly ? isFri2 : true)) {
+                                    saveAstreinte(teamName, rowType, dk, astreinteSelStart.agentId);
+                                  }
+                                });
                               }
                               setAstreinteSelStart(null); setAstreinteHovered(null);
                             } else {
@@ -2911,7 +3134,14 @@ function PlanningApp({ currentUser, onLogout }) {
                               });
                             }
                           }}
-                          onContextMenu={e => { e.preventDefault(); if (!canClick) return; setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; }); }}
+                          onContextMenu={e => { 
+                            e.preventDefault(); 
+                            if (!canClick) return; 
+                            const astreinteData = astreintes[aKey];
+                            if (astreinteData && astreinteData.id) {
+                              deleteAstreinte(astreinteData.id, teamName, rowType, k);
+                            }
+                          }}
                           onMouseEnter={() => {
                             if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
                               (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId)) { if (eligible) setAstreinteHovered(k); }
