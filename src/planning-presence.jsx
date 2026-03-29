@@ -2045,17 +2045,12 @@ function PlanningApp({ currentUser, onLogout }) {
       reconnectionAttempts: 5,
     });
 
-    'connect', () => {
-      console.log('✅ Connecté au serveur temps réel');
+
+    // ========== AGENT EVENTS ==========
+    'agent-added', (newAgent) => {
+      console.log('🆕 Agent ajouté:', newAgent);
+      setAgents(prev => [...prev, newAgent]);
     });
-
-
-
-  // ========== AGENT EVENTS ==========
-  'agent-added', (newAgent) => {
-    console.log('🆕 Agent ajouté:', newAgent);
-    setAgents(prev => [...prev, newAgent]);
-  });
 
   'agent-updated', (updatedAgent) => {
     console.log('✏️ Agent modifié:', updatedAgent);
