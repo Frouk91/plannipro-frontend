@@ -2049,9 +2049,7 @@ function PlanningApp({ currentUser, onLogout }) {
       console.log('✅ Connecté au serveur temps réel');
     });
 
-  'disconnect', () => {
-    console.log('❌ Déconnecté du serveur');
-  });
+
 
   // ========== AGENT EVENTS ==========
   'agent-added', (newAgent) => {
@@ -4597,7 +4595,6 @@ return (
     )}
     {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99999, backdropFilter: "blur(4px)" }} />}
     {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99998, backdropFilter: "blur(4px)" }} />}
-
     {rejectModal && <Modal title="❌ Refuser la demande">
       <textarea value={rejectComment} onChange={e => setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, boxSizing: "border-box", resize: "none", marginBottom: 20, transition: "all 0.2s" }} />
       <ModalButtons onCancel={() => setRejectModal(null)} onConfirm={() => rejectRequest(rejectModal)} confirmLabel="Confirmer le refus" confirmColor={rejectComment.trim() ? "#ef4444" : "#fca5a5"} disabled={!rejectComment.trim()} />
