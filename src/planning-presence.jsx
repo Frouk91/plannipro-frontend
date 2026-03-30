@@ -3328,12 +3328,15 @@ function PlanningApp({ currentUser, onLogout }) {
                     // Compter sur toute l'année (toutes les clés du localStorage)
                     const agentCounts = {};
                     teamAgentsList.forEach(a => { agentCounts[a.id] = {}; rows.forEach(r => { agentCounts[a.id][r] = 0; }); });
-                    Object.entries(astreintes).forEach(([key, agentId]) => {
+                    Object.entries(astreintes).forEach(([key, astrData]) => {
                       const parts = key.split("|");
                       if (parts.length !== 3) return;
                       const [kTeam, kRow, kDate] = parts;
                       if (kTeam !== teamName) return;
-                      if (!agentCounts[agentId]) return;
+
+                      // Extraire l'agent_id depuis l'objet astreinte retourné par l'API
+                      const agentId = astrData?.agent_id || astrData;
+                      if (!agentId || !agentCounts[agentId]) return;
                       if (agentCounts[agentId][kRow] !== undefined) agentCounts[agentId][kRow]++;
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
