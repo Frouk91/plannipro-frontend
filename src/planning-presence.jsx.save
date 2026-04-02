@@ -1839,7 +1839,6 @@ function PlanningApp({ currentUser, onLogout }) {
   ];
   const [astreinteDropdown, setAstreinteDropdown] = useState(null); // { key, teamName, rowType, x, y }
   const [astreinteFilter, setAstreinteFilter] = useState("all"); // "all"|"Css Digital"|"Mailing Solution"
-  const [suggestedAgent, setSuggestedAgent] = useState(null);
   const [astreinteSelStart, setAstreinteSelStart] = useState(null); // { aKey base, rowType, teamName }
   const [astreinteHovered, setAstreinteHovered] = useState(null); // dateKey hovered
   const [astreinteEraseStart, setAstreinteEraseStart] = useState(null); // { teamName, rowId, key } mode effacement plage
@@ -2028,28 +2027,6 @@ function PlanningApp({ currentUser, onLogout }) {
       }
     } catch (err) {
       console.error('❌ Erreur deleteAstreinteRange:', err);
-    }
-  }, [token]);
-
-  // Fonction pour charger la suggestion auto du prochain agent
-  const loadSuggestion = useCallback(async (teamName, dateKey) => {
-    try {
-      console.log('💡 Chargement suggestion pour:', { teamName, dateKey });
-      const response = await fetch(
-        `${API}/astreintes/suggest-next?team_name=${encodeURIComponent(teamName)}&date_key=${encodeURIComponent(dateKey)}`,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
-      if (!response.ok) {
-        console.error('Erreur suggestion:', response.status);
-        return;
-      }
-      const data = await response.json();
-      setSuggestedAgent(data);
-      console.log('✅ Agent suggéré:', data.suggested_agent?.first_name);
-    } catch (err) {
-      console.error('❌ Erreur loadSuggestion:', err);
     }
   }, [token]);
 
@@ -3164,122 +3141,6 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* VUE MOIS */}
             {planView === "month" && filterMode === "astreinte" && (
               <React.Fragment>
-                {/* SUGGESTIONS AUTO - LOAD BALANCING */}
-                {canManageAstreintes && (
-                  <div style={{ padding: "12px 16px", background: "#fffbeb", borderBottom: "1px solid #fcd34d", display: "flex", flexDirection: "column", gap: 10 }}>
-                    <button
-                      onClick={() => {
-                        const firstFridayOfMonth = (() => {
-                          for (let d = 1; d <= daysInMonth; d++) {
-                            if (new Date(year, month, d).getDay() === 5) return dateKey(year, month, d);
-                          }
-                          return dateKey(year, month, 1);
-                        })();
-                        loadSuggestion("Css Digital", firstFridayOfMonth);
-                      }}
-                      style={{
-                        padding: '8px 14px',
-                        background: '#10b981',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        transition: 'all 0.2s',
-                        maxWidth: 220
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#059669'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#10b981'; }}
-                    >
-                      💡 Suggestion auto Css Digital
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        const firstFridayOfMonth = (() => {
-                          for (let d = 1; d <= daysInMonth; d++) {
-                            if (new Date(year, month, d).getDay() === 5) return dateKey(year, month, d);
-                          }
-                          return dateKey(year, month, 1);
-                        })();
-                        loadSuggestion("Mailing Solution", firstFridayOfMonth);
-                      }}
-                      style={{
-                        padding: '8px 14px',
-                        background: '#8b5cf6',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        cursor: 'pointer',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        transition: 'all 0.2s',
-                        maxWidth: 220
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = '#7c3aed'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = '#8b5cf6'; }}
-                    >
-                      💡 Suggestion auto Mailing
-                    </button>
-                  </div>
-                )}
-
-                {/* AFFICHER LES STATS DE SUGGESTION */}
-                {suggestedAgent && (
-                  <div style={{ padding: "12px 16px", background: "#f0fdf4", borderBottom: "1px solid #bbf7d0" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: suggestedAgent.suggested_agent?.team === "Css Digital" ? "#3b82f6" : "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
-                        {suggestedAgent.suggested_agent?.first_name[0]}{suggestedAgent.suggested_agent?.last_name[0]}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#065f46" }}>
-                          ✅ Recommandé: <strong>{suggestedAgent.suggested_agent?.first_name} {suggestedAgent.suggested_agent?.last_name}</strong>
-                        </div>
-                        <div style={{ fontSize: 11, color: "#047857", marginTop: 2 }}>
-                          {suggestedAgent.suggested_agent?.astreinte_count || 0} astreintes ce trimestre
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setSuggestedAgent(null)}
-                        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#047857" }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    {/* TABLEAU STATS TOUS LES AGENTS */}
-                    <div style={{ overflowX: "auto", marginTop: 8, fontSize: 11 }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                          <tr style={{ background: "#ecfdf5" }}>
-                            <th style={{ padding: "6px 8px", textAlign: "left", fontWeight: 700, color: "#047857", borderBottom: "1px solid #bbf7d0" }}>Agent</th>
-                            <th style={{ padding: "6px 8px", textAlign: "center", fontWeight: 700, color: "#047857", borderBottom: "1px solid #bbf7d0" }}>Astreintes</th>
-                            <th style={{ padding: "6px 8px", textAlign: "center", fontWeight: 700, color: "#047857", borderBottom: "1px solid #bbf7d0" }}>État</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {suggestedAgent.stats.map(stat => (
-                            <tr key={stat.agent_id} style={{ borderBottom: "1px solid #dbeafe" }}>
-                              <td style={{ padding: "6px 8px", fontWeight: stat.is_suggested ? 700 : 500, color: stat.is_suggested ? "#047857" : "#475569" }}>
-                                {stat.name} {stat.is_suggested && "⭐"}
-                              </td>
-                              <td style={{ padding: "6px 8px", textAlign: "center", fontWeight: 700, color: "#047857" }}>
-                                {stat.astreinte_count}
-                              </td>
-                              <td style={{ padding: "6px 8px", textAlign: "center", fontSize: 10 }}>
-                                {stat.on_leave && <span style={{ background: "#fecaca", color: "#dc2626", padding: "2px 6px", borderRadius: 3 }}>Congés</span>}
-                                {stat.did_last_week && <span style={{ background: "#fde68a", color: "#d97706", padding: "2px 6px", borderRadius: 3, marginLeft: 4 }}>Semaine dern.</span>}
-                                {!stat.on_leave && !stat.did_last_week && <span style={{ color: "#10b981" }}>✓ OK</span>}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
                 <div style={{
                   background: "#fff", borderRadius: 0,
                   border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
@@ -3467,12 +3328,15 @@ function PlanningApp({ currentUser, onLogout }) {
                     // Compter sur toute l'année (toutes les clés du localStorage)
                     const agentCounts = {};
                     teamAgentsList.forEach(a => { agentCounts[a.id] = {}; rows.forEach(r => { agentCounts[a.id][r] = 0; }); });
-                    Object.entries(astreintes).forEach(([key, agentId]) => {
+                    Object.entries(astreintes).forEach(([key, astrData]) => {
                       const parts = key.split("|");
                       if (parts.length !== 3) return;
                       const [kTeam, kRow, kDate] = parts;
                       if (kTeam !== teamName) return;
-                      if (!agentCounts[agentId]) return;
+
+                      // Extraire l'agent_id depuis l'objet astreinte retourné par l'API
+                      const agentId = astrData?.agent_id || astrData;
+                      if (!agentId || !agentCounts[agentId]) return;
                       if (agentCounts[agentId][kRow] !== undefined) agentCounts[agentId][kRow]++;
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
@@ -3735,7 +3599,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
 
             {/* VUE SEMAINE */}
-            {planView === "week" && (
+            {planView === "week" && filterMode !== "astreinte" && (
               <div style={{
                 background: "#fff", borderRadius: 0, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,

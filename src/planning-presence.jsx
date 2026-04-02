@@ -283,10 +283,11 @@ const GLOBAL_STYLE = `
     overflow: hidden;
     transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
     cursor: default;
-    min-height: 140px;
+    height: 200px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: stretch;
   }
   
   .stats-card:hover {
@@ -330,7 +331,7 @@ const GLOBAL_STYLE = `
   .stats-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 16px;
   }
   
@@ -3328,15 +3329,12 @@ function PlanningApp({ currentUser, onLogout }) {
                     // Compter sur toute l'année (toutes les clés du localStorage)
                     const agentCounts = {};
                     teamAgentsList.forEach(a => { agentCounts[a.id] = {}; rows.forEach(r => { agentCounts[a.id][r] = 0; }); });
-                    Object.entries(astreintes).forEach(([key, astrData]) => {
+                    Object.entries(astreintes).forEach(([key, agentId]) => {
                       const parts = key.split("|");
                       if (parts.length !== 3) return;
                       const [kTeam, kRow, kDate] = parts;
                       if (kTeam !== teamName) return;
-
-                      // Extraire l'agent_id depuis l'objet astreinte retourné par l'API
-                      const agentId = astrData?.agent_id || astrData;
-                      if (!agentId || !agentCounts[agentId]) return;
+                      if (!agentCounts[agentId]) return;
                       if (agentCounts[agentId][kRow] !== undefined) agentCounts[agentId][kRow]++;
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
@@ -3599,7 +3597,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
 
             {/* VUE SEMAINE */}
-            {planView === "week" && filterMode !== "astreinte" && (
+            {planView === "week" && (
               <div style={{
                 background: "#fff", borderRadius: 0, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
