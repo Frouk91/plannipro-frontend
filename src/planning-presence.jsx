@@ -2122,9 +2122,9 @@ function PlanningApp({ currentUser, onLogout }) {
   };
 
   const sortedAgents = useMemo(() => {
-    if (agentsOrder.length === 0) return agents;
-    return agents.slice().sort((a, b) => agentsOrder.indexOf(a.id) - agentsOrder.indexOf(b.id));
-  }, [agentsOrder, agents]);
+    // Trier par agent_display_order depuis la BDD (pas agentsOrder)
+    return agents.slice().sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
+  }, [agents]);
 
   function getStatsCounts(filterType, agentId) {
     const stats = { cp: 0, cp_current: 0, cp_next: 0, rtt: 0, pont: 0, absence: 0, veille_cp: 0, veille_ferie: 0 };
