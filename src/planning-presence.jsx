@@ -2031,6 +2031,38 @@ function PlanningApp({ currentUser, onLogout }) {
     }
   }, [token]);
 
+  // ========== SAUVEGARDE ORDRE AGENTS EN BDD ==========
+  const saveAgentOrder = useCallback(async (agentIds) => {
+    try {
+      const response = await fetch(`${API}/agents/reorder`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ agentIds })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Mettre à jour l'ordre local avec les agents retournés
+        const newAgents = data.agents.map(a => ({
+          id: a.id,
+          name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
+          email: a.email,
+          role: a.role || "agent",
+          team: a.team_name || a.team || "",
+          avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`),
+          can_book_presence_sites: a.can_book_presence_sites || false,
+          agent_display_order: a.agent_display_order
+        }));
+        setAgents(newAgents);
+        console.log('✅ Ordre sauvegardé en BDD');
+      }
+    } catch (err) {
+      console.error('❌ Erreur saveAgentOrder:', err);
+    }
+  }, [token]);
+  // ========== FIN SAUVEGARDE ORDRE ==========
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
@@ -2055,7 +2087,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   // Tri des agents - SIMPLE ET EFFICACE
-  const moveAgent = (agentId, direction) => {
+  const moveAgent = async (agentId, direction) => {
     const current = agentsOrder.length > 0 ? agentsOrder : agents.map(a => a.id);
     const idx = current.indexOf(agentId);
     if (idx < 0) return;
@@ -2073,10 +2105,12 @@ function PlanningApp({ currentUser, onLogout }) {
       newOrder[idx + 1] = temp;
     }
     setAgentsOrder(newOrder);
-    setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
+    // Sauvegarder en BDD
+    const agentIds = newOrder.map(id => id);
+    await saveAgentOrder(agentIds);
   };
 
-  const dragReorder = (fromId, toId) => {
+  const dragReorder = async (fromId, toId) => {
     if (fromId === toId) return;
     const current = agentsOrder.length > 0 ? agentsOrder : agents.map(a => a.id);
     const newOrder = [...current];
@@ -2086,7 +2120,8 @@ function PlanningApp({ currentUser, onLogout }) {
     newOrder.splice(fromIdx, 1);
     newOrder.splice(toIdx, 0, fromId);
     setAgentsOrder(newOrder);
-    setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
+    // Sauvegarder en BDD
+    await saveAgentOrder(newOrder);
   };
 
   const sortedAgents = useMemo(() => {
@@ -2176,16 +2211,10 @@ function PlanningApp({ currentUser, onLogout }) {
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
-        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false }));
+        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order }));
+        // Trier par agent_display_order depuis la BDD
+        agentsList.sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
         setAgents(agentsList);
-        // Charger l'ordre personnalisé depuis localStorage
-        const savedOrder = localStorage.getItem("agentsOrder");
-        if (savedOrder) {
-          try {
-            const parsedOrder = JSON.parse(savedOrder);
-            setAgentsOrder(parsedOrder);
-          } catch (e) { console.log("Erreur chargement ordre agents:", e); }
-        }
         await loadLeaves(ltFormatted, token, now.getFullYear(), now.getMonth());
         await loadRequests(token);
       } catch (e) { console.error("Erreur chargement:", e); }
