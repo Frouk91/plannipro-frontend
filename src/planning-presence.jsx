@@ -2122,9 +2122,9 @@ function PlanningApp({ currentUser, onLogout }) {
   };
 
   const sortedAgents = useMemo(() => {
-    // Trier par agent_display_order depuis la BDD (pas agentsOrder)
-    return agents.slice().sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
-  }, [agents]);
+    if (agentsOrder.length === 0) return agents;
+    return agents.slice().sort((a, b) => agentsOrder.indexOf(a.id) - agentsOrder.indexOf(b.id));
+  }, [agentsOrder, agents]);
 
   function getStatsCounts(filterType, agentId) {
     const stats = { cp: 0, cp_current: 0, cp_next: 0, rtt: 0, pont: 0, absence: 0, veille_cp: 0, veille_ferie: 0 };
@@ -2212,6 +2212,11 @@ function PlanningApp({ currentUser, onLogout }) {
         // Trier par agent_display_order depuis la BDD
         agentsList.sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
         setAgents(agentsList);
+        // Initialiser agentsOrder depuis agent_display_order (BDD)
+        const initialOrder = agentsList
+          .sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999))
+          .map(a => a.id);
+        setAgentsOrder(initialOrder);
         await loadLeaves(ltFormatted, token, now.getFullYear(), now.getMonth());
         await loadRequests(token);
       } catch (e) { console.error("Erreur chargement:", e); }
