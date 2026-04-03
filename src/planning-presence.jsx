@@ -2046,19 +2046,8 @@ function PlanningApp({ currentUser, onLogout }) {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // ✨ METTRE À JOUR LES AGENTS AVEC LE NOUVEL ORDRE
-        const updatedAgents = data.agents.map(a => ({
-          id: a.id,
-          name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
-          email: a.email,
-          role: a.role || "agent",
-          team: a.team_name || a.team || "",
-          avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`),
-          can_book_presence_sites: a.can_book_presence_sites || false,
-          agent_display_order: a.agent_display_order
-        }));
-        setAgents(updatedAgents);
+        // ✨ METTRE À JOUR JUSTE agentsOrder (pas agents!)
+        setAgentsOrder(agentIds);
         console.log('✅ Ordre sauvegardé en BDD');
       } else {
         console.error('❌ Erreur API:', response.status);
