@@ -309,6 +309,9 @@ const GLOBAL_STYLE = `
   }
   
   .stats-card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -316,7 +319,6 @@ const GLOBAL_STYLE = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: 12px;
     font-size: 24px;
     font-weight: 800;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -331,8 +333,9 @@ const GLOBAL_STYLE = `
   .stats-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
+    padding-right: 60px;
   }
   
   .stats-card-label {
