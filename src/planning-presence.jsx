@@ -2034,6 +2034,7 @@ function PlanningApp({ currentUser, onLogout }) {
   // ========== SAUVEGARDE ORDRE AGENTS EN BDD ==========
   const saveAgentOrder = useCallback(async (agentIds) => {
     try {
+      console.log('💾 Sauvegarde ordre:', agentIds);
       const response = await fetch(`${API}/agents/reorder`, {
         method: 'PATCH',
         headers: {
@@ -2043,20 +2044,9 @@ function PlanningApp({ currentUser, onLogout }) {
         body: JSON.stringify({ agentIds })
       });
       if (response.ok) {
-        const data = await response.json();
-        // Mettre à jour l'ordre local avec les agents retournés
-        const newAgents = data.agents.map(a => ({
-          id: a.id,
-          name: `${a.first_name || ""} ${a.last_name || ""}`.trim(),
-          email: a.email,
-          role: a.role || "agent",
-          team: a.team_name || a.team || "",
-          avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`),
-          can_book_presence_sites: a.can_book_presence_sites || false,
-          agent_display_order: a.agent_display_order
-        }));
-        setAgents(newAgents);
         console.log('✅ Ordre sauvegardé en BDD');
+      } else {
+        console.error('❌ Erreur API:', response.status);
       }
     } catch (err) {
       console.error('❌ Erreur saveAgentOrder:', err);
