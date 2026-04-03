@@ -2035,6 +2035,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const saveAgentOrder = useCallback(async (agentIds) => {
     try {
       console.log('💾 Sauvegarde ordre:', agentIds);
+
       const response = await fetch(`${API}/agents/reorder`, {
         method: 'PATCH',
         headers: {
@@ -2043,13 +2044,19 @@ function PlanningApp({ currentUser, onLogout }) {
         },
         body: JSON.stringify({ agentIds })
       });
+
+      console.log('📡 Réponse API status:', response.status);
+
+      const data = await response.json();
+      console.log('📡 Réponse API data:', data);
+
       if (response.ok) {
         console.log('✅ Ordre sauvegardé en BDD');
       } else {
-        console.error('❌ Erreur API:', response.status);
+        console.error('❌ Erreur API:', response.status, data);
       }
     } catch (err) {
-      console.error('❌ Erreur saveAgentOrder:', err);
+      console.error('❌ Erreur fetch:', err);
     }
   }, [token]);
   // ========== FIN SAUVEGARDE ORDRE ==========
