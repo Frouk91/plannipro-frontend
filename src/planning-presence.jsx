@@ -3029,7 +3029,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 { id: "mail", label: "Mail", fridayOnly: false, color: "#06b6d4", bg: "#ecfeff", border: "#67e8f9", textColor: "#0e7490" },
                 { id: "es", label: "ES", fridayOnly: false, color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7", textColor: "#065f46" },
               ];
-              const showCss = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+              const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
               const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
 
               function AstreinteWeekRow({ teamName, rowId, rowLabel, fridayOnly, color, bg, border, textColor, teamAgentsList }) {
@@ -3311,7 +3311,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           );
                         }
 
-                        const showCss = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+                        const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
                         const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
                         const cssAgents = agents.filter(a => a.team === "Css Digital" && a.role !== "admin");
                         const mailAgents = agents.filter(a => a.team === "Mailing Solution" && a.role !== "admin");
@@ -3371,7 +3371,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
                   });
-                  const showCssBilan = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+                  const showCssBilan = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
                   const showMailBilan = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
                   return (
                     <div style={{ marginTop: 8 }}>
@@ -3381,10 +3381,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       </button>
                       {showBilanAstreinte && (
                         <div style={{ background: "#fff", border: "2px solid #f59e0b", borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden", boxShadow: "0 4px 16px rgba(245,158,11,0.1)" }}>
-                          {[...(showCssBilan ? ["Css Digital"] : []), ...(showMailBilan ? ["Mailing Solution"] : [])].map(teamName => {
+                          {[...(showCssBilan ? ["CSS Digital"] : []), ...(showMailBilan ? ["Mailing Solution"] : [])].map(teamName => {
                             const { agents: tAgents, rows, rowLabels, agentCounts } = bilanByTeam[teamName];
-                            const teamColor = teamName === "Css Digital" ? "#3b82f6" : "#7c3aed";
-                            const teamBg = teamName === "Css Digital" ? "#eff6ff" : "#fdf4ff";
+                            const teamColor = teamName === "CSS Digital" ? "#3b82f6" : "#7c3aed";
+                            const teamBg = teamName === "CSS Digital" ? "#eff6ff" : "#fdf4ff";
                             return (
                               <div key={teamName}>
                                 <div style={{ padding: "8px 16px", background: teamBg, borderTop: "1px solid #f1f5f9", fontSize: 11, fontWeight: 700, color: teamColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>
