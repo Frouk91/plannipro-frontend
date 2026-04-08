@@ -1835,7 +1835,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [astreintes, setAstreintes] = useState({});
   const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
-  const ASTREINTE_TEAMS = ["Css Digital", "Mailing Solution"];
+  const ASTREINTE_TEAMS = ["CSS Digital", "Mailing Solution"];
   const MAILING_EXTRA_ROWS = [
     { id: "action_serveur", label: "Action Serveur / Admin" },
     { id: "mail", label: "Mail" },
