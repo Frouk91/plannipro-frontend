@@ -461,7 +461,7 @@ function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || ""
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 function teamGradient(team) {
   const map = {
-    "Css Digital": "linear-gradient(135deg,#3b82f6,#60a5fa)",
+    "CSS Digital": "linear-gradient(135deg,#3b82f6,#60a5fa)",
     "Mailing Solution": "linear-gradient(135deg,#7c3aed,#a78bfa)",
     "MANAGER": "linear-gradient(135deg,#059669,#34d399)",
   };
@@ -504,7 +504,7 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
 }
 function teamPalette(teamName) {
   const palettes = {
-    "Css Digital": { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
+    "CSS Digital": { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
     "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
     "MANAGER": { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
   };
@@ -3151,7 +3151,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
                             <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
                           </tr>
-                          <AstreinteWeekRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
+                          <AstreinteWeekRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
                         </React.Fragment>
                       )}
                       {showMail && (
@@ -3328,7 +3328,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
                                   <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
                                 </tr>
-                                <AstreinteRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
+                                <AstreinteRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
                               </React.Fragment>
                             )}
                             {showMail && (
