@@ -309,6 +309,9 @@ const GLOBAL_STYLE = `
   }
   
   .stats-card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -316,7 +319,6 @@ const GLOBAL_STYLE = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-left: 12px;
     font-size: 24px;
     font-weight: 800;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -331,8 +333,9 @@ const GLOBAL_STYLE = `
   .stats-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 16px;
+    padding-right: 60px;
   }
   
   .stats-card-label {
@@ -458,7 +461,7 @@ function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || ""
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 function teamGradient(team) {
   const map = {
-    "Css Digital": "linear-gradient(135deg,#3b82f6,#60a5fa)",
+    "CSS Digital": "linear-gradient(135deg,#3b82f6,#60a5fa)",
     "Mailing Solution": "linear-gradient(135deg,#7c3aed,#a78bfa)",
     "MANAGER": "linear-gradient(135deg,#059669,#34d399)",
   };
@@ -501,7 +504,7 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
 }
 function teamPalette(teamName) {
   const palettes = {
-    "Css Digital": { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
+    "CSS Digital": { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
     "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
     "MANAGER": { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
   };
@@ -1832,7 +1835,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [astreintes, setAstreintes] = useState({});
   const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
-  const ASTREINTE_TEAMS = ["Css Digital", "Mailing Solution"];
+  const ASTREINTE_TEAMS = ["CSS Digital", "Mailing Solution"];
   const MAILING_EXTRA_ROWS = [
     { id: "action_serveur", label: "Action Serveur / Admin" },
     { id: "mail", label: "Mail" },
@@ -2031,6 +2034,32 @@ function PlanningApp({ currentUser, onLogout }) {
     }
   }, [token]);
 
+  // ========== SAUVEGARDE ORDRE AGENTS EN BDD ==========
+  const saveAgentOrder = useCallback(async (agentIds) => {
+    try {
+      console.log('💾 Sauvegarde ordre:', agentIds);
+
+      const response = await fetch(`${API}/agents/reorder`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ agentIds })
+      });
+
+      if (response.ok) {
+        // ✨ METTRE À JOUR JUSTE agentsOrder (pas agents!)
+        setAgentsOrder(agentIds);
+        console.log('✅ Ordre sauvegardé en BDD');
+      } else {
+        console.error('❌ Erreur API:', response.status);
+      }
+    } catch (err) {
+      console.error('❌ Erreur fetch:', err);
+    }
+  }, [token]);
+  // ========== FIN SAUVEGARDE ORDRE ==========
 
   function getDaysForLeaveType(leave) {
     const label = (leave.label || "").toLowerCase();
@@ -2055,7 +2084,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   // Tri des agents - SIMPLE ET EFFICACE
-  const moveAgent = (agentId, direction) => {
+  const moveAgent = async (agentId, direction) => {
     const current = agentsOrder.length > 0 ? agentsOrder : agents.map(a => a.id);
     const idx = current.indexOf(agentId);
     if (idx < 0) return;
@@ -2073,10 +2102,12 @@ function PlanningApp({ currentUser, onLogout }) {
       newOrder[idx + 1] = temp;
     }
     setAgentsOrder(newOrder);
-    setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
+    // Sauvegarder en BDD
+    const agentIds = newOrder.map(id => id);
+    await saveAgentOrder(agentIds);
   };
 
-  const dragReorder = (fromId, toId) => {
+  const dragReorder = async (fromId, toId) => {
     if (fromId === toId) return;
     const current = agentsOrder.length > 0 ? agentsOrder : agents.map(a => a.id);
     const newOrder = [...current];
@@ -2086,7 +2117,8 @@ function PlanningApp({ currentUser, onLogout }) {
     newOrder.splice(fromIdx, 1);
     newOrder.splice(toIdx, 0, fromId);
     setAgentsOrder(newOrder);
-    setTimeout(() => localStorage.setItem("agentsOrder", JSON.stringify(newOrder)), 0);
+    // Sauvegarder en BDD
+    await saveAgentOrder(newOrder);
   };
 
   const sortedAgents = useMemo(() => {
@@ -2176,16 +2208,15 @@ function PlanningApp({ currentUser, onLogout }) {
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
-        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false }));
+        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order }));
+        // Trier par agent_display_order depuis la BDD
+        agentsList.sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
         setAgents(agentsList);
-        // Charger l'ordre personnalisé depuis localStorage
-        const savedOrder = localStorage.getItem("agentsOrder");
-        if (savedOrder) {
-          try {
-            const parsedOrder = JSON.parse(savedOrder);
-            setAgentsOrder(parsedOrder);
-          } catch (e) { console.log("Erreur chargement ordre agents:", e); }
-        }
+        // Initialiser agentsOrder depuis agent_display_order (BDD)
+        const initialOrder = agentsList
+          .sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999))
+          .map(a => a.id);
+        setAgentsOrder(initialOrder);
         await loadLeaves(ltFormatted, token, now.getFullYear(), now.getMonth());
         await loadRequests(token);
       } catch (e) { console.error("Erreur chargement:", e); }
@@ -2998,7 +3029,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 { id: "mail", label: "Mail", fridayOnly: false, color: "#06b6d4", bg: "#ecfeff", border: "#67e8f9", textColor: "#0e7490" },
                 { id: "es", label: "ES", fridayOnly: false, color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7", textColor: "#065f46" },
               ];
-              const showCss = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+              const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
               const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
 
               function AstreinteWeekRow({ teamName, rowId, rowLabel, fridayOnly, color, bg, border, textColor, teamAgentsList }) {
@@ -3120,7 +3151,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
                             <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
                           </tr>
-                          <AstreinteWeekRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
+                          <AstreinteWeekRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
                         </React.Fragment>
                       )}
                       {showMail && (
@@ -3280,7 +3311,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           );
                         }
 
-                        const showCss = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+                        const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
                         const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
                         const cssAgents = agents.filter(a => a.team === "Css Digital" && a.role !== "admin");
                         const mailAgents = agents.filter(a => a.team === "Mailing Solution" && a.role !== "admin");
@@ -3297,7 +3328,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
                                   <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
                                 </tr>
-                                <AstreinteRow teamName="Css Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
+                                <AstreinteRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
                               </React.Fragment>
                             )}
                             {showMail && (
@@ -3329,17 +3360,18 @@ function PlanningApp({ currentUser, onLogout }) {
                     // Compter sur toute l'année (toutes les clés du localStorage)
                     const agentCounts = {};
                     teamAgentsList.forEach(a => { agentCounts[a.id] = {}; rows.forEach(r => { agentCounts[a.id][r] = 0; }); });
-                    Object.entries(astreintes).forEach(([key, agentId]) => {
+                    Object.entries(astreintes).forEach(([key, astreinteObj]) => {
                       const parts = key.split("|");
                       if (parts.length !== 3) return;
                       const [kTeam, kRow, kDate] = parts;
                       if (kTeam !== teamName) return;
-                      if (!agentCounts[agentId]) return;
+                      const agentId = astreinteObj?.agent_id;
+                      if (!agentId || !agentCounts[agentId]) return;
                       if (agentCounts[agentId][kRow] !== undefined) agentCounts[agentId][kRow]++;
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
                   });
-                  const showCssBilan = astreinteFilter === "all" || astreinteFilter === "Css Digital";
+                  const showCssBilan = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
                   const showMailBilan = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
                   return (
                     <div style={{ marginTop: 8 }}>
@@ -3349,10 +3381,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       </button>
                       {showBilanAstreinte && (
                         <div style={{ background: "#fff", border: "2px solid #f59e0b", borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden", boxShadow: "0 4px 16px rgba(245,158,11,0.1)" }}>
-                          {[...(showCssBilan ? ["Css Digital"] : []), ...(showMailBilan ? ["Mailing Solution"] : [])].map(teamName => {
+                          {[...(showCssBilan ? ["CSS Digital"] : []), ...(showMailBilan ? ["Mailing Solution"] : [])].map(teamName => {
                             const { agents: tAgents, rows, rowLabels, agentCounts } = bilanByTeam[teamName];
-                            const teamColor = teamName === "Css Digital" ? "#3b82f6" : "#7c3aed";
-                            const teamBg = teamName === "Css Digital" ? "#eff6ff" : "#fdf4ff";
+                            const teamColor = teamName === "CSS Digital" ? "#3b82f6" : "#7c3aed";
+                            const teamBg = teamName === "CSS Digital" ? "#eff6ff" : "#fdf4ff";
                             return (
                               <div key={teamName}>
                                 <div style={{ padding: "8px 16px", background: teamBg, borderTop: "1px solid #f1f5f9", fontSize: 11, fontWeight: 700, color: teamColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>
@@ -3497,94 +3529,96 @@ function PlanningApp({ currentUser, onLogout }) {
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
-                                  draggable={isAdmin}
-                                  onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
-                                  onDragOver={e => { if (!isAdmin || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
+                                  draggable={isAdmin || isManager}
+                                  onDragStart={e => { if (!isAdmin && !isManager) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
+                                  onDragOver={e => { if ((!isAdmin && !isManager) || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
                                   onDragLeave={() => setDragOverAgentId(null)}
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
-                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
+                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin || isManager ? "grab" : "pointer" }}>
+                                  {(isAdmin || isManager) && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", letterSpacing: "0.3px" }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
                                 </td>
-                                {Array.from({ length: daysInMonth }, (_, i) => {
-                                  const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
-                                  const leave = getLeaveForDay(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day;
-                                  const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
-                                  const isFridayCell = new Date(year, month, day).getDay() === 5;
-                                  const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
-                                  return <td key={i}
-                                    onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
-                                    onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
-                                    onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
-                                    onMouseLeave={() => setHoveredDay(null)}
-                                    className={canInteract ? "cell-hover" : ""}
-                                    title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
-                                    style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
-                                    {filterMode === "astreinte" && isFridayCell && !wk && (() => {
-                                      const aKey = dateKey(year, month, day);
-                                      const aAgentId = astreintes[aKey];
-                                      const aAgent = aAgentId ? agents.find(a => a.id === (aAgentId?.agent_id ?? aAgentId)) : null;
-                                      return aAgent ? (
-                                        <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#fef3c7", border: "1.5px solid #f59e0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                          <span style={{ fontSize: 8, fontWeight: 800, color: "#92400e" }}>{aAgent.avatar}</span>
-                                        </div>
-                                      ) : (
-                                        <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, border: "1px dashed #fcd34d", background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                          <span style={{ fontSize: 9, color: "#fcd34d" }}>+</span>
-                                        </div>
-                                      );
-                                    })()}
-                                    {filterMode !== "astreinte" && isFer && !wk && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 8, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
-                                    {filterMode !== "astreinte" && leave && !wk && !isFer && (
-                                      filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
-                                        <div style={{
-                                          width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, overflow: "hidden", position: "relative",
-                                          background: leave.status === "pending" ? "#fff" : leave.color,
-                                          border: `1.5px solid ${leave.color}`,
-                                          boxShadow: leave.status === "pending" ? "0 0 8px rgba(255,255,255,0.5)" : `0 1px 3px ${leave.color}50`,
-                                          animation: leave.status === "pending" ? "pulse 2s ease-in-out infinite" : "none",
-                                          transition: "all 0.3s ease"
-                                        }}>
-                                          {leave.status !== "pending" && <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.15)" }} />}
-                                          <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.3px", color: leave.status === "pending" ? leave.color : "#fff", textTransform: "uppercase" }}>
-                                              {leave.status === "pending" ? "…" : leave.label.slice(0, 1).toUpperCase()}
+                                {
+                                  Array.from({ length: daysInMonth }, (_, i) => {
+                                    const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
+                                    const leave = getLeaveForDay(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day;
+                                    const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
+                                    const isFridayCell = new Date(year, month, day).getDay() === 5;
+                                    const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
+                                    return <td key={i}
+                                      onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
+                                      onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
+                                      onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
+                                      onMouseLeave={() => setHoveredDay(null)}
+                                      className={canInteract ? "cell-hover" : ""}
+                                      title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
+                                      style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
+                                      {filterMode === "astreinte" && isFridayCell && !wk && (() => {
+                                        const aKey = dateKey(year, month, day);
+                                        const aAgentId = astreintes[aKey];
+                                        const aAgent = aAgentId ? agents.find(a => a.id === (aAgentId?.agent_id ?? aAgentId)) : null;
+                                        return aAgent ? (
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#fef3c7", border: "1.5px solid #f59e0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <span style={{ fontSize: 8, fontWeight: 800, color: "#92400e" }}>{aAgent.avatar}</span>
+                                          </div>
+                                        ) : (
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, border: "1px dashed #fcd34d", background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <span style={{ fontSize: 9, color: "#fcd34d" }}>+</span>
+                                          </div>
+                                        );
+                                      })()}
+                                      {filterMode !== "astreinte" && isFer && !wk && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 8, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
+                                      {filterMode !== "astreinte" && leave && !wk && !isFer && (
+                                        filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
+                                          <div style={{
+                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, overflow: "hidden", position: "relative",
+                                            background: leave.status === "pending" ? "#fff" : leave.color,
+                                            border: `1.5px solid ${leave.color}`,
+                                            boxShadow: leave.status === "pending" ? "0 0 8px rgba(255,255,255,0.5)" : `0 1px 3px ${leave.color}50`,
+                                            animation: leave.status === "pending" ? "pulse 2s ease-in-out infinite" : "none",
+                                            transition: "all 0.3s ease"
+                                          }}>
+                                            {leave.status !== "pending" && <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.15)" }} />}
+                                            <div style={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                              <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.3px", color: leave.status === "pending" ? leave.color : "#fff", textTransform: "uppercase" }}>
+                                                {leave.status === "pending" ? "…" : leave.label.slice(0, 1).toUpperCase()}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ) : isHalfDay(leave) && leave.status === "pending" ? (
+                                          <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}`, animation: "pulse 2s ease-in-out infinite", transition: "all 0.3s ease" }}>
+                                            <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
+                                          </div>
+                                        ) : isHalfDay(leave) ? (
+                                          <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ display: "contents" }}>
+                                            <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½", "").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
+                                          </div>
+                                        ) : (
+                                          <div style={{
+                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px",
+                                            background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
+                                            borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
+                                            border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
+                                            opacity: filterMode === "presence" ? 0.75 : 1,
+                                            boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
+                                          }}>
+                                            <span style={{
+                                              fontSize: 7, fontWeight: 700,
+                                              color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
+                                            }}>
+                                              {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
                                             </span>
                                           </div>
-                                        </div>
-                                      ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}`, animation: "pulse 2s ease-in-out infinite", transition: "all 0.3s ease" }}>
-                                          <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
-                                        </div>
-                                      ) : isHalfDay(leave) ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ display: "contents" }}>
-                                          <HalfDayCell color={leave.color} label={leaveAbbr(leave.label).replace("½", "").trim()} isMatin={getHalfDayPeriod(leave) === "matin"} size={20} fontSize={6} pad={1} />
-                                        </div>
-                                      ) : (
-                                        <div style={{
-                                          width: "calc(100% - 2px)", height: 20, margin: "0 1px",
-                                          background: filterMode === "presence" ? hexToLight(leave.color) : (leave.status === "pending" ? hexToLight(leave.color) : leave.color),
-                                          borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center",
-                                          border: filterMode === "presence" ? `1px dashed ${leave.color}` : (leave.status === "pending" ? `1px dashed ${leave.color}` : "none"),
-                                          opacity: filterMode === "presence" ? 0.75 : 1,
-                                          boxShadow: filterMode !== "presence" && leave.status !== "pending" ? `0 1px 4px ${leave.color}40` : "none"
-                                        }}>
-                                          <span style={{
-                                            fontSize: 7, fontWeight: 700,
-                                            color: filterMode === "presence" || leave.status === "pending" ? leave.color : "#fff"
-                                          }}>
-                                            {leave.status === "pending" ? "?" : leaveAbbr(leave.label)}
-                                          </span>
-                                        </div>
-                                      )
-                                    )}
-                                    {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
-                                  </td>;
-                                })}
+                                        )
+                                      )}
+                                      {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
+                                    </td>;
+                                  })
+                                }
                               </tr>
                             );
                           })}
@@ -3662,14 +3696,14 @@ function PlanningApp({ currentUser, onLogout }) {
                               <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
                                 <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
-                                  draggable={isAdmin}
-                                  onDragStart={e => { if (!isAdmin) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
-                                  onDragOver={e => { if (!isAdmin || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
+                                  draggable={isAdmin || isManager}
+                                  onDragStart={e => { if (!isAdmin && !isManager) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
+                                  onDragOver={e => { if ((!isAdmin && !isManager) || !dragAgentId) return; e.preventDefault(); setDragOverAgentId(agent.id); }}
                                   onDragLeave={() => setDragOverAgentId(null)}
                                   onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragAgentId) dragReorder(dragAgentId, agent.id); setDragAgentId(null); setDragOverAgentId(null); }}
                                   onDragEnd={() => { setDragAgentId(null); setDragOverAgentId(null); }}
-                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin ? "grab" : "pointer" }}>
-                                  {isAdmin && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
+                                  style={{ display: "flex", alignItems: "center", height: "100%", minHeight: 36, gap: 6, paddingLeft: 6, opacity: dragAgentId === agent.id ? 0.4 : 1, background: dragOverAgentId === agent.id ? "#eef2ff" : "inherit", transition: "background 0.15s, opacity 0.15s", cursor: isAdmin || isManager ? "grab" : "pointer" }}>
+                                  {(isAdmin || isManager) && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
                                     <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", letterSpacing: "0.3px" }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
@@ -3748,772 +3782,787 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
             )}
           </div>
-        )}
+        )
+        }
 
-        {view === "validations" && (
-          <ValidationsView
-            isManager={isManager}
-            isAdmin={isAdmin}
-            requests={requests}
-            pendingRequests={pendingRequests}
-            myRequests={myRequests}
-            onApprove={approveRequest}
-            onReject={(id) => { setRejectModal(id); setRejectComment(""); }}
-            onClearHistory={async () => {
-              const toDelete = requests.filter(r => r.status === "rejected");
-              setRequests(prev => prev.filter(r => r.status !== "rejected"));
-              await Promise.all(toDelete.map(r => apiFetch(`/leaves/${r.id}`, token, { method: "DELETE" }).catch(() => { })));
-              await loadRequests(token);
-              showNotif("Historique des validations effacé ✅");
-            }}
-            onClearPlanningData={async () => {
-              const allLeaves = requests;
-              setRequests([]);
-              setLeaves({});
-              setAstreintes({});
-              localStorage.removeItem("astreintes");
-              await Promise.all(allLeaves.map(r => apiFetch(`/leaves/${r.id}`, token, { method: "DELETE" }).catch(() => { })));
-              await loadRequests(token);
-              showNotif("Données du planning et astreintes supprimées ✅");
-            }}
-          />
-        )}
+        {
+          view === "validations" && (
+            <ValidationsView
+              isManager={isManager}
+              isAdmin={isAdmin}
+              requests={requests}
+              pendingRequests={pendingRequests}
+              myRequests={myRequests}
+              onApprove={approveRequest}
+              onReject={(id) => { setRejectModal(id); setRejectComment(""); }}
+              onClearHistory={async () => {
+                const toDelete = requests.filter(r => r.status === "rejected");
+                setRequests(prev => prev.filter(r => r.status !== "rejected"));
+                await Promise.all(toDelete.map(r => apiFetch(`/leaves/${r.id}`, token, { method: "DELETE" }).catch(() => { })));
+                await loadRequests(token);
+                showNotif("Historique des validations effacé ✅");
+              }}
+              onClearPlanningData={async () => {
+                const allLeaves = requests;
+                setRequests([]);
+                setLeaves({});
+                setAstreintes({});
+                localStorage.removeItem("astreintes");
+                await Promise.all(allLeaves.map(r => apiFetch(`/leaves/${r.id}`, token, { method: "DELETE" }).catch(() => { })));
+                await loadRequests(token);
+                showNotif("Données du planning et astreintes supprimées ✅");
+              }}
+            />
+          )
+        }
 
-        {view === "stats" && (
-          <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
-            {(() => {
-              /* ── Calculs agent ── */
-              const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
-              const teamMap = {};
-              agents.filter(a => a.role !== "admin").forEach(a => {
-                const t = a.team || "Sans équipe";
-                if (!teamMap[t]) teamMap[t] = [];
-                teamMap[t].push(a);
-              });
-              const filteredAgents = statsAgentSearch
-                ? agents.filter(a => a.role !== "admin" && (a.name.toLowerCase().includes(statsAgentSearch.toLowerCase()) || (a.team || "").toLowerCase().includes(statsAgentSearch.toLowerCase())))
-                : null;
+        {
+          view === "stats" && (
+            <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
+              {(() => {
+                /* ── Calculs agent ── */
+                const selAgent = selectedAgentForStats ? agents.find(a => a.id === selectedAgentForStats) : null;
+                const teamMap = {};
+                agents.filter(a => a.role !== "admin").forEach(a => {
+                  const t = a.team || "Sans équipe";
+                  if (!teamMap[t]) teamMap[t] = [];
+                  teamMap[t].push(a);
+                });
+                const filteredAgents = statsAgentSearch
+                  ? agents.filter(a => a.role !== "admin" && (a.name.toLowerCase().includes(statsAgentSearch.toLowerCase()) || (a.team || "").toLowerCase().includes(statsAgentSearch.toLowerCase())))
+                  : null;
 
-              /* ── Calculs dates ── */
-              const displayAgentIdForPicker = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
-              const agentLeaves = leaves[displayAgentIdForPicker] || {};
-              const monthsWithLeaves = {};
-              Object.entries(agentLeaves).forEach(([dateKey]) => {
-                if (dateKey.endsWith("__presence")) return;
-                const [y, m] = dateKey.split("-");
-                const key = `${y}-${m}`;
-                if (!monthsWithLeaves[key]) monthsWithLeaves[key] = { year: parseInt(y), month: parseInt(m) - 1 };
-              });
-              const yearsAvailable = [...new Set(Object.values(monthsWithLeaves).map(x => x.year))].sort((a, b) => b - a);
-              if (!yearsAvailable.includes(year)) yearsAvailable.push(year);
-              yearsAvailable.sort((a, b) => b - a);
-              const navMonth = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.month : month;
-              const navYear = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.year : year;
-              const isYearMode = statsFilter === "year";
-              function navPrev() {
-                setStatsPickerOpen(false);
-                if (isYearMode) return;
-                let nm = navMonth - 1, ny = navYear;
-                if (nm < 0) { nm = 11; ny--; }
-                if (nm === month && ny === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
-                else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
-              }
-              function navNext() {
-                setStatsPickerOpen(false);
-                if (isYearMode) return;
-                let nm = navMonth + 1, ny = navYear;
-                if (nm > 11) { nm = 0; ny++; }
-                if (nm === month && ny === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
-                else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
-              }
+                /* ── Calculs dates ── */
+                const displayAgentIdForPicker = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
+                const agentLeaves = leaves[displayAgentIdForPicker] || {};
+                const monthsWithLeaves = {};
+                Object.entries(agentLeaves).forEach(([dateKey]) => {
+                  if (dateKey.endsWith("__presence")) return;
+                  const [y, m] = dateKey.split("-");
+                  const key = `${y}-${m}`;
+                  if (!monthsWithLeaves[key]) monthsWithLeaves[key] = { year: parseInt(y), month: parseInt(m) - 1 };
+                });
+                const yearsAvailable = [...new Set(Object.values(monthsWithLeaves).map(x => x.year))].sort((a, b) => b - a);
+                if (!yearsAvailable.includes(year)) yearsAvailable.push(year);
+                yearsAvailable.sort((a, b) => b - a);
+                const navMonth = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.month : month;
+                const navYear = statsFilter === "custom" && statsCustomMonth ? statsCustomMonth.year : year;
+                const isYearMode = statsFilter === "year";
+                function navPrev() {
+                  setStatsPickerOpen(false);
+                  if (isYearMode) return;
+                  let nm = navMonth - 1, ny = navYear;
+                  if (nm < 0) { nm = 11; ny--; }
+                  if (nm === month && ny === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
+                  else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
+                }
+                function navNext() {
+                  setStatsPickerOpen(false);
+                  if (isYearMode) return;
+                  let nm = navMonth + 1, ny = navYear;
+                  if (nm > 11) { nm = 0; ny++; }
+                  if (nm === month && ny === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
+                  else { setStatsFilter("custom"); setStatsCustomMonth({ year: ny, month: nm }); }
+                }
 
-              return (
-                <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
-
-                  {/* ── Sélecteur agent (managers uniquement) ── */}
-                  {isManager && (<>
-                    <div style={{ position: "relative", flexShrink: 0 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
-                      </div>
-                      <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#6366f1"), background: "#eef2ff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "0 1px 6px rgba(99,102,241,0.2)", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
-                        {selAgent ? (<>
-                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
-                            <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
-                          </div>
-                        </>) : (<>
-                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                            <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
-                          </div>
-                        </>)}
-                        <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
-                      </div>
-                      {statsAgentDropOpen && (
-                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
-                          <div style={{ padding: "10px 12px", borderBottom: "1px solid #334155", position: "sticky", top: 0, background: "#1e293b", zIndex: 1 }}>
-                            <div style={{ position: "relative" }}>
-                              <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
-                                <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2" />
-                                <path d="M13 13l3.5 3.5" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" />
-                              </svg>
-                              <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher un agent ou une équipe..."
-                                style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #475569", borderRadius: 10, background: "#0f172a", fontSize: 12, color: "#f1f5f9", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
-                                onFocus={e => e.target.style.borderColor = "#6366f1"}
-                                onBlur={e => e.target.style.borderColor = "#475569"}
-                              />
-                              {statsAgentSearch && (
-                                <button onClick={() => setStatsAgentSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "rgba(148,163,184,0.15)", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", color: "#64748b", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>✕</button>
-                              )}
-                            </div>
-                          </div>
-                          <div style={{ maxHeight: 320, overflowY: "auto" }}>
-                            {(!statsAgentSearch) && (
-                              <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer", borderBottom: "1px solid #334155" }}
-                                onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
-                                <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
-                                <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                                  <div style={{ fontSize: 10, color: "#64748b" }}>Mon profil</div>
-                                </div>
-                                {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                              </button>
-                            )}
-                            {filteredAgents ? filteredAgents.map(a => (
-                              <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
-                                <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                <div style={{ flex: 1, textAlign: "left" }}>
-                                  <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
-                                  <div style={{ fontSize: 10, color: "#64748b" }}>{a.team}</div>
-                                </div>
-                                {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                              </button>
-                            )) : Object.entries(teamMap).sort(([a], [b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
-                              const tp = teamPalette(teamName);
-                              return (
-                                <div key={teamName}>
-                                  <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.border, textTransform: "uppercase", letterSpacing: "0.6px", background: "rgba(255,255,255,0.04)", borderTop: "1px solid #334155" }}>{teamName}</div>
-                                  {teamAgents.map(a => (
-                                    <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
-                                      style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
-                                      onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                      onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
-                                      <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                      <div style={{ flex: 1, textAlign: "left" }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
-                                      </div>
-                                      {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
-                                    </button>
-                                  ))}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ── Séparateur vertical ── */}
-                    <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
-                  </>)}
-
-                  {/* ── Navigateur mois ‹ / label / › ── */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
-                        <button onClick={navPrev} title="Mois précédent"
-                          style={{ padding: "5px 10px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
-                          onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
-                          onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
-                        <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                          <button
-                            onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                            style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
-                            📅 {MONTHS_FR[navMonth]} {navYear}
-                            {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
-                          </button>
-                          {statsPickerOpen && (
-                            <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
-                              {yearsAvailable.map(yr => (
-                                <div key={yr}>
-                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
-                                    <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
-                                    <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
-                                  </div>
-                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
-                                    {Array.from({ length: 12 }, (_, mi) => {
-                                      const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi + 1).padStart(2, "0")}`];
-                                      const isAct = (!isYearMode && navYear === yr && navMonth === mi);
-                                      const isCurrMth = yr === year && mi === month;
-                                      return (
-                                        <button key={mi}
-                                          onClick={() => {
-                                            if (mi === month && yr === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
-                                            else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
-                                            setStatsPickerOpen(false);
-                                          }}
-                                          style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
-                                          onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
-                                          onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
-                                          {MONTHS_FR[mi].slice(0, 3)}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <button onClick={navNext} title="Mois suivant"
-                          style={{ padding: "5px 10px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
-                          onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
-                          onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
-                      </div>
-
-                      {/* ── Séparateur ── */}
-                      <div style={{ width: 1, height: 28, background: "#e8edf5", borderRadius: 1 }} />
-
-                      {/* ── Bouton Année ── */}
-                      <button
-                        onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
-                        style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
-                        onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; } }}
-                        onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; } }}>
-                        📆 Année {navYear}
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              );
-            })()}
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
-              {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
-                <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
-                    <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                    <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
-                  </div>
-                </div>
-              )}
-              {!loadingYearStats && (() => {
-                const displayAgentId = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
-                const displayAgent = agents.find(a => a.id === displayAgentId);
-                if (!displayAgent) return <div style={{ color: "#94a3b8", fontSize: 12 }}>Agent non trouvé</div>;
-                const counts = getStatsCounts(statsFilter, displayAgentId);
-                const veilleCpLT = leaveTypes.find(t => (t.code || "") === "veille_de_cp" || (t.label || "").toLowerCase() === "veille de cp");
-                const veilleEFerieLT = leaveTypes.find(t => (t.code || "") === "veille_de_ferie" || (t.label || "").toLowerCase() === "veille de férié");
-                const cpLT = leaveTypes.find(t => (t.code || "") === "cp" || (t.label || "").toLowerCase() === "congé payé" || (t.label || "").toUpperCase() === "CP");
-                const rttLT = leaveTypes.find(t => (t.code || "") === "rtt" || (t.label || "").toUpperCase() === "RTT");
-                const pontLT = leaveTypes.find(t => (t.code || "") === "pont" || (t.label || "").toLowerCase() === "pont");
-                const absenceLT = leaveTypes.find(t => (t.code || "") === "absence" || (t.label || "").toLowerCase() === "absence");
-                const stats = [
-                  { key: "cp", label: "Congés Payés", color: cpLT?.color || "#6366f1", icon: "✏️", days: counts.cp },
-                  { key: "rtt", label: "RTT", color: rttLT?.color || "#10b981", icon: "⏱️", days: counts.rtt },
-                  { key: "pont", label: "Ponts", color: pontLT?.color || "#f59e0b", icon: "🌉", days: counts.pont },
-                  { key: "absence", label: "Absences", color: absenceLT?.color || "#ef4444", icon: "❌", days: counts.absence },
-                  { key: "veille_cp", label: "Veille de CP", color: veilleCpLT?.color || "#8b5cf6", icon: "🌙", days: counts.veille_cp },
-                  { key: "veille_ferie", label: "Veille de Férié", color: veilleEFerieLT?.color || "#f97316", icon: "🎉", days: counts.veille_ferie },
-                ];
-                const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
-                const totalDays = stats.reduce((s, x) => s + x.days, 0);
                 return (
-                  <>
-                    {/* Bandeau agent si manager */}
-                    {isManager && selectedAgentForStats && (
-                      <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
-                        <div>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
-                          <div style={{ fontSize: 11, color: "#94a3b8" }}>{displayAgent.team} · {periodLabel}</div>
+                  <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+
+                    {/* ── Sélecteur agent (managers uniquement) ── */}
+                    {isManager && (<>
+                      <div style={{ position: "relative", flexShrink: 0 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
+                          <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
                         </div>
-                        <div style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#64748b" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })} j total</div>
-                      </div>
-                    )}
-                    {stats.map(s => {
-                      const isCp = s.key === "cp";
-                      const todayPeriodYear = (new Date().getMonth() >= 5) ? new Date().getFullYear() : new Date().getFullYear() - 1;
-                      const periodCurrent = `Juin ${todayPeriodYear} → Mai ${todayPeriodYear + 1}`;
-                      const periodNext = `Juin ${todayPeriodYear + 1} → Mai ${todayPeriodYear + 2}`;
-                      return (
-                        <div key={s.key} className="stats-card" style={{ '--card-color': s.color }}>
-                          {/* Label + valeur */}
-                          <div className="stats-card-header">
-                            <div style={{ flex: 1 }}>
-                              <div className="stats-card-label">{s.label}</div>
-                              {isCp ? (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                  <div>
-                                    <span className="stats-card-value" style={{ color: s.color }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
-                                    <span className="stats-card-unit">j</span>
-                                    <div className="stats-card-period">{periodCurrent}</div>
-                                  </div>
-                                  <div className="stats-card-divider" />
-                                  <div>
-                                    <span className="stats-card-subvalue" style={{ color: s.color }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
-                                    <span className="stats-card-unit">j</span>
-                                    <div className="stats-card-period">{periodNext}</div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div>
-                                  <span className="stats-card-value" style={{ color: s.color }}>{s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
-                                  <span className="stats-card-unit">j</span>
-                                </div>
-                              )}
+                        <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
+                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#6366f1"), background: "#eef2ff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "0 1px 6px rgba(99,102,241,0.2)", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
+                          {selAgent ? (<>
+                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                              <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
                             </div>
-                            {/* Badge moderne */}
-                            <div className="stats-card-badge" style={{ background: s.color + "20", color: s.color }}>
-                              {s.icon || "●"}
+                          </>) : (<>
+                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                              <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
+                            </div>
+                          </>)}
+                          <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
+                        </div>
+                        {statsAgentDropOpen && (
+                          <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
+                            <div style={{ padding: "10px 12px", borderBottom: "1px solid #334155", position: "sticky", top: 0, background: "#1e293b", zIndex: 1 }}>
+                              <div style={{ position: "relative" }}>
+                                <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
+                                  <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2" />
+                                  <path d="M13 13l3.5 3.5" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                                <input autoFocus value={statsAgentSearch} onChange={e => setStatsAgentSearch(e.target.value)} placeholder="Rechercher un agent ou une équipe..."
+                                  style={{ width: "100%", padding: "9px 34px 9px 34px", border: "1.5px solid #475569", borderRadius: 10, background: "#0f172a", fontSize: 12, color: "#f1f5f9", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
+                                  onFocus={e => e.target.style.borderColor = "#6366f1"}
+                                  onBlur={e => e.target.style.borderColor = "#475569"}
+                                />
+                                {statsAgentSearch && (
+                                  <button onClick={() => setStatsAgentSearch("")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", border: "none", background: "rgba(148,163,184,0.15)", borderRadius: "50%", width: 18, height: 18, cursor: "pointer", color: "#64748b", fontSize: 10, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>✕</button>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{ maxHeight: 320, overflowY: "auto" }}>
+                              {(!statsAgentSearch) && (
+                                <button onClick={() => { setSelectedAgentForStats(null); setStatsAgentDropOpen(false); }}
+                                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", background: !selectedAgentForStats ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer", borderBottom: "1px solid #334155" }}
+                                  onMouseEnter={e => { if (selectedAgentForStats) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                  onMouseLeave={e => { if (selectedAgentForStats) e.currentTarget.style.background = "none"; }}>
+                                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                                  <div style={{ flex: 1, textAlign: "left" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: "#f1f5f9" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                                    <div style={{ fontSize: 10, color: "#64748b" }}>Mon profil</div>
+                                  </div>
+                                  {!selectedAgentForStats && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                                </button>
+                              )}
+                              {filteredAgents ? filteredAgents.map(a => (
+                                <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
+                                  onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                  onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
+                                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                  <div style={{ flex: 1, textAlign: "left" }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                                    <div style={{ fontSize: 10, color: "#64748b" }}>{a.team}</div>
+                                  </div>
+                                  {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                                </button>
+                              )) : Object.entries(teamMap).sort(([a], [b]) => a.localeCompare(b)).map(([teamName, teamAgents]) => {
+                                const tp = teamPalette(teamName);
+                                return (
+                                  <div key={teamName}>
+                                    <div style={{ padding: "6px 14px 4px", fontSize: 10, fontWeight: 800, color: tp.border, textTransform: "uppercase", letterSpacing: "0.6px", background: "rgba(255,255,255,0.04)", borderTop: "1px solid #334155" }}>{teamName}</div>
+                                    {teamAgents.map(a => (
+                                      <button key={a.id} onClick={() => { setSelectedAgentForStats(a.id); setStatsAgentDropOpen(false); }}
+                                        style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 14px", border: "none", background: selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none", cursor: "pointer" }}
+                                        onMouseEnter={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                        onMouseLeave={e => { if (selectedAgentForStats !== a.id) e.currentTarget.style.background = selectedAgentForStats === a.id ? "rgba(99,102,241,0.25)" : "none"; }}>
+                                        <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                        <div style={{ flex: 1, textAlign: "left" }}>
+                                          <div style={{ fontSize: 12, fontWeight: 600, color: "#f1f5f9" }}>{a.name}</div>
+                                        </div>
+                                        {selectedAgentForStats === a.id && <span style={{ color: "#6366f1", fontSize: 13, fontWeight: 700 }}>✓</span>}
+                                      </button>
+                                    ))}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                          {/* Barre de progression */}
-                          {!isCp && totalDays > 0 && (
-                            <div className="stats-card-progress">
-                              <div className="stats-card-progress-bar">
-                                <div className="stats-card-progress-fill" style={{ width: Math.round((s.days / totalDays) * 100) + "%", background: s.color }} />
+                        )}
+                      </div>
+
+                      {/* ── Séparateur vertical ── */}
+                      <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
+                    </>)}
+
+                    {/* ── Navigateur mois ‹ / label / › ── */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
+                        <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
+                          <button onClick={navPrev} title="Mois précédent"
+                            style={{ padding: "5px 10px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                            onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
+                            onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
+                          <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                            <button
+                              onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
+                              style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
+                              📅 {MONTHS_FR[navMonth]} {navYear}
+                              {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
+                            </button>
+                            {statsPickerOpen && (
+                              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                                {yearsAvailable.map(yr => (
+                                  <div key={yr}>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
+                                      <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
+                                      <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
+                                      {Array.from({ length: 12 }, (_, mi) => {
+                                        const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi + 1).padStart(2, "0")}`];
+                                        const isAct = (!isYearMode && navYear === yr && navMonth === mi);
+                                        const isCurrMth = yr === year && mi === month;
+                                        return (
+                                          <button key={mi}
+                                            onClick={() => {
+                                              if (mi === month && yr === year) { setStatsFilter("month"); setStatsCustomMonth(null); }
+                                              else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
+                                              setStatsPickerOpen(false);
+                                            }}
+                                            style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
+                                            onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
+                                            {MONTHS_FR[mi].slice(0, 3)}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                              <div className="stats-card-progress-label">{periodLabel}</div>
-                            </div>
-                          )}
+                            )}
+                          </div>
+                          <button onClick={navNext} title="Mois suivant"
+                            style={{ padding: "5px 10px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                            onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
+                            onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
                         </div>
-                      );
-                    })}
-                  </>
+
+                        {/* ── Séparateur ── */}
+                        <div style={{ width: 1, height: 28, background: "#e8edf5", borderRadius: 1 }} />
+
+                        {/* ── Bouton Année ── */}
+                        <button
+                          onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
+                          style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
+                          onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; } }}
+                          onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; } }}>
+                          📆 Année {navYear}
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
                 );
               })()}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
+                  <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
+                      <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                      <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
+                    </div>
+                  </div>
+                )}
+                {!loadingYearStats && (() => {
+                  const displayAgentId = isManager ? (selectedAgentForStats || currentUser.id) : currentUser.id;
+                  const displayAgent = agents.find(a => a.id === displayAgentId);
+                  if (!displayAgent) return <div style={{ color: "#94a3b8", fontSize: 12 }}>Agent non trouvé</div>;
+                  const counts = getStatsCounts(statsFilter, displayAgentId);
+                  const veilleCpLT = leaveTypes.find(t => (t.code || "") === "veille_de_cp" || (t.label || "").toLowerCase() === "veille de cp");
+                  const veilleEFerieLT = leaveTypes.find(t => (t.code || "") === "veille_de_ferie" || (t.label || "").toLowerCase() === "veille de férié");
+                  const cpLT = leaveTypes.find(t => (t.code || "") === "cp" || (t.label || "").toLowerCase() === "congé payé" || (t.label || "").toUpperCase() === "CP");
+                  const rttLT = leaveTypes.find(t => (t.code || "") === "rtt" || (t.label || "").toUpperCase() === "RTT");
+                  const pontLT = leaveTypes.find(t => (t.code || "") === "pont" || (t.label || "").toLowerCase() === "pont");
+                  const absenceLT = leaveTypes.find(t => (t.code || "") === "absence" || (t.label || "").toLowerCase() === "absence");
+                  const stats = [
+                    { key: "cp", label: "Congés Payés", color: cpLT?.color || "#6366f1", icon: "✏️", days: counts.cp },
+                    { key: "rtt", label: "RTT", color: rttLT?.color || "#10b981", icon: "⏱️", days: counts.rtt },
+                    { key: "pont", label: "Ponts", color: pontLT?.color || "#f59e0b", icon: "🌉", days: counts.pont },
+                    { key: "absence", label: "Absences", color: absenceLT?.color || "#ef4444", icon: "❌", days: counts.absence },
+                    { key: "veille_cp", label: "Veille de CP", color: veilleCpLT?.color || "#8b5cf6", icon: "🌙", days: counts.veille_cp },
+                    { key: "veille_ferie", label: "Veille de Férié", color: veilleEFerieLT?.color || "#f97316", icon: "🎉", days: counts.veille_ferie },
+                  ];
+                  const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
+                  const totalDays = stats.reduce((s, x) => s + x.days, 0);
+                  return (
+                    <>
+                      {/* Bandeau agent si manager */}
+                      {isManager && selectedAgentForStats && (
+                        <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
+                          <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
+                            <div style={{ fontSize: 11, color: "#94a3b8" }}>{displayAgent.team} · {periodLabel}</div>
+                          </div>
+                          <div style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#64748b" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })} j total</div>
+                        </div>
+                      )}
+                      {stats.map(s => {
+                        const isCp = s.key === "cp";
+                        const todayPeriodYear = (new Date().getMonth() >= 5) ? new Date().getFullYear() : new Date().getFullYear() - 1;
+                        const periodCurrent = `Juin ${todayPeriodYear} → Mai ${todayPeriodYear + 1}`;
+                        const periodNext = `Juin ${todayPeriodYear + 1} → Mai ${todayPeriodYear + 2}`;
+                        return (
+                          <div key={s.key} className="stats-card" style={{ '--card-color': s.color }}>
+                            {/* Label + valeur */}
+                            <div className="stats-card-header">
+                              <div style={{ flex: 1 }}>
+                                <div className="stats-card-label">{s.label}</div>
+                                {isCp ? (
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <div>
+                                      <span className="stats-card-value" style={{ color: s.color }}>{counts.cp_current.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_current % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                      <span className="stats-card-unit">j</span>
+                                      <div className="stats-card-period">{periodCurrent}</div>
+                                    </div>
+                                    <div className="stats-card-divider" />
+                                    <div>
+                                      <span className="stats-card-subvalue" style={{ color: s.color }}>{counts.cp_next.toLocaleString("fr-FR", { minimumFractionDigits: counts.cp_next % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                      <span className="stats-card-unit">j</span>
+                                      <div className="stats-card-period">{periodNext}</div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div>
+                                    <span className="stats-card-value" style={{ color: s.color }}>{s.days.toLocaleString("fr-FR", { minimumFractionDigits: s.days % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                                    <span className="stats-card-unit">j</span>
+                                  </div>
+                                )}
+                              </div>
+                              {/* Badge moderne */}
+                              <div className="stats-card-badge" style={{ background: s.color + "20", color: s.color }}>
+                                {s.icon || "●"}
+                              </div>
+                            </div>
+                            {/* Barre de progression */}
+                            {!isCp && totalDays > 0 && (
+                              <div className="stats-card-progress">
+                                <div className="stats-card-progress-bar">
+                                  <div className="stats-card-progress-fill" style={{ width: Math.round((s.days / totalDays) * 100) + "%", background: s.color }} />
+                                </div>
+                                <div className="stats-card-progress-label">{periodLabel}</div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
-          </div>
-        )}
-      </main>
+          )
+        }
+      </main >
 
       {/* DROPDOWN ASTREINTE */}
-      {astreinteDropdown && (() => {
-        const { aKey, teamName: aTeamName, rowType, rowId, key: aDateKey, onAgentPicked } = astreinteDropdown;
-        const ASTREINTE_EXCLUDED = ["carol horlaville", "yannick loubery"];
-        const aTeamAgents = agents.filter(a => a.team === aTeamName && a.role !== "admin" && !ASTREINTE_EXCLUDED.includes(a.name.toLowerCase()));
-        const rowLabels = { "astreinte": "Astreinte vendredi", "action_serveur": "Action Serveur / Admin", "mail": "Mail", "es": "ES" };
-        const [ay, am, ad] = (aDateKey || "").split("-");
-        const dateLabel = `${ad}/${am}`;
-        return (
-          <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.min(astreinteDropdown.y, window.innerHeight - 320), left: Math.min(astreinteDropdown.x, window.innerWidth - 240), background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: 230, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.15s ease" }}>
-            <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#1e293b", fontWeight: 700, background: "#fef3c7", position: "sticky", top: 0 }}>
-              🔔 {aTeamName} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
-              {astreinteDropdown.fridayOnly
-                ? <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
-                : <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
-              }
-            </div>
-            {!onAgentPicked && astreintes[aKey] && (
+      {
+        astreinteDropdown && (() => {
+          const { aKey, teamName: aTeamName, rowType, rowId, key: aDateKey, onAgentPicked } = astreinteDropdown;
+          const ASTREINTE_EXCLUDED = ["carol horlaville", "yannick loubery"];
+          const aTeamAgents = agents.filter(a => a.team === aTeamName && a.role !== "admin" && !ASTREINTE_EXCLUDED.includes(a.name.toLowerCase()));
+          const rowLabels = { "astreinte": "Astreinte vendredi", "action_serveur": "Action Serveur / Admin", "mail": "Mail", "es": "ES" };
+          const [ay, am, ad] = (aDateKey || "").split("-");
+          const dateLabel = `${ad}/${am}`;
+          return (
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.min(astreinteDropdown.y, window.innerHeight - 320), left: Math.min(astreinteDropdown.x, window.innerWidth - 240), background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: 230, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.15s ease" }}>
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#1e293b", fontWeight: 700, background: "#fef3c7", position: "sticky", top: 0 }}>
+                🔔 {aTeamName} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
+                {astreinteDropdown.fridayOnly
+                  ? <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
+                  : <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
+                }
+              </div>
+              {!onAgentPicked && astreintes[aKey] && (
+                <button onClick={() => {
+                  const astrToDelete = astreintes[aKey];
+                  if (astrToDelete?.id) {
+                    deleteAstreinte(astrToDelete.id, aTeamName, rowType || rowId, aDateKey);
+                  } else {
+                    setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
+                  }
+                  setAstreinteDropdown(null);
+                }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>✕ Retirer ce jour uniquement</button>
+              )}
               <button onClick={() => {
-                const astrToDelete = astreintes[aKey];
-                if (astrToDelete?.id) {
-                  deleteAstreinte(astrToDelete.id, aTeamName, rowType || rowId, aDateKey);
-                } else {
-                  setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
-                }
+                const { teamName: tn, rowId: ri, key: k } = astreinteDropdown;
+                setAstreinteEraseStart({ teamName: tn, rowId: ri, key: k });
+                setAstreinteHovered(k);
                 setAstreinteDropdown(null);
-              }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>✕ Retirer ce jour uniquement</button>
-            )}
-            <button onClick={() => {
-              const { teamName: tn, rowId: ri, key: k } = astreinteDropdown;
-              setAstreinteEraseStart({ teamName: tn, rowId: ri, key: k });
-              setAstreinteHovered(k);
-              setAstreinteDropdown(null);
-            }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🗑 Effacer une plage → cliquer la date de fin</button>
-            {aTeamAgents.length === 0 && <div style={{ padding: "16px", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>Aucun agent dans cette équipe</div>}
-            {aTeamAgents.map(a => (
-              <button key={a.id} onClick={() => {
-                if (onAgentPicked) {
-                  // Mode glisser : choisir agent puis glisser jusqu'à la date de fin
-                  onAgentPicked(a.id);
-                  setAstreinteDropdown(null);
-                } else {
-                  // Mode direct (fridayOnly ou simple) : mise à jour optimiste + persistance API
-                  setAstreintes(prev => ({ ...prev, [aKey]: { agent_id: a.id } }));
-                  saveAstreinte(aTeamName, rowType || rowId, aDateKey, a.id);
-                  setAstreinteDropdown(null);
-                }
-              }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: astreintes[aKey] === a.id ? "#fef3c7" : "none", cursor: "pointer", fontSize: 12, color: "#1e293b", fontWeight: astreintes[aKey] === a.id ? 700 : 400, transition: "background 0.1s" }}>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
-                {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
-                {onAgentPicked && <span style={{ fontSize: 10, color: "#64748b" }}>→ puis glisser</span>}
-              </button>
-            ))}
-            <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8" }}>✕ Annuler</button>
-          </div>
-        );
-      })()}
+              }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🗑 Effacer une plage → cliquer la date de fin</button>
+              {aTeamAgents.length === 0 && <div style={{ padding: "16px", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>Aucun agent dans cette équipe</div>}
+              {aTeamAgents.map(a => (
+                <button key={a.id} onClick={() => {
+                  if (onAgentPicked) {
+                    // Mode glisser : choisir agent puis glisser jusqu'à la date de fin
+                    onAgentPicked(a.id);
+                    setAstreinteDropdown(null);
+                  } else {
+                    // Mode direct (fridayOnly ou simple) : mise à jour optimiste + persistance API
+                    setAstreintes(prev => ({ ...prev, [aKey]: { agent_id: a.id } }));
+                    saveAstreinte(aTeamName, rowType || rowId, aDateKey, a.id);
+                    setAstreinteDropdown(null);
+                  }
+                }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: astreintes[aKey] === a.id ? "#fef3c7" : "none", cursor: "pointer", fontSize: 12, color: "#1e293b", fontWeight: astreintes[aKey] === a.id ? 700 : 400, transition: "background 0.1s" }}>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                  <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
+                  {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
+                  {onAgentPicked && <span style={{ fontSize: 10, color: "#64748b" }}>→ puis glisser</span>}
+                </button>
+              ))}
+              <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8" }}>✕ Annuler</button>
+            </div>
+          );
+        })()
+      }
 
-      {requestModal && (() => {
-        const allAvail = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
-        // Séparer les types "groupés" (CP, RTT et leurs ½) des autres
-        const isCpFamily = t => /^(cp|_cp|congé payé)$/i.test((t.code || "").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label || "").trim());
-        const isRttFamily = t => /^(rtt|_rtt)$/i.test((t.code || "").trim()) || /^(rtt|½ rtt)$/i.test((t.label || "").trim());
-        const isVeilleFamily = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code || "").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label || "").trim());
-        const isHalfCp = t => /^_cp$/i.test(t.code) || /^½ cp$/i.test(t.label);
-        const isHalfRtt = t => /^_rtt$/i.test(t.code) || /^½ rtt$/i.test(t.label);
-        // Types affichés dans la liste (sans les ½ CP et ½ RTT)
-        const displayTypes = allAvail.filter(t => !isHalfCp(t) && !isHalfRtt(t));
-        // Trouver les types ½ correspondants
-        const halfCpType = allAvail.find(isHalfCp) || allAvail.find(t => (t.code || "").includes("cp") && isHalfDay(t));
-        const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code || "").includes("rtt") && isHalfDay(t));
-        function handleTypeClick(t) {
-          if (isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t)) {
-            setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
-          } else if (isHalfDay(t)) {
-            setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType({ ...t, _overrideModal: requestModal }); setHalfDayPeriod(null);
-          } else {
-            setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason);
-          }
-        }
-        function submitPeriod(t, period) {
-          setRequestModal(null);
-          if (period === "journee") {
-            submitRequest(t, requestReason);
-          } else if (isVeilleFamily(t)) {
-            const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
-            submitRequest(t, finalReason);
-          } else {
-            const halfType = isCpFamily(t) ? halfCpType : halfRttType;
-            if (halfType) {
-              const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
-              submitRequest(halfType, finalReason);
+      {
+        requestModal && (() => {
+          const allAvail = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
+          // Séparer les types "groupés" (CP, RTT et leurs ½) des autres
+          const isCpFamily = t => /^(cp|_cp|congé payé)$/i.test((t.code || "").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label || "").trim());
+          const isRttFamily = t => /^(rtt|_rtt)$/i.test((t.code || "").trim()) || /^(rtt|½ rtt)$/i.test((t.label || "").trim());
+          const isVeilleFamily = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code || "").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label || "").trim());
+          const isHalfCp = t => /^_cp$/i.test(t.code) || /^½ cp$/i.test(t.label);
+          const isHalfRtt = t => /^_rtt$/i.test(t.code) || /^½ rtt$/i.test(t.label);
+          // Types affichés dans la liste (sans les ½ CP et ½ RTT)
+          const displayTypes = allAvail.filter(t => !isHalfCp(t) && !isHalfRtt(t));
+          // Trouver les types ½ correspondants
+          const halfCpType = allAvail.find(isHalfCp) || allAvail.find(t => (t.code || "").includes("cp") && isHalfDay(t));
+          const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code || "").includes("rtt") && isHalfDay(t));
+          function handleTypeClick(t) {
+            if (isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t)) {
+              setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
+            } else if (isHalfDay(t)) {
+              setRequestModal(null); setExpandedLeaveType(null); setHalfDayPendingType({ ...t, _overrideModal: requestModal }); setHalfDayPeriod(null);
             } else {
-              setHalfDayPendingType(t); setHalfDayPeriod(period);
+              setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason);
             }
           }
-        }
-        return (
-          <div onClick={e => e.stopPropagation()} style={{
-            position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-            background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
-            zIndex: 99999, width: 310, overflow: "hidden", animation: "slideIn 0.2s ease"
-          }}>
-            {/* Header */}
-            <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-              <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>
-                {requestModal.start === requestModal.end ? formatDate(requestModal.start) : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
-              </div>
-            </div>
-            {/* Liste des types */}
-            <div style={{ padding: "6px 0", background: "transparent" }}>
-              {displayTypes.map(t => {
-                const isGrouped = isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t);
-                const isOpen = expandedLeaveType === t.id;
-                return (
-                  <div key={t.id}>
-                    <button onClick={() => handleTypeClick(t)} style={{
-                      display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
-                      border: "none", background: isOpen ? t.color + "25" : "none", cursor: "pointer",
-                      textAlign: "left", transition: "background 0.1s"
-                    }}
-                      onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                      onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
-                      <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9", flex: 1 }}>{t.label}</span>
-                      <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(t.label)}</span>
-                      {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
-                    </button>
-                    {/* Sous-menu Matin / Après-midi / Journée */}
-                    {isGrouped && isOpen && (
-                      <div style={{ background: t.color + "20", borderTop: `1px solid ${t.color}40`, borderBottom: `1px solid ${t.color}40`, padding: "8px 16px 10px" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
-                        <div style={{ display: "flex", gap: 7 }}>
-                          {[
-                            { key: "journee", label: "☀️ Journée", sub: "complète" },
-                            { key: "matin", label: "Matin", sub: "½ journée" },
-                            { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
-                          ].filter(opt => isVeilleFamily(t) ? opt.key !== "journee" : true).map(opt => (
-                            <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
-                              flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
-                              background: "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
-                            }}
-                              onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.style.color = "#fff"; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = "rgba(255,255,255,0.8)"); }}
-                              onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
-                              <span style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Raison */}
-            <div style={{ padding: "8px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-              <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
-            </div>
-            <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid rgba(255,255,255,0.08)", background: "none", cursor: "pointer", fontSize: 12, color: "#475569", fontWeight: 500 }}>✕ Annuler</button>
-          </div>
-        );
-      })()}
-      {addLeaveModal && (() => {
-        const availLTs = isManager
-          ? leaveTypes.filter(t => !isPresenceType(t))
-          : leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
-        const selectedAlAgent = addLeaveForm.agentId ? agents.find(a => a.id === addLeaveForm.agentId) : null;
-        return (
-          <>
-            <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
-              <div className="modal-header">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
-                    <div style={{ fontSize: 11, opacity: 0.8 }}>Remplissez les informations ci-dessous</div>
-                  </div>
-                  <button onClick={() => setAddLeaveModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 16, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          function submitPeriod(t, period) {
+            setRequestModal(null);
+            if (period === "journee") {
+              submitRequest(t, requestReason);
+            } else if (isVeilleFamily(t)) {
+              const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
+              submitRequest(t, finalReason);
+            } else {
+              const halfType = isCpFamily(t) ? halfCpType : halfRttType;
+              if (halfType) {
+                const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
+                submitRequest(halfType, finalReason);
+              } else {
+                setHalfDayPendingType(t); setHalfDayPeriod(period);
+              }
+            }
+          }
+          return (
+            <div onClick={e => e.stopPropagation()} style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
+              zIndex: 99999, width: 310, overflow: "hidden", animation: "slideIn 0.2s ease"
+            }}>
+              {/* Header */}
+              <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>
+                  {requestModal.start === requestModal.end ? formatDate(requestModal.start) : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
                 </div>
               </div>
-              <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, background: "transparent" }}>
-                {isManager && (
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
-                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                      <div onClick={() => { setAlShowAgentDrop(p => !p); setAlSearchQuery(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: "`1.5px solid ${alShowAgentDrop ? \"#6366f1\" : \"rgba(255,255,255,0.12)\"}`", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}>
-                        {selectedAlAgent ? (
-                          <>
-                            <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(selectedAlAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
-                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{selectedAlAgent.name}</span>
-                            <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
-                          </>
-                        ) : (
-                          <span style={{ flex: 1, fontSize: 13, color: "#64748b" }}>Choisir un agent...</span>
-                        )}
-                        <span style={{ fontSize: 10, color: "#64748b" }}>▾</span>
-                      </div>
-                      {alShowAgentDrop && (
-                        <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
-                          <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                            <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
-                          </div>
-                          <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                            {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team || "").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
-                              <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
-                                style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
-                                onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                                onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
-                                <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                                <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#f1f5f9", textAlign: "left" }}>{a.name}</span>
-                                <span style={{ fontSize: 10, color: "#64748b" }}>{a.team}</span>
-                                {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
+              {/* Liste des types */}
+              <div style={{ padding: "6px 0", background: "transparent" }}>
+                {displayTypes.map(t => {
+                  const isGrouped = isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t);
+                  const isOpen = expandedLeaveType === t.id;
+                  return (
+                    <div key={t.id}>
+                      <button onClick={() => handleTypeClick(t)} style={{
+                        display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "10px 16px",
+                        border: "none", background: isOpen ? t.color + "25" : "none", cursor: "pointer",
+                        textAlign: "left", transition: "background 0.1s"
+                      }}
+                        onMouseEnter={e => { if (!isOpen) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                        onMouseLeave={e => { if (!isOpen) e.currentTarget.style.background = "none"; }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.color, flexShrink: 0, boxShadow: `0 0 0 3px ${t.color}25` }} />
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9", flex: 1 }}>{t.label}</span>
+                        <span style={{ fontSize: 10, color: "#64748b", background: "rgba(255,255,255,0.08)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{leaveAbbr(t.label)}</span>
+                        {isGrouped && <span style={{ fontSize: 10, color: t.color, marginLeft: 2, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>}
+                      </button>
+                      {/* Sous-menu Matin / Après-midi / Journée */}
+                      {isGrouped && isOpen && (
+                        <div style={{ background: t.color + "20", borderTop: `1px solid ${t.color}40`, borderBottom: `1px solid ${t.color}40`, padding: "8px 16px 10px" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 7 }}>Choisir la période</div>
+                          <div style={{ display: "flex", gap: 7 }}>
+                            {[
+                              { key: "journee", label: "☀️ Journée", sub: "complète" },
+                              { key: "matin", label: "Matin", sub: "½ journée" },
+                              { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
+                            ].filter(opt => isVeilleFamily(t) ? opt.key !== "journee" : true).map(opt => (
+                              <button key={opt.key} onClick={() => submitPeriod(t, opt.key)} style={{
+                                flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${t.color}50`,
+                                background: "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s"
+                              }}
+                                onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.style.color = "#fff"; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = "rgba(255,255,255,0.8)"); }}
+                                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = ""; Array.from(e.currentTarget.querySelectorAll("span")).forEach(s => s.style.color = ""); }}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
+                                <span style={{ fontSize: 9, color: "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
                               </button>
                             ))}
                           </div>
                         </div>
                       )}
                     </div>
+                  );
+                })}
+              </div>
+              {/* Raison */}
+              <div style={{ padding: "8px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid rgba(255,255,255,0.08)", background: "none", cursor: "pointer", fontSize: 12, color: "#475569", fontWeight: 500 }}>✕ Annuler</button>
+            </div>
+          );
+        })()
+      }
+      {
+        addLeaveModal && (() => {
+          const availLTs = isManager
+            ? leaveTypes.filter(t => !isPresenceType(t))
+            : leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
+          const selectedAlAgent = addLeaveForm.agentId ? agents.find(a => a.id === addLeaveForm.agentId) : null;
+          return (
+            <>
+              <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
+              <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
+                <div className="modal-header">
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📅 Poser un congé</div>
+                      <div style={{ fontSize: 11, opacity: 0.8 }}>Remplissez les informations ci-dessous</div>
+                    </div>
+                    <button onClick={() => setAddLeaveModal(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, color: "#fff", cursor: "pointer", fontSize: 16, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
-                )}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
-                    <button onClick={() => { setAlShowStartCal(p => !p); setAlShowEndCal(false); }}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowStartCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.startDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span>{addLeaveForm.startDate ? new Date(addLeaveForm.startDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
-                      <span style={{ fontSize: 14 }}>📅</span>
-                    </button>
-                    {alShowStartCal && (
-                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 999999 }}>
-                        <MiniCalendarPicker value={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, startDate: v, endDate: f.endDate < v ? v : f.endDate })); setAlShowStartCal(false); }} />
+                </div>
+                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, background: "transparent" }}>
+                  {isManager && (
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Agent</label>
+                      <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                        <div onClick={() => { setAlShowAgentDrop(p => !p); setAlSearchQuery(""); }}
+                          style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: "`1.5px solid ${alShowAgentDrop ? \"#6366f1\" : \"rgba(255,255,255,0.12)\"}`", background: "rgba(255,255,255,0.05)", cursor: "pointer" }}>
+                          {selectedAlAgent ? (
+                            <>
+                              <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(selectedAlAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selectedAlAgent.avatar}</div>
+                              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{selectedAlAgent.name}</span>
+                              <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 4 }}>{selectedAlAgent.team}</span>
+                            </>
+                          ) : (
+                            <span style={{ flex: 1, fontSize: 13, color: "#64748b" }}>Choisir un agent...</span>
+                          )}
+                          <span style={{ fontSize: 10, color: "#64748b" }}>▾</span>
+                        </div>
+                        {alShowAgentDrop && (
+                          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                            <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                              <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+                            </div>
+                            <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                              {agents.filter(a => a.role !== "admin" && (!alSearchQuery || a.name.toLowerCase().includes(alSearchQuery.toLowerCase()) || (a.team || "").toLowerCase().includes(alSearchQuery.toLowerCase()))).map(a => (
+                                <button key={a.id} onClick={() => { setAddLeaveForm(f => ({ ...f, agentId: a.id })); setAlShowAgentDrop(false); }}
+                                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: addLeaveForm.agentId === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer" }}
+                                  onMouseEnter={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                                  onMouseLeave={e => { if (addLeaveForm.agentId !== a.id) e.currentTarget.style.background = "none"; }}>
+                                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                                  <span style={{ flex: 1, fontSize: 12, fontWeight: 500, color: "#f1f5f9", textAlign: "left" }}>{a.name}</span>
+                                  <span style={{ fontSize: 10, color: "#64748b" }}>{a.team}</span>
+                                  {addLeaveForm.agentId === a.id && <span style={{ color: "#6366f1" }}>✓</span>}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
+                  )}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de début</label>
+                      <button onClick={() => { setAlShowStartCal(p => !p); setAlShowEndCal(false); }}
+                        style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowStartCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.startDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span>{addLeaveForm.startDate ? new Date(addLeaveForm.startDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
+                        <span style={{ fontSize: 14 }}>📅</span>
+                      </button>
+                      {alShowStartCal && (
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 999999 }}>
+                          <MiniCalendarPicker value={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, startDate: v, endDate: f.endDate < v ? v : f.endDate })); setAlShowStartCal(false); }} />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
+                      <button onClick={() => { setAlShowEndCal(p => !p); setAlShowStartCal(false); }}
+                        style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowEndCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.endDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span>{addLeaveForm.endDate ? new Date(addLeaveForm.endDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
+                        <span style={{ fontSize: 14 }}>📅</span>
+                      </button>
+                      {alShowEndCal && (
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 999999 }}>
+                          <MiniCalendarPicker value={addLeaveForm.endDate} minDate={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, endDate: v })); setAlShowEndCal(false); }} />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Date de fin</label>
-                    <button onClick={() => { setAlShowEndCal(p => !p); setAlShowStartCal(false); }}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${alShowEndCal ? "#6366f1" : "rgba(255,255,255,0.12)"}`, background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: addLeaveForm.endDate ? "#f1f5f9" : "#475569", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span>{addLeaveForm.endDate ? new Date(addLeaveForm.endDate + "T00:00:00").toLocaleDateString("fr-FR") : "Choisir..."}</span>
-                      <span style={{ fontSize: 14 }}>📅</span>
-                    </button>
-                    {alShowEndCal && (
-                      <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 999999 }}>
-                        <MiniCalendarPicker value={addLeaveForm.endDate} minDate={addLeaveForm.startDate} onChange={v => { setAddLeaveForm(f => ({ ...f, endDate: v })); setAlShowEndCal(false); }} />
+                  {(() => {
+                    const isCpType = t => /^(cp|congé payé)$/i.test((t.label || "").trim()) || (t.code === "cp");
+                    const isRttType = t => /^rtt$/i.test((t.label || "").trim()) || (t.code === "rtt");
+                    const isVeilleType = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code || "").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label || "").trim());
+                    const isHalfCpT = t => /^½ cp$/i.test((t.label || "").trim()) || t.code === "_cp";
+                    const isHalfRttT = t => /^½ rtt$/i.test((t.label || "").trim()) || t.code === "_rtt";
+                    const halfCp = availLTs.find(isHalfCpT);
+                    const halfRtt = availLTs.find(isHalfRttT);
+                    // Masquer ½ CP et ½ RTT de la liste principale
+                    const displayLTs = sortLeaveTypes(availLTs).filter(t => !isHalfCpT(t) && !isHalfRttT(t));
+                    // Quel type "parent" est ouvert pour montrer Matin/AM/Journée
+                    const openParentId = addLeaveForm.leaveTypeId &&
+                      displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t) || isVeilleType(t))) ? addLeaveForm.leaveTypeId : null;
+                    return (
+                      <div>
+                        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {displayLTs.map(t => {
+                            const isGrouped = isCpType(t) || isRttType(t) || isVeilleType(t);
+                            const isSelected = addLeaveForm.leaveTypeId === t.id;
+                            return (
+                              <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
+                                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "rgba(255,255,255,0.1)"}`, background: isSelected ? t.color + "30" : "rgba(255,255,255,0.04)", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#64748b", transition: "all 0.15s" }}>
+                                <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
+                                {t.label}
+                                {isGrouped && <span style={{ fontSize: 9, opacity: 0.55, marginLeft: 1 }}>▾</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {/* Sous-menu période si CP ou RTT sélectionné */}
+                        {openParentId && (() => {
+                          const parentType = displayLTs.find(t => t.id === openParentId);
+                          const halfType = isCpType(parentType) ? halfCp : isRttType(parentType) ? halfRtt : null;
+                          return (
+                            <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: parentType.color + "15", border: `1.5px solid ${parentType.color}40` }}>
+                              <div style={{ fontSize: 10, fontWeight: 800, color: parentType.color, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Choisir la période</div>
+                              <div style={{ display: "flex", gap: 7 }}>
+                                {[
+                                  { key: "journee", label: "☀️ Journée", sub: "complète" },
+                                  { key: "matin", label: "Matin", sub: "½ journée" },
+                                  { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
+                                ].filter(opt => isVeilleType(parentType) ? opt.key !== "journee" : true).map(opt => {
+                                  const isSelPeriod = addLeaveForm._period === opt.key;
+                                  return (
+                                    <button key={opt.key}
+                                      onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: isVeilleType(parentType) ? parentType.id : (opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id)) }))}
+                                      style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : "rgba(255,255,255,0.12)"}`, background: isSelPeriod ? parentType.color : "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                                      <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
+                                      <span style={{ fontSize: 9, color: isSelPeriod ? "rgba(255,255,255,0.75)" : "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </div>
-                    )}
+                    );
+                  })()}
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#475569", textTransform: "none" }}>(optionnel)</span></label>
+                    <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.12)", fontSize: 13, color: "#f1f5f9", background: "rgba(255,255,255,0.05)", outline: "none", boxSizing: "border-box" }}
+                      onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
                   </div>
                 </div>
                 {(() => {
-                  const isCpType = t => /^(cp|congé payé)$/i.test((t.label || "").trim()) || (t.code === "cp");
-                  const isRttType = t => /^rtt$/i.test((t.label || "").trim()) || (t.code === "rtt");
-                  const isVeilleType = t => /^(veille_de_cp|veille_de_ferie)$/i.test((t.code || "").trim()) || /^(veille de cp|veille de férié)$/i.test((t.label || "").trim());
-                  const isHalfCpT = t => /^½ cp$/i.test((t.label || "").trim()) || t.code === "_cp";
-                  const isHalfRttT = t => /^½ rtt$/i.test((t.label || "").trim()) || t.code === "_rtt";
-                  const halfCp = availLTs.find(isHalfCpT);
-                  const halfRtt = availLTs.find(isHalfRttT);
-                  // Masquer ½ CP et ½ RTT de la liste principale
-                  const displayLTs = sortLeaveTypes(availLTs).filter(t => !isHalfCpT(t) && !isHalfRttT(t));
-                  // Quel type "parent" est ouvert pour montrer Matin/AM/Journée
-                  const openParentId = addLeaveForm.leaveTypeId &&
-                    displayLTs.find(t => t.id === addLeaveForm.leaveTypeId && (isCpType(t) || isRttType(t) || isVeilleType(t))) ? addLeaveForm.leaveTypeId : null;
+                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                  const startWE = addLeaveForm.startDate && isWE(addLeaveForm.startDate);
+                  const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
+                  if (!startWE && !endWE) return null;
                   return (
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Type de congé</label>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                        {displayLTs.map(t => {
-                          const isGrouped = isCpType(t) || isRttType(t) || isVeilleType(t);
-                          const isSelected = addLeaveForm.leaveTypeId === t.id;
-                          return (
-                            <button key={t.id} onClick={() => setAddLeaveForm(f => ({ ...f, leaveTypeId: t.id, _period: null }))}
-                              style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `2px solid ${isSelected ? t.color : "rgba(255,255,255,0.1)"}`, background: isSelected ? t.color + "30" : "rgba(255,255,255,0.04)", cursor: "pointer", fontSize: 12, fontWeight: isSelected ? 700 : 500, color: isSelected ? t.color : "#64748b", transition: "all 0.15s" }}>
-                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                              {t.label}
-                              {isGrouped && <span style={{ fontSize: 9, opacity: 0.55, marginLeft: 1 }}>▾</span>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {/* Sous-menu période si CP ou RTT sélectionné */}
-                      {openParentId && (() => {
-                        const parentType = displayLTs.find(t => t.id === openParentId);
-                        const halfType = isCpType(parentType) ? halfCp : isRttType(parentType) ? halfRtt : null;
-                        return (
-                          <div style={{ marginTop: 10, padding: "10px 12px", borderRadius: 10, background: parentType.color + "15", border: `1.5px solid ${parentType.color}40` }}>
-                            <div style={{ fontSize: 10, fontWeight: 800, color: parentType.color, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Choisir la période</div>
-                            <div style={{ display: "flex", gap: 7 }}>
-                              {[
-                                { key: "journee", label: "☀️ Journée", sub: "complète" },
-                                { key: "matin", label: "Matin", sub: "½ journée" },
-                                { key: "apres-midi", label: "Après-midi", sub: "½ journée" },
-                              ].filter(opt => isVeilleType(parentType) ? opt.key !== "journee" : true).map(opt => {
-                                const isSelPeriod = addLeaveForm._period === opt.key;
-                                return (
-                                  <button key={opt.key}
-                                    onClick={() => setAddLeaveForm(f => ({ ...f, _period: opt.key, leaveTypeId: isVeilleType(parentType) ? parentType.id : (opt.key === "journee" ? parentType.id : (halfType ? halfType.id : parentType.id)) }))}
-                                    style={{ flex: 1, padding: "8px 4px", borderRadius: 9, border: `1.5px solid ${isSelPeriod ? parentType.color : "rgba(255,255,255,0.12)"}`, background: isSelPeriod ? parentType.color : "rgba(255,255,255,0.05)", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: isSelPeriod ? "#fff" : "#f1f5f9", lineHeight: 1.3 }}>{opt.label}</div>
-                                    <span style={{ fontSize: 9, color: isSelPeriod ? "rgba(255,255,255,0.75)" : "#94a3b8", fontWeight: 500 }}>{opt.sub}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })()}
+                    <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "rgba(220,38,38,0.15)", border: "1.5px solid rgba(220,38,38,0.4)", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>⚠️</span>
+                      <span style={{ fontSize: 12, color: "#fca5a5", fontWeight: 600 }}>
+                        {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}{" "}Veuillez choisir des jours ouvrés.
+                      </span>
                     </div>
                   );
                 })()}
-                <div>
-                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Raison <span style={{ fontWeight: 400, color: "#475569", textTransform: "none" }}>(optionnel)</span></label>
-                  <input value={addLeaveForm.reason} onChange={e => setAddLeaveForm(f => ({ ...f, reason: e.target.value }))} placeholder="Motif du congé..."
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.12)", fontSize: 13, color: "#f1f5f9", background: "rgba(255,255,255,0.05)", outline: "none", boxSizing: "border-box" }}
-                    onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"} />
+                <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
+                  <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>Annuler</button>
+                  <button onClick={async () => {
+                    const agentId = addLeaveForm.agentId || currentUser.id;
+                    const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
+                    if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
+                    const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                    if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
+                    const period = addLeaveForm._period;
+                    // Si demi-journée via période sélectionnée
+                    const finalReason = (period && period !== "journee")
+                      ? "[" + period + "]" + (addLeaveForm.reason ? " " + addLeaveForm.reason : "")
+                      : addLeaveForm.reason;
+                    if (isHalfDay(lt) && !period) {
+                      // Cas ½ CP / ½ RTT sélectionné directement sans période → ouvrir modale période
+                      setAddLeaveModal(false);
+                      setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
+                      setHalfDayPeriod(null);
+                    } else {
+                      setAddLeaveModal(false);
+                      await submitRequest({ ...lt }, finalReason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
+                    }
+                  }} disabled={(() => {
+                    const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
+                    return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
+                  })()}
+                    className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (() => { const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; }; return (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) ? 0.5 : 1; })() }}>
+                    ✅ Valider le congé
+                  </button>
                 </div>
               </div>
-              {(() => {
-                const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                const startWE = addLeaveForm.startDate && isWE(addLeaveForm.startDate);
-                const endWE = addLeaveForm.endDate && isWE(addLeaveForm.endDate);
-                if (!startWE && !endWE) return null;
-                return (
-                  <div style={{ margin: "0 24px 12px", padding: "10px 14px", background: "rgba(220,38,38,0.15)", border: "1.5px solid rgba(220,38,38,0.4)", borderRadius: 9, display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 16 }}>⚠️</span>
-                    <span style={{ fontSize: 12, color: "#fca5a5", fontWeight: 600 }}>
-                      {startWE && endWE ? "Les dates de début et de fin tombent un week-end." : startWE ? "La date de début tombe un week-end." : "La date de fin tombe un week-end."}{" "}Veuillez choisir des jours ouvrés.
-                    </span>
-                  </div>
-                );
-              })()}
-              <div style={{ padding: "0 24px 20px", display: "flex", gap: 10 }}>
-                <button onClick={() => setAddLeaveModal(false)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 13, color: "#94a3b8", fontWeight: 500 }}>Annuler</button>
-                <button onClick={async () => {
-                  const agentId = addLeaveForm.agentId || currentUser.id;
-                  const lt = availLTs.find(t => t.id === addLeaveForm.leaveTypeId) || availLTs[0];
-                  if (!agentId || !lt || !addLeaveForm.startDate || !addLeaveForm.endDate) return;
-                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                  if (isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) return;
-                  const period = addLeaveForm._period;
-                  // Si demi-journée via période sélectionnée
-                  const finalReason = (period && period !== "journee")
-                    ? "[" + period + "]" + (addLeaveForm.reason ? " " + addLeaveForm.reason : "")
-                    : addLeaveForm.reason;
-                  if (isHalfDay(lt) && !period) {
-                    // Cas ½ CP / ½ RTT sélectionné directement sans période → ouvrir modale période
-                    setAddLeaveModal(false);
-                    setHalfDayPendingType({ ...lt, _overrideModal: { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate }, _reason: addLeaveForm.reason });
-                    setHalfDayPeriod(null);
-                  } else {
-                    setAddLeaveModal(false);
-                    await submitRequest({ ...lt }, finalReason, { agentId, start: addLeaveForm.startDate, end: addLeaveForm.endDate });
-                  }
-                }} disabled={(() => {
-                  const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; };
-                  return !addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate);
-                })()}
-                  className="btn-primary" style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#6366f1,#818cf8)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(99,102,241,0.35)", opacity: (() => { const isWE = (d) => { const day = new Date(d).getDay(); return day === 0 || day === 6; }; return (!addLeaveForm.startDate || !addLeaveForm.endDate || (isManager && !addLeaveForm.agentId) || isWE(addLeaveForm.startDate) || isWE(addLeaveForm.endDate)) ? 0.5 : 1; })() }}>
-                  ✅ Valider le congé
-                </button>
-              </div>
-            </div>
-          </>
-        );
-      })()}
+            </>
+          );
+        })()
+      }
 
-      {halfDayPendingType && (
-        <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
-          <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>{halfDayPendingType.label} — quelle période ?</div>
+      {
+        halfDayPendingType && (
+          <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+            <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>{halfDayPendingType.label} — quelle période ?</div>
+            </div>
+            <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {["matin", "apres-midi"].map(period => (
+                <button key={period} onClick={() => setHalfDayPeriod(period)}
+                  style={{ padding: "12px 16px", borderRadius: 10, border: "2px solid " + (halfDayPeriod === period ? halfDayPendingType.color : "#e2e8f0"), background: halfDayPeriod === period ? hexToLight(halfDayPendingType.color) : "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 6, overflow: "hidden", border: "1px solid " + halfDayPendingType.color + "40", flexShrink: 0 }}>
+                    {period === "matin"
+                      ? <><div style={{ height: "50%", background: halfDayPendingType.color }} /><div style={{ height: "50%", background: "#fff" }} /></>
+                      : <><div style={{ height: "50%", background: "#fff" }} /><div style={{ height: "50%", background: halfDayPendingType.color }} /></>
+                    }
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "Matin" : "Après-midi"}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ padding: "0 16px 12px" }}>
+              <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
+              <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
+              <button disabled={!halfDayPeriod} onClick={() => {
+                const reason = document.getElementById("leave-reason-halfday")?.value || "";
+                const finalReason = "[" + halfDayPeriod + "]" + (reason ? " " + reason : "");
+                const overrideModal = halfDayPendingType._overrideModal || null;
+                const lt = { ...halfDayPendingType };
+                delete lt._overrideModal; delete lt._reason;
+                setHalfDayPeriod(null);
+                setHalfDayPendingType(null);
+                submitRequest(lt, finalReason, overrideModal);
+              }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
+            </div>
           </div>
-          <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-            {["matin", "apres-midi"].map(period => (
-              <button key={period} onClick={() => setHalfDayPeriod(period)}
-                style={{ padding: "12px 16px", borderRadius: 10, border: "2px solid " + (halfDayPeriod === period ? halfDayPendingType.color : "#e2e8f0"), background: halfDayPeriod === period ? hexToLight(halfDayPendingType.color) : "#f8fafc", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, transition: "all 0.15s" }}>
-                <div style={{ width: 32, height: 32, borderRadius: 6, overflow: "hidden", border: "1px solid " + halfDayPendingType.color + "40", flexShrink: 0 }}>
-                  {period === "matin"
-                    ? <><div style={{ height: "50%", background: halfDayPendingType.color }} /><div style={{ height: "50%", background: "#fff" }} /></>
-                    : <><div style={{ height: "50%", background: "#fff" }} /><div style={{ height: "50%", background: halfDayPendingType.color }} /></>
-                  }
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: halfDayPeriod === period ? halfDayPendingType.color : "#374151" }}>{period === "matin" ? "Matin" : "Après-midi"}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ padding: "0 16px 12px" }}>
-            <input id="leave-reason-halfday" placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
-          </div>
-          <div style={{ display: "flex", borderTop: "1px solid #f1f5f9" }}>
-            <button onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ flex: 1, padding: "10px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>✕ Annuler</button>
-            <button disabled={!halfDayPeriod} onClick={() => {
-              const reason = document.getElementById("leave-reason-halfday")?.value || "";
-              const finalReason = "[" + halfDayPeriod + "]" + (reason ? " " + reason : "");
-              const overrideModal = halfDayPendingType._overrideModal || null;
-              const lt = { ...halfDayPendingType };
-              delete lt._overrideModal; delete lt._reason;
-              setHalfDayPeriod(null);
-              setHalfDayPendingType(null);
-              submitRequest(lt, finalReason, overrideModal);
-            }} style={{ flex: 1, padding: "10px", border: "none", borderLeft: "1px solid #f1f5f9", background: halfDayPeriod ? halfDayPendingType.color : "#e2e8f0", color: halfDayPeriod ? "#fff" : "#94a3b8", cursor: halfDayPeriod ? "pointer" : "not-allowed", fontSize: 12, fontWeight: 700, transition: "all 0.15s" }}>Confirmer</button>
-          </div>
-        </div>
-      )}
+        )
+      }
       {halfDayPendingType && <div onClick={() => { setHalfDayPendingType(null); setHalfDayPeriod(null); }} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99999, backdropFilter: "blur(4px)" }} />}
       {requestModal && <div onClick={() => setRequestModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.6)", zIndex: 99998, backdropFilter: "blur(4px)" }} />}
-      {rejectModal && <Modal title="❌ Refuser la demande">
-        <textarea value={rejectComment} onChange={e => setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, boxSizing: "border-box", resize: "none", marginBottom: 20, transition: "all 0.2s" }} />
-        <ModalButtons onCancel={() => setRejectModal(null)} onConfirm={() => rejectRequest(rejectModal)} confirmLabel="Confirmer le refus" confirmColor={rejectComment.trim() ? "#ef4444" : "#fca5a5"} disabled={!rejectComment.trim()} />
-      </Modal>}
-    </div>
+      {
+        rejectModal && <Modal title="❌ Refuser la demande">
+          <textarea value={rejectComment} onChange={e => setRejectComment(e.target.value)} placeholder="Motif du refus (obligatoire)..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1.5px solid #e5e7eb", fontSize: 14, boxSizing: "border-box", resize: "none", marginBottom: 20, transition: "all 0.2s" }} />
+          <ModalButtons onCancel={() => setRejectModal(null)} onConfirm={() => rejectRequest(rejectModal)} confirmLabel="Confirmer le refus" confirmColor={rejectComment.trim() ? "#ef4444" : "#fca5a5"} disabled={!rejectComment.trim()} />
+        </Modal>
+      }
+    </div >
   );
 }
 
