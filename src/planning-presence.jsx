@@ -481,7 +481,8 @@ function isHalfDay(leave) {
   if (!leave) return false;
   var label = (leave.label || "").toLowerCase();
   var code = (leave.code || "").toLowerCase();
-  return (label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié");
+  var reason = (leave.reason || "");
+  return (label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié" || reason.startsWith("[matin]") || reason.startsWith("[apres-midi]"));
 }
 function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   var w = "calc(100% - " + (pad * 2) + "px)";
@@ -4233,12 +4234,8 @@ function PlanningApp({ currentUser, onLogout }) {
               submitRequest(t, finalReason);
             } else {
               const halfType = isCpFamily(t) ? halfCpType : halfRttType;
-              if (halfType) {
-                const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
-                submitRequest(halfType, finalReason);
-              } else {
-                setHalfDayPendingType(t); setHalfDayPeriod(period);
-              }
+              const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
+              submitRequest(halfType || t, finalReason);
             }
           }
           return (
