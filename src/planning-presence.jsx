@@ -1838,6 +1838,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [statsAgentSearch, setStatsAgentSearch] = useState("");
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
+  const [astreinteContextMenu, setAstreinteContextMenu] = useState(null); // { x, y, aKey, teamName, rowId, rowType, dateKey, id }
   const [astreintes, setAstreintes] = useState({});
   const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
@@ -2720,7 +2721,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "#060818", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (astreinteContextMenu) setAstreinteContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
       <style>{GLOBAL_STYLE}</style>
       <style>{`::-webkit-scrollbar-thumb{background:${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}!important;border-radius:10px}::-webkit-scrollbar-thumb:hover{background:${filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8"}!important}`}</style>
 
@@ -2733,6 +2734,47 @@ function PlanningApp({ currentUser, onLogout }) {
 
       {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1), pulse 2s ease-in-out 0.4s infinite" }}>{notification.msg}</div>}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
+      {astreinteContextMenu && (() => {
+        const { x, y, aKey, teamName, rowId, rowType, dateKey: aDateKey, id } = astreinteContextMenu;
+        const menuW = 230, menuH = 130;
+        const safeX = Math.min(x, window.innerWidth - menuW - 8);
+        const safeY = Math.min(y, window.innerHeight - menuH - 8);
+        const aData = astreintes[aKey];
+        const agentId = aData?.agent_id;
+        const agent = agentId ? agents.find(a => a.id === agentId) : null;
+        // Trouver toutes les clés consécutives assignées au même agent sur cette ligne
+        const allKeys = Object.keys(astreintes)
+          .filter(k => k.startsWith(`${teamName}|${rowType || rowId}|`) && astreintes[k]?.agent_id === agentId)
+          .map(k => k.split("|")[2]).sort();
+        const isMulti = allKeys.length > 1;
+        return (
+          <div onClick={e => e.stopPropagation()} className="context-menu"
+            style={{ position: "fixed", top: safeY, left: safeX, zIndex: 99999, minWidth: menuW, overflow: "hidden" }}>
+            <div className="context-menu-item">
+              <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 3, background: "#f59e0b", marginRight: 8 }} />
+              {agent ? agent.name : "Astreinte"} — {aDateKey.split("-").reverse().join("/")}
+            </div>
+            <button onClick={e => { e.stopPropagation(); setAstreinteContextMenu(null); if (id) { deleteAstreinte(id, teamName, rowType || rowId, aDateKey); } else { setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; }); } }}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>
+              ✂️ Supprimer ce jour seulement
+            </button>
+            {isMulti && (
+              <button onClick={e => {
+                e.stopPropagation(); setAstreinteContextMenu(null);
+                const minKey = allKeys[0], maxKey = allKeys[allKeys.length - 1];
+                deleteAstreinteRange(teamName, rowType || rowId, minKey, maxKey);
+              }}
+                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 500 }}>
+                🗑 Supprimer toute la période ({allKeys.length} jours)
+              </button>
+            )}
+            <button onClick={e => { e.stopPropagation(); setAstreinteContextMenu(null); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#475569" }}>
+              ✕ Annuler
+            </button>
+          </div>
+        );
+      })()}
 
       {/* SIDEBAR */}
       <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.3) 100%)", backdropFilter: "blur(20px)", border: "1px solid rgba(148,163,184,0.1)", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
@@ -3094,14 +3136,11 @@ function PlanningApp({ currentUser, onLogout }) {
                             }
                           }}
                           onContextMenu={e => {
-                            e.preventDefault();
+                            e.preventDefault(); e.stopPropagation();
                             if (!canClick) return;
                             const astrToDelete = astreintes[aKey];
-                            if (astrToDelete?.id) {
-                              deleteAstreinte(astrToDelete.id, teamName, rowType, k);
-                            } else if (astrToDelete) {
-                              setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
-                            }
+                            if (!astrToDelete) return;
+                            setAstreinteContextMenu({ x: e.clientX, y: e.clientY, aKey, teamName, rowId, rowType, dateKey: k, id: astrToDelete?.id });
                           }}
                           onMouseEnter={() => {
                             if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
@@ -3280,13 +3319,10 @@ function PlanningApp({ currentUser, onLogout }) {
                                     }
                                   }}
                                   onContextMenu={e => {
-                                    e.preventDefault(); if (!canClick) return;
+                                    e.preventDefault(); e.stopPropagation(); if (!canClick) return;
                                     const astrToDelete = astreintes[aKey];
-                                    if (astrToDelete?.id) {
-                                      deleteAstreinte(astrToDelete.id, teamName, rowId, k);
-                                    } else if (astrToDelete) {
-                                      setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
-                                    }
+                                    if (!astrToDelete) return;
+                                    setAstreinteContextMenu({ x: e.clientX, y: e.clientY, aKey, teamName, rowId, rowType: rowId, dateKey: k, id: astrToDelete?.id });
                                   }}
                                   onMouseEnter={() => {
                                     if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
