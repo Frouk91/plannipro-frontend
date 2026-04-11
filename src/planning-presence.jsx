@@ -2759,10 +2759,17 @@ function PlanningApp({ currentUser, onLogout }) {
               ✂️ Supprimer ce jour seulement
             </button>
             {isMulti && (
-              <button onClick={e => {
+              <button onClick={async e => {
                 e.stopPropagation(); setAstreinteContextMenu(null);
-                const minKey = allKeys[0], maxKey = allKeys[allKeys.length - 1];
-                deleteAstreinteRange(teamName, rowType || rowId, minKey, maxKey);
+                // Supprimer chaque jour individuellement pour éviter tout effet de bord cross-équipe
+                const keysToDelete = Object.keys(astreintes)
+                  .filter(k => k.startsWith(`${teamName}|${rowType || rowId}|`) && astreintes[k]?.agent_id === agentId);
+                await Promise.all(keysToDelete.map(k => {
+                  const dk = k.split("|")[2];
+                  const entry = astreintes[k];
+                  if (entry?.id) return deleteAstreinte(entry.id, teamName, rowType || rowId, dk);
+                  setAstreintes(prev => { const n = { ...prev }; delete n[k]; return n; });
+                }));
               }}
                 style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 500 }}>
                 🗑 Supprimer toute la période ({allKeys.length} jours)
@@ -3107,10 +3114,16 @@ function PlanningApp({ currentUser, onLogout }) {
                             if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
                               const s = astreinteEraseStart.key, en = k;
                               const minK = s < en ? s : en, maxK = s < en ? en : s;
-                              // Convertir les clés de date en format DATE
-                              const minDate = new Date(minK.substring(0, 4), parseInt(minK.substring(5, 7)) - 1, minK.substring(8, 10)).toISOString().split('T')[0];
-                              const maxDate = new Date(maxK.substring(0, 4), parseInt(maxK.substring(5, 7)) - 1, maxK.substring(8, 10)).toISOString().split('T')[0];
-                              deleteAstreinteRange(teamName, rowType, minDate, maxDate);
+                              const keysToDelete = Object.keys(astreintes).filter(ak => {
+                                const parts = ak.split("|");
+                                return parts[0] === teamName && parts[1] === rowType && parts[2] >= minK && parts[2] <= maxK;
+                              });
+                              keysToDelete.forEach(ak => {
+                                const dk = ak.split("|")[2];
+                                const entry = astreintes[ak];
+                                if (entry?.id) deleteAstreinte(entry.id, teamName, rowType, dk);
+                                else setAstreintes(prev => { const n = { ...prev }; delete n[ak]; return n; });
+                              });
                               setAstreinteEraseStart(null); setAstreinteHovered(null);
                             } else if (astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) {
                               const s = astreinteSelStart.key, en = k;
@@ -3284,7 +3297,16 @@ function PlanningApp({ currentUser, onLogout }) {
                                     if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
                                       const s = astreinteEraseStart.key, en = k;
                                       const minK = s < en ? s : en, maxK = s < en ? en : s;
-                                      deleteAstreinteRange(teamName, rowId, minK, maxK);
+                                      const keysToDelete = Object.keys(astreintes).filter(ak => {
+                                        const parts = ak.split("|");
+                                        return parts[0] === teamName && parts[1] === rowId && parts[2] >= minK && parts[2] <= maxK;
+                                      });
+                                      keysToDelete.forEach(ak => {
+                                        const dk = ak.split("|")[2];
+                                        const entry = astreintes[ak];
+                                        if (entry?.id) deleteAstreinte(entry.id, teamName, rowId, dk);
+                                        else setAstreintes(prev => { const n = { ...prev }; delete n[ak]; return n; });
+                                      });
                                       setAstreinteEraseStart(null); setAstreinteHovered(null);
                                       // Mode assignation : second clic = assigner la plage
                                     } else if (astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) {
