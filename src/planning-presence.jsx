@@ -4234,12 +4234,6 @@ function PlanningApp({ currentUser, onLogout }) {
                   setAstreinteDropdown(null);
                 }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>✕ Retirer ce jour uniquement</button>
               )}
-              <button onClick={() => {
-                const { teamName: tn, rowId: ri, key: k } = astreinteDropdown;
-                setAstreinteEraseStart({ teamName: tn, rowId: ri, key: k });
-                setAstreinteHovered(k);
-                setAstreinteDropdown(null);
-              }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "#fef2f2", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🗑 Effacer une plage → cliquer la date de fin</button>
               {aTeamAgents.length === 0 && <div style={{ padding: "16px", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>Aucun agent dans cette équipe</div>}
               {aTeamAgents.map(a => (
                 <button key={a.id} onClick={() => {
