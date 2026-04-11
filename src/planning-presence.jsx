@@ -3103,7 +3103,7 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <td key={i}
                           onMouseDown={e => {
-                            if (!canClick) return; e.preventDefault();
+                            if (!canClick) return; if (e.button !== 0) return; e.preventDefault();
                             if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
                               const s = astreinteEraseStart.key, en = k;
                               const minK = s < en ? s : en, maxK = s < en ? en : s;
@@ -3279,7 +3279,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                 })();
                                 return <td key={i}
                                   onMouseDown={e => {
-                                    if (!canClick) return; e.preventDefault();
+                                    if (!canClick) return; if (e.button !== 0) return; e.preventDefault();
                                     // Mode effacement plage : second clic = effacer la plage
                                     if (astreinteEraseStart && astreinteEraseStart.teamName === teamName && astreinteEraseStart.rowId === rowId) {
                                       const s = astreinteEraseStart.key, en = k;
