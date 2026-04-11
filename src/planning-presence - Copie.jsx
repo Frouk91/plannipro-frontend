@@ -481,7 +481,8 @@ function isHalfDay(leave) {
   if (!leave) return false;
   var label = (leave.label || "").toLowerCase();
   var code = (leave.code || "").toLowerCase();
-  return (label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié");
+  var reason = (leave.reason || "");
+  return (label.includes("1/2") || label.includes("½") || code.startsWith("_") || code === "veille_de_cp" || code === "veille_de_ferie" || label === "veille de cp" || label === "veille de férié" || reason.startsWith("[matin]") || reason.startsWith("[apres-midi]"));
 }
 function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
   var w = "calc(100% - " + (pad * 2) + "px)";
@@ -520,8 +521,13 @@ function teamPalette(teamName) {
 }
 function leaveAbbr(label) {
   if (!label) return "???";
-  const map = { "½ CP": "½CP", "½ RTT": "½RTT", "Congé payé": "CP", "CP": "CP", "RTT": "RTT", "Pont": "Pt", "Formation": "FOR", "Absence": "ABS", "Rueil": "R", "Paris": "P", "Veille de CP": "VCP", "Veille de Férié": "VDF" };
-  if (map[label]) return map[label];
+  const map = { "½ cp": "½CP", "½ rtt": "½RTT", "congé payé": "CP", "cp": "CP", "rtt": "RTT", "pont": "Pt", "formation": "FOR", "absence": "ABS", "rueil": "R", "paris": "P", "veille de cp": "VCP", "veille de férié": "VDF" };
+  const key = label.toLowerCase().trim();
+  if (map[key]) return map[key];
+  // Pour les ½ CP / ½ RTT avec différentes graphies
+  if (key.includes("cp") && (key.includes("½") || key.includes("1/2"))) return "½CP";
+  if (key.includes("rtt") && (key.includes("½") || key.includes("1/2"))) return "½RTT";
+  if (key.includes("congé") || key === "cp") return "CP";
   return label.replace(/[^a-zA-Z0-9½]/g, "").slice(0, 4).toUpperCase() || label.slice(0, 3).toUpperCase();
 }
 function getWeekDays(year, month, day) {
@@ -3469,7 +3475,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                  <colgroup><col style={{ width: 160 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
+                  <colgroup><col style={{ width: 200 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
                       <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
@@ -3539,7 +3545,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   {(isAdmin || isManager) && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", letterSpacing: "0.3px" }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", letterSpacing: "0.3px" }}>{agent.name} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
                                 </td>
                                 {
@@ -3640,7 +3646,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ width: 200, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
                       {weekDays.map((d, i) => {
                         const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now);
                         const feriesDay = getFeries(d.getFullYear());
@@ -3706,7 +3712,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   {(isAdmin || isManager) && <span style={{ fontSize: 13, color: "#64748b", flexShrink: 0, cursor: "grab", userSelect: "none", marginRight: 6 }}>⠿</span>}
                                   <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: selectedAgentRow === agent.id ? "0 0 0 2px #3b82f6" : "none" }}>{agent.avatar}</div>
                                   <div style={{ minWidth: 0, flex: 1, marginLeft: 7 }}>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", letterSpacing: "0.3px" }}>{agent.name.split(" ")[0]} {agent.role === "manager" ? "👑" : ""}</div>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: agent.id === currentUser.id ? "#4f46e5" : selectedAgentRow === agent.id ? "#2563eb" : "#0f172a", whiteSpace: "nowrap", letterSpacing: "0.3px" }}>{agent.name} {agent.role === "manager" ? "👑" : ""}</div>
                                   </div>
                                 </td>
                                 {weekDays.map((d, i) => {
@@ -4213,8 +4219,8 @@ function PlanningApp({ currentUser, onLogout }) {
           // Types affichés dans la liste (sans les ½ CP et ½ RTT)
           const displayTypes = allAvail.filter(t => !isHalfCp(t) && !isHalfRtt(t));
           // Trouver les types ½ correspondants
-          const halfCpType = allAvail.find(isHalfCp) || allAvail.find(t => (t.code || "").includes("cp") && isHalfDay(t));
-          const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => (t.code || "").includes("rtt") && isHalfDay(t));
+          const halfCpType = allAvail.find(isHalfCp) || allAvail.find(t => !isVeilleFamily(t) && (t.code || "").includes("cp") && isHalfDay(t));
+          const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => !isVeilleFamily(t) && (t.code || "").includes("rtt") && isHalfDay(t));
           function handleTypeClick(t) {
             if (isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t)) {
               setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
@@ -4233,12 +4239,8 @@ function PlanningApp({ currentUser, onLogout }) {
               submitRequest(t, finalReason);
             } else {
               const halfType = isCpFamily(t) ? halfCpType : halfRttType;
-              if (halfType) {
-                const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
-                submitRequest(halfType, finalReason);
-              } else {
-                setHalfDayPendingType(t); setHalfDayPeriod(period);
-              }
+              const finalReason = "[" + period + "]" + (requestReason ? " " + requestReason : "");
+              submitRequest(halfType || t, finalReason);
             }
           }
           return (

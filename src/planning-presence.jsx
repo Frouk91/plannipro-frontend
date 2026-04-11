@@ -2602,18 +2602,18 @@ function PlanningApp({ currentUser, onLogout }) {
 
   async function approveRequest(reqId) {
     try {
-      await apiFetch(`/leaves/${reqId}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
+      await apiFetch(`/leaves/${reqId}/approve`, token, { method: "PATCH" });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "approved" } : r));
       await loadLeaves(leaveTypes, token, year, month); showNotif("Demande approuvée ✅");
-    } catch { showNotif("Erreur", "error"); }
+    } catch (e) { console.error("approveRequest error:", e); showNotif("Erreur: " + (e.message || "inconnue"), "error"); }
   }
 
   async function rejectRequest(reqId) {
     try {
-      await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment }) });
+      await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment || "" }) });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "rejected", comment: rejectComment } : r));
       await loadLeaves(leaveTypes, token, year, month); setRejectModal(null); showNotif("Demande refusée", "error");
-    } catch { showNotif("Erreur", "error"); }
+    } catch (e) { console.error("rejectRequest error:", e); showNotif("Erreur: " + (e.message || "inconnue"), "error"); }
   }
 
   function isInSelection(agentId, day) {
@@ -3096,10 +3096,11 @@ function PlanningApp({ currentUser, onLogout }) {
                           onContextMenu={e => {
                             e.preventDefault();
                             if (!canClick) return;
-                            const astreinteData = astreintes[aKey];
-                            if (astreinteData && astreinteData.id) {
-                              deleteAstreinte(astreinteData.id, teamName, rowType, k);
-                            }
+                            setAstreinteDropdown({
+                              aKey, teamName, rowId, rowType, key: k, x: e.clientX, y: e.clientY, fridayOnly,
+                              onAgentPicked: fridayOnly ? null : (agentId) => { setAstreinteSelStart({ teamName, rowId, key: k, agentId }); setAstreinteHovered(k); },
+                              onErasePicked: () => { setAstreinteEraseStart({ teamName, rowId, key: k }); setAstreinteHovered(k); }
+                            });
                           }}
                           onMouseEnter={() => {
                             if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
@@ -3279,13 +3280,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                   }}
                                   onContextMenu={e => {
                                     e.preventDefault(); if (!canClick) return;
-                                    // Clic droit = supprimer ce jour uniquement
-                                    const astrToDelete = astreintes[aKey];
-                                    if (astrToDelete?.id) {
-                                      deleteAstreinte(astrToDelete.id, teamName, rowId, k);
-                                    } else {
-                                      setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
-                                    }
+                                    setAstreinteDropdown({
+                                      aKey, teamName, rowId, rowType: rowId, key: k, x: e.clientX, y: e.clientY, fridayOnly,
+                                      onAgentPicked: fridayOnly ? null : (agentId) => { setAstreinteSelStart({ teamName, rowId, key: k, agentId }); setAstreinteHovered(k); },
+                                      onErasePicked: () => { setAstreinteEraseStart({ teamName, rowId, key: k }); setAstreinteHovered(k); }
+                                    });
                                   }}
                                   onMouseEnter={() => {
                                     if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
