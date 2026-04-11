@@ -3096,11 +3096,12 @@ function PlanningApp({ currentUser, onLogout }) {
                           onContextMenu={e => {
                             e.preventDefault();
                             if (!canClick) return;
-                            setAstreinteDropdown({
-                              aKey, teamName, rowId, rowType, key: k, x: e.clientX, y: e.clientY, fridayOnly,
-                              onAgentPicked: fridayOnly ? null : (agentId) => { setAstreinteSelStart({ teamName, rowId, key: k, agentId }); setAstreinteHovered(k); },
-                              onErasePicked: () => { setAstreinteEraseStart({ teamName, rowId, key: k }); setAstreinteHovered(k); }
-                            });
+                            const astrToDelete = astreintes[aKey];
+                            if (astrToDelete?.id) {
+                              deleteAstreinte(astrToDelete.id, teamName, rowType, k);
+                            } else if (astrToDelete) {
+                              setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
+                            }
                           }}
                           onMouseEnter={() => {
                             if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
@@ -3280,11 +3281,12 @@ function PlanningApp({ currentUser, onLogout }) {
                                   }}
                                   onContextMenu={e => {
                                     e.preventDefault(); if (!canClick) return;
-                                    setAstreinteDropdown({
-                                      aKey, teamName, rowId, rowType: rowId, key: k, x: e.clientX, y: e.clientY, fridayOnly,
-                                      onAgentPicked: fridayOnly ? null : (agentId) => { setAstreinteSelStart({ teamName, rowId, key: k, agentId }); setAstreinteHovered(k); },
-                                      onErasePicked: () => { setAstreinteEraseStart({ teamName, rowId, key: k }); setAstreinteHovered(k); }
-                                    });
+                                    const astrToDelete = astreintes[aKey];
+                                    if (astrToDelete?.id) {
+                                      deleteAstreinte(astrToDelete.id, teamName, rowId, k);
+                                    } else if (astrToDelete) {
+                                      setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
+                                    }
                                   }}
                                   onMouseEnter={() => {
                                     if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
