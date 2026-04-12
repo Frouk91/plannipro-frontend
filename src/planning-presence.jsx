@@ -2613,7 +2613,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const autoApprove = (isManager && !isPont) || (filterMode === "presence" && agentCanPresence && isPresenceType(leaveType));
         if (autoApprove) {
           try {
-            await apiFetch(`/leaves/${data.leave.id}/approve`, token, { method: "PATCH", body: JSON.stringify({}) });
+            await apiFetch(`/leaves/${data.leave.id}`, token, { method: "PATCH", body: JSON.stringify({ status: "approved" }) });
           } catch (approveErr) {
             console.warn("Approve échoué (non bloquant):", approveErr);
           }
@@ -2630,7 +2630,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   async function approveRequest(reqId) {
     try {
-      await apiFetch(`/leaves/${reqId}/approve`, token, { method: "PATCH" });
+      await apiFetch(`/leaves/${reqId}`, token, { method: "PATCH", body: JSON.stringify({ status: "approved" }) });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "approved" } : r));
       await loadLeaves(leaveTypes, token, year, month); showNotif("Demande approuvée ✅");
     } catch (e) { console.error("approveRequest error:", e); showNotif("Erreur: " + (e.message || "inconnue"), "error"); }
@@ -2638,7 +2638,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   async function rejectRequest(reqId) {
     try {
-      await apiFetch(`/leaves/${reqId}/reject`, token, { method: "PATCH", body: JSON.stringify({ manager_comment: rejectComment || "" }) });
+      await apiFetch(`/leaves/${reqId}`, token, { method: "PATCH", body: JSON.stringify({ status: "rejected", comment: rejectComment || "" }) });
       setRequests(prev => prev.map(r => r.id === reqId ? { ...r, status: "rejected", comment: rejectComment } : r));
       await loadLeaves(leaveTypes, token, year, month); setRejectModal(null); showNotif("Demande refusée", "error");
     } catch (e) { console.error("rejectRequest error:", e); showNotif("Erreur: " + (e.message || "inconnue"), "error"); }

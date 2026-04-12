@@ -1828,6 +1828,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [rejectModal, setRejectModal] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
   const [notification, setNotification] = useState(null);
+  const [lastSync, setLastSync] = useState(null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [loadingYearStats, setLoadingYearStats] = useState(false);  // Indicateur de chargement année
   const [showMonthPicker, setShowMonthPicker] = useState(false);
@@ -2231,6 +2232,32 @@ function PlanningApp({ currentUser, onLogout }) {
     }
     loadAll();
   }, [token]);
+
+  // ========== POLLING TEMPS RÉEL — toutes les 30 secondes ==========
+  const pollingRef = useRef(null);
+  useEffect(() => {
+    if (!dataLoaded || leaveTypes.length === 0) return;
+    const poll = async () => {
+      try {
+        await loadLeaves(leaveTypes, token, year, month);
+        await loadRequests(token);
+        // Recharger les astreintes
+        const res = await fetch(`${API}/astreintes`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.ok) {
+          const data = await res.json();
+          const obj = {};
+          data.forEach(a => {
+            const dateStr = typeof a.date_key === "string" ? a.date_key.split("T")[0] : new Date(a.date_key).toISOString().split("T")[0];
+            obj[`${a.team_name}|${a.row_type}|${dateStr}`] = a;
+          });
+          setAstreintes(obj);
+        }
+        setLastSync(new Date());
+      } catch { /* silencieux */ }
+    };
+    pollingRef.current = setInterval(poll, 30000);
+    return () => clearInterval(pollingRef.current);
+  }, [dataLoaded, token, year, month, leaveTypes.length]);
 
   useEffect(() => {
     if (!dataLoaded || leaveTypes.length === 0) return;
@@ -2787,7 +2814,15 @@ function PlanningApp({ currentUser, onLogout }) {
       <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.3) 100%)", backdropFilter: "blur(20px)", border: "1px solid rgba(148,163,184,0.1)", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div><div style={{ fontSize: 16, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.3px" }}>Planning {new Date().getFullYear()}</div></div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.3px" }}>Planning {new Date().getFullYear()}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: lastSync ? "#10b981" : "#64748b", display: "inline-block", boxShadow: lastSync ? "0 0 6px #10b981" : "none", animation: lastSync ? "pulse 2s ease-in-out infinite" : "none" }} />
+                <span style={{ fontSize: 10, color: lastSync ? "#6ee7b7" : "#64748b", fontWeight: 500 }}>
+                  {lastSync ? `Sync ${lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "En attente…"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
