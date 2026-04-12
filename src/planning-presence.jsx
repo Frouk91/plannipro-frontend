@@ -3626,8 +3626,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 36, background: selectedAgentRow === agent.id ? tp.border + "12" : rowBg, transition: "all 0.25s ease", borderLeft: selectedAgentRow === agent.id ? "3px solid " + tp.border : "3px solid transparent", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.55 : 1 }}>
+                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer", borderTop: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin || isManager}
                                   onDragStart={e => { if (!isAdmin && !isManager) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
@@ -3656,7 +3656,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                       onMouseLeave={() => setHoveredDay(null)}
                                       className={canInteract ? "cell-hover" : ""}
                                       title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
-                                      style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
+                                      style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", borderTop: selectedAgentRow === agent.id ? "2px solid " + tp.border : "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
                                       {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                         const aKey = dateKey(year, month, day);
                                         const aAgentId = astreintes[aKey];
@@ -3793,8 +3793,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             const tp = teamPalette(teamName);
                             const rowBg = tp.row;
                             return (
-                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: rowBg, transition: "all 0.2s", outline: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none", outlineOffset: -2, opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.45 : 1 }}>
-                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer" }}
+                              <tr key={agent.id} style={{ borderBottom: "1px solid " + tp.border + "40", height: 38, background: selectedAgentRow === agent.id ? tp.border + "12" : rowBg, transition: "all 0.25s ease", borderLeft: selectedAgentRow === agent.id ? "3px solid " + tp.border : "3px solid transparent", opacity: selectedAgentRow && selectedAgentRow !== agent.id ? 0.55 : 1 }}>
+                                <td style={{ padding: "0 10px", verticalAlign: "middle", background: rowBg, fontSize: 12, position: "relative", cursor: "pointer", borderTop: selectedAgentRow === agent.id ? "2px solid " + tp.border : "none" }}
                                   onClick={() => setSelectedAgentRow(selectedAgentRow === agent.id ? null : agent.id)}
                                   draggable={isAdmin || isManager}
                                   onDragStart={e => { if (!isAdmin && !isManager) return; e.stopPropagation(); setDragAgentId(agent.id); e.dataTransfer.effectAllowed = "move"; }}
@@ -3825,7 +3825,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: selectedAgentRow === agent.id ? tp.header : wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", borderTop: selectedAgentRow === agent.id ? "2px solid " + tp.border : "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
