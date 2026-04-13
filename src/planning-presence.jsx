@@ -75,8 +75,13 @@ const GLOBAL_STYLE = `
   @keyframes slideInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
   @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
   @keyframes popIn { 0% { opacity:0; transform:scale(0.92) translateY(6px); } 60% { transform:scale(1.02) translateY(-1px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  @keyframes modalIn { 0% { opacity:0; transform:translate(-50%,-50%) scale(0.94); } 60% { transform:translate(-50%,-50%) scale(1.02); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
   @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
   @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
+  @keyframes modalIn { 
+    0% { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
   @keyframes toastIn { from { opacity:0; transform:translateX(20px) scale(0.96); } to { opacity:1; transform:translateX(0) scale(1); } }
   @keyframes progressDrain { from { width: 100%; } to { width: 0%; } }
   
@@ -3098,7 +3103,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           const isFriday = new Date(year, month, day).getDay() === 5;
                           return <th key={i} style={{
                             padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600,
-                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#eef2ff" : wk ? "#fafafa" : "#f8fafc",
+                            background: isFriday && !wk ? "#fef3c7" : isToday ? "#e0e7ff" : wk ? "#fafafa" : "#f8fafc",
                             color: isFriday && !wk ? "#d97706" : isToday ? "#6366f1" : wk ? "#d1d5db" : "#94a3b8",
                             borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#6366f1" : "#f1f5f9"}`,
                             borderLeft: "1px solid #f8fafc", minWidth: 26
@@ -3392,7 +3397,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         const absent = countAbsents(k);
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
-                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
+                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
                           <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
                             {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
@@ -3470,7 +3475,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                       onMouseLeave={() => setHoveredDay(null)}
                                       className={canInteract ? "cell-hover" : ""}
                                       title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
-                                      style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === daysInMonth - 1 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
+                                      style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.08)" : rowBg, border: isToday ? "1px solid rgba(99,102,241,0.25)" : "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === daysInMonth - 1 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
                                       {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                         const aKey = dateKey(year, month, day);
                                         const aAgentId = astreintes[aKey];
@@ -3560,7 +3565,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         const feriesDay = getFeries(d.getFullYear());
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
-                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#eef2ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
+                        return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
                           <div style={{ height: 24, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
                             {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
@@ -3639,7 +3644,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
                                     title={isFer ? `🗓 ${feriesDay[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
-                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? tp.header : rowBg, border: "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === 6 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
+                                    style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.08)" : rowBg, border: isToday ? "1px solid rgba(99,102,241,0.25)" : "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === 6 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
@@ -4147,9 +4152,9 @@ function PlanningApp({ currentUser, onLogout }) {
           }
           return (
             <div onClick={e => e.stopPropagation()} style={{
-              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              position: "fixed", top: "50%", left: "50%",
               background: "linear-gradient(160deg,#0d1425 0%,#162035 100%)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 18, boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05) inset",
-              zIndex: 99999, width: 320, overflow: "hidden", animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)"
+              zIndex: 99999, width: 320, overflow: "hidden", animation: "modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards"
             }}>
               {/* Header */}
               <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,182,212,0.08))" }}>
@@ -4224,7 +4229,7 @@ function PlanningApp({ currentUser, onLogout }) {
           return (
             <>
               <div onClick={() => setAddLeaveModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", zIndex: 99998, backdropFilter: "blur(6px)" }} />
-              <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalPop 0.15s ease" }}>
+              <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 99999, width: 440, maxWidth: "95vw", animation: "modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
                 <div className="modal-header">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div>
@@ -4422,7 +4427,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
       {
         halfDayPendingType && (
-          <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 100000, width: 300, overflow: "hidden", animation: "slideIn 0.2s ease" }}>
+          <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: "50%", left: "50%", background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", zIndex: 100000, width: 300, overflow: "hidden", animation: "modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards" }}>
             <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>Demi-journée</div>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>{halfDayPendingType.label} — quelle période ?</div>
