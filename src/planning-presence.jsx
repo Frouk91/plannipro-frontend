@@ -54,15 +54,15 @@ const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg, #060818 0%, #0a0e27 50%, #060818 100%); min-height: 100vh; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: rgba(6,8,24,0.8); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
-  ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.7); }
   ::-webkit-scrollbar-corner { background: transparent; }
 
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes slideIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
-  @keyframes modalPop { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideIn { from { opacity:0; transform:scale(0.97) translateY(-4px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  @keyframes modalPop { from { opacity:0; transform:scale(0.95) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -74,342 +74,150 @@ const GLOBAL_STYLE = `
   @keyframes slideInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
   @keyframes slideInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
   @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
-  @keyframes popIn { 0% { opacity:0; transform:scale(0.8); } 50% { transform:scale(1.05); } to { opacity:1; transform:scale(1); } }
+  @keyframes popIn { 0% { opacity:0; transform:scale(0.92) translateY(6px); } 60% { transform:scale(1.02) translateY(-1px); } to { opacity:1; transform:scale(1) translateY(0); } }
   @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
   @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
+  @keyframes toastIn { from { opacity:0; transform:translateX(20px) scale(0.96); } to { opacity:1; transform:translateX(0) scale(1); } }
+  @keyframes progressDrain { from { width: 100%; } to { width: 0%; } }
   
-  /* BADGE ANIMATIONS - Étape 6 */
-  @keyframes badgePulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.85; transform: scale(1.05); }
-  }
-  
-  @keyframes badgeGlow {
-    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.4), inset 0 0 8px rgba(245, 158, 11, 0.1); }
-    50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.7), inset 0 0 12px rgba(245, 158, 11, 0.2); }
-  }
-  
-  @keyframes badgeBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-  
-  @keyframes badgeShimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-  
-  /* Classes pour badges */
+  /* BADGE ANIMATIONS */
+  @keyframes badgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.05); } }
+  @keyframes badgeGlow { 0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 16px rgba(245,158,11,0.7); } }
+  @keyframes badgeBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes badgeShimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
   .badge-pending { animation: badgePulse 2s ease-in-out infinite; }
   .badge-glow { animation: badgeGlow 2.5s ease-in-out infinite; }
   .badge-bounce { animation: badgeBounce 1.5s ease-in-out infinite; }
-  .badge-shimmer { 
-    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
-    background-size: 1000px 100%;
-    animation: badgeShimmer 3s linear infinite;
-  }
+  .badge-shimmer { background: linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.3) 50%,rgba(255,255,255,0) 100%); background-size:1000px 100%; animation:badgeShimmer 3s linear infinite; }
   
-  /* VIEW TRANSITIONS - Étape 7 */
-  @keyframes viewFadeIn {
-    0% { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes viewFadeOut {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-8px); }
-  }
-  
-  @keyframes viewSlideIn {
-    0% { opacity: 0; transform: translateX(-20px); }
-    100% { opacity: 1; transform: translateX(0); }
-  }
-  
-  @keyframes viewSlideOut {
-    0% { opacity: 1; transform: translateX(0); }
-    100% { opacity: 0; transform: translateX(20px); }
-  }
-  
-  /* View transitions */
-  .view-container { animation: viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  /* VIEW TRANSITIONS */
+  @keyframes viewFadeIn { 0% { opacity:0; transform:translateY(8px); } 100% { opacity:1; transform:translateY(0); } }
+  @keyframes viewFadeOut { 0% { opacity:1; transform:translateY(0); } 100% { opacity:0; transform:translateY(-8px); } }
+  @keyframes viewSlideIn { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
+  @keyframes viewSlideOut { 0% { opacity:1; transform:translateX(0); } 100% { opacity:0; transform:translateX(20px); } }
+  @keyframes cascadeIn { 0% { opacity:0; transform:translateY(16px); } 100% { opacity:1; transform:translateY(0); } }
+  @keyframes slideInLeft2 { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
+  @keyframes slideInRight2 { 0% { opacity:0; transform:translateX(20px); } 100% { opacity:1; transform:translateX(0); } }
+  .view-container { animation: viewFadeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
   .view-container.exit { animation: viewFadeOut 0.3s ease-out forwards; }
-  .subview-container { animation: viewSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-  .month-transition { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  
-  .cell-hover { transition: all 0.3s ease; }
-  @keyframes cascadeIn { 
-    0% { opacity: 0; transform: translateY(16px); } 
-    100% { opacity: 1; transform: translateY(0); } 
-  }
-  @keyframes slideInLeft2 { 
-    0% { opacity: 0; transform: translateX(-20px); } 
-    100% { opacity: 1; transform: translateX(0); } 
-  }
-  @keyframes slideInRight2 { 
-    0% { opacity: 0; transform: translateX(20px); } 
-    100% { opacity: 1; transform: translateX(0); } 
-  }
-  
-  /* Row animations with stagger */
-  .row-animate { animation: cascadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
-  .row-animate.visible { animation: cascadeIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  
-  .request-animate { animation: slideInLeft2 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
-  .request-animate.visible { animation: slideInLeft2 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  
-  .card-animate { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
-  .card-animate.visible { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  
-  .cell-hover { transition: all 0.3s ease; }
-  .cell-hover:hover { background: rgba(59,130,246,0.15) !important; box-shadow: inset 0 0 0 1px rgba(99,102,241,0.3), 0 4px 12px rgba(99,102,241,0.15) !important; }
+  .subview-container { animation: viewSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .row-animate { animation: cascadeIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
+  .request-animate { animation: slideInLeft2 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
+  .card-animate { animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
 
-  .nav-btn { transition: all 0.15s ease; }
-  .nav-btn:hover { background: rgba(59,130,246,0.1) !important; }
-  
-  /* MICRO-INTERACTIONS */
-  button { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  button:hover { filter: brightness(1.05); transform: translateY(-2px); }
-  button:active { transform: translateY(0); }
-  
-  /* Boutons avec dégradés améliorés */
-  button[style*="gradient"] { position: relative; overflow: hidden; }
-  button[style*="gradient"]::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.3), transparent); opacity: 0; transition: opacity 0.3s ease; }
-  button[style*="gradient"]:hover::before { opacity: 1; }
-  
-  /* Inputs avec focus glow */
-  input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.25) !important; }
-  
-  /* Cards avec hover scale */
-  .card { transform: scale(1); }
-  .card:hover { transform: scale(1.02); }
-  
-  .cell-hover { transition: all 0.3s ease; }
-  select { appearance: none; background-color: #ffffff; }
-  select option { background: #1e293b; color: #f1f5f9; padding: 8px; border: none; margin: 4px 0; }
-  select option:checked { background: #6366f1; color: #ffffff; }
-  select option:hover { background: #334155; color: #f1f5f9; }
-  .half-tooltip { position: relative; }
-  .half-tooltip::before { content: ''; position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(15,23,42,0.92); pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; }
-  .half-tooltip::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.92); color: #fff; font-size: 11px; font-weight: 600; font-family: 'Outfit', sans-serif; padding: 6px 12px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; z-index: 9999; letter-spacing: 0.2px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); }
-  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
-  /* Glow effect */
-  @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 20px rgba(99,102,241,0.6); } }
-  .glow { animation: glow 2s ease-in-out infinite; }
-  /* Glow orange pour pending */
-  .pending-glow { animation: glowOrange 2s ease-in-out infinite; }
-  @keyframes glowOrange { 0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 16px rgba(245,158,11,0.8); } }
-  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:30px; height:30px; padding:0 8px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:15px; cursor:pointer; overflow:hidden; transition:width 0.3s ease-out, box-shadow 0.2s; box-shadow:0 3px 12px rgba(99,102,241,0.4); flex-shrink:0; }
+  /* CELL HOVER */
+  .cell-hover { transition: background 0.18s ease, box-shadow 0.18s ease; }
+  .cell-hover:hover { background: rgba(99,102,241,0.08) !important; box-shadow: inset 0 0 0 1.5px rgba(99,102,241,0.25) !important; }
+
+  /* NAV */
+  .nav-btn { transition: all 0.18s ease; position: relative; }
+  .nav-btn:hover { background: rgba(255,255,255,0.06) !important; color: #e2e8f0 !important; }
+  .nav-btn-active::before { content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px; background: linear-gradient(180deg,#6366f1,#06b6d4); border-radius: 0 3px 3px 0; }
+
+  /* BUTTONS - no global hover lift (causes issues on table cells) */
+  button { transition: all 0.18s ease; }
+  button:active { transform: scale(0.98) !important; }
+  .btn-primary { 
+    background: linear-gradient(135deg,#6366f1,#818cf8);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+    padding: 10px 18px; border-radius: 9px; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 200ms ease; letter-spacing: 0.2px;
+  }
+  .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(99,102,241,0.45); transform: translateY(-1px); }
+  .btn-secondary { background: rgba(255,255,255,0.05); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
+  .btn-danger { background: linear-gradient(135deg,#ef4444,#f87171); color:#fff; box-shadow:0 4px 14px rgba(239,68,68,0.3); border-radius:9px; }
+  .btn-danger:hover { filter:brightness(1.08); box-shadow:0 6px 20px rgba(239,68,68,0.4); transform:translateY(-1px); }
+  .btn-edit { padding:5px 12px; border-radius:7px; border:1.5px solid #c7d2fe; background:#eef2ff; cursor:pointer; font-size:11px; color:#4338ca; font-weight:600; transition:all 150ms; }
+  .btn-edit:hover { background:#6366f1; color:#fff; border-color:#6366f1; transform:translateY(-1px); }
+  .btn-delete { padding:5px 9px; border-radius:7px; border:1.5px solid #fca5a5; background:#fef2f2; cursor:pointer; font-size:12px; color:#ef4444; font-weight:700; transition:all 150ms; }
+  .btn-delete:hover { background:#ef4444; color:#fff; transform:translateY(-1px); }
+
+  /* INPUTS */
+  .input-field { width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:14px; transition:all 0.2s; outline:none; }
+  .input-field:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.18); }
+  .select-field { width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:14px; transition:all 0.2s; cursor:pointer; outline:none; }
+  .select-field:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.18); }
+  .select-field option { background:#1e293b; color:#f1f5f9; }
+  input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important; }
+  select { appearance:none; background-color:#ffffff; }
+  select option { background:#1e293b; color:#f1f5f9; padding:8px; }
+  select option:checked { background:#6366f1; color:#ffffff; }
+
+  /* LABEL */
+  .label { display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.6px; }
+
+  /* BADGES */
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.2px; }
+  .badge-primary { background:rgba(99,102,241,0.12); color:#a5b4fc; border:1px solid rgba(99,102,241,0.2); }
+  .badge-danger { background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.2); }
+  .badge-success { background:rgba(34,197,94,0.1); color:#86efac; border:1px solid rgba(34,197,94,0.2); }
+
+  /* MODALS */
+  .modal-header { padding:22px 28px 18px; background:linear-gradient(135deg,#4f46e5,#6366f1,#818cf8); color:#fff; border-radius:16px 16px 0 0; position:relative; overflow:hidden; }
+  .modal-header::before { content:''; position:absolute; top:-40%; right:-10%; width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%; }
+  .modal-body { padding:20px 28px; }
+  .modal-footer { padding:16px 28px; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:12px; justify-content:flex-end; }
+
+  /* CARDS */
+  .card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; transition:all 0.2s; }
+  .card:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,0.25); border-color:rgba(255,255,255,0.14); }
+
+  /* CONTEXT MENU */
+  .context-menu { background:linear-gradient(145deg,#0d1425,#162035); border-radius:14px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset; overflow:hidden; }
+  .context-menu-item { padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-size:12px; color:#94a3b8; font-weight:600; background:rgba(255,255,255,0.03); letter-spacing:0.2px; }
+  .context-menu button:hover { background:rgba(255,255,255,0.06) !important; }
+
+  /* HALF-DAY TOOLTIP */
+  .half-tooltip { position:relative; }
+  .half-tooltip::before { content:''; position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(10,14,30,0.96); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:9999; }
+  .half-tooltip::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%); background:rgba(10,14,30,0.96); color:#fff; font-size:11px; font-weight:600; font-family:'Outfit',sans-serif; padding:6px 12px; border-radius:9px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:9999; letter-spacing:0.2px; box-shadow:0 4px 20px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); }
+  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity:1; }
+
+  /* GLOW */
+  @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(99,102,241,0.3);} 50%{box-shadow:0 0 20px rgba(99,102,241,0.6);} }
+  .glow { animation:glow 2s ease-in-out infinite; }
+  @keyframes glowOrange { 0%,100%{box-shadow:0 0 8px rgba(245,158,11,0.4);} 50%{box-shadow:0 0 16px rgba(245,158,11,0.8);} }
+  .pending-glow { animation:glowOrange 2s ease-in-out infinite; }
+
+  /* BTN CONGE EXPAND */
+  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:32px; height:32px; padding:0 9px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:16px; cursor:pointer; overflow:hidden; transition:width 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s; box-shadow:0 4px 14px rgba(99,102,241,0.4); flex-shrink:0; }
   .btn-conge-expand svg { flex-shrink:0; width:14px; height:14px; }
   .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
-  .btn-conge-expand:hover { width:175px; box-shadow:0 4px 18px rgba(99,102,241,0.55); }
+  .btn-conge-expand:hover { width:178px; box-shadow:0 6px 20px rgba(99,102,241,0.55); }
   .btn-conge-expand:hover .btn-label { opacity:1; }
-  
-  /* ===== DESIGN SYSTEM v7 - CLASSES CSS ===== */
-  
-  /* Button Styles */
-  .btn { padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s ease; }
-  .btn-primary { 
-    background: linear-gradient(135deg, #6366f1, #818cf8); 
-    color: #fff; 
-    box-shadow: 0 4px 14px rgba(99,102,241,0.35);
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 200ms ease;
-  }
-  .btn-primary:hover { 
-    filter: brightness(1.08); 
-    transform: translateY(-2px); 
-    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,0.4); }
-  .btn-secondary { background: rgba(255,255,255,0.05); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.1); }
-  .btn-secondary:hover { background: rgba(255,255,255,0.08); }
-  .btn-danger { background: linear-gradient(135deg, #ef4444, #f87171); color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,0.35); }
-  .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239,68,68,0.4); }
-  
-  /* Input Styles */
-  .input-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #f1f5f9; font-size: 14px; transition: all 0.2s; }
-  .input-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
-  
-  /* Select Styles */
-  .select-field { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #f1f5f9; font-size: 14px; transition: all 0.2s; cursor: pointer; }
-  .select-field:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
-  .select-field option { background: #1e293b; color: #f1f5f9; }
-  
-  /* Label Styles */
-  .label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
-  
-  /* Badge Styles */
-  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .badge-primary { background: rgba(99,102,241,0.1); color: #a5b4fc; }
-  .badge-danger { background: rgba(239,68,68,0.1); color: #fca5a5; }
-  .badge-success { background: rgba(34,197,94,0.1); color: #86efac; }
-  
-  /* Modal Styles */
-  .modal-header { padding: 20px 24px 16px; background: linear-gradient(135deg,#6366f1,#818cf8); color: #fff; border-radius: 12px 12px 0 0; }
-  .modal-body { padding: 20px 24px; }
-  .modal-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; justify-content: flex-end; }
-  
-  /* Card Styles */
-  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 16px; transition: all 0.2s; }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-  
-  /* Context Menu */
-  .context-menu { background: linear-gradient(145deg,#0f172a,#1e293b); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
-  
-  /* Bouton Edit */
-  .btn-edit { padding: 5px 12px; border-radius: 7px; border: 1.5px solid #c7d2fe; background: #eef2ff; cursor: pointer; font-size: 11px; color: #4338ca; font-weight: 600; transition: all 150ms; }
-  .btn-edit:hover { background: #6366f1; color: #fff; border-color: #6366f1; }
-  
-  /* Bouton Delete */
-  .btn-delete { padding: 5px 9px; border-radius: 7px; border: 1.5px solid #fca5a5; background: #fef2f2; cursor: pointer; font-size: 12px; color: #ef4444; font-weight: 700; transition: all 150ms; }
-  .btn-delete:hover { background: #ef4444; color: #fff; }
-  
-  /* Context Menu Item */
-  .context-menu-item { padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 12px; color: #94a3b8; font-weight: 600; background: rgba(255,255,255,0.04); }
-  
-  /* ===== STATS CARDS - MODERN DESIGN ===== */
+
+  /* STATS CARDS */
   .stats-card { 
-    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-    border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
+    background: linear-gradient(145deg,#ffffff 0%,#f8fafc 100%);
+    border: 1.5px solid #e8edf5;
+    border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    position: relative;
-    overflow: hidden;
-    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    cursor: default;
-    height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    position: relative; overflow: hidden;
+    transition: all 320ms cubic-bezier(0.34,1.56,0.64,1);
+    cursor: default; height: 200px;
+    display: flex; flex-direction: column; justify-content: center;
   }
-  
-  .stats-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-    border-color: #cbd5e1;
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  }
-  
-  .stats-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--card-color, #6366f1);
-    border-radius: 12px 12px 0 0;
-  }
-  
-  .stats-card-badge {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 24px;
-    font-weight: 800;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  
-  .stats-card:hover .stats-card-badge {
-    transform: scale(1.1) rotate(-5deg);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  }
-  
-  .stats-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    padding-right: 60px;
-  }
-  
-  .stats-card-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    margin-bottom: 12px;
-  }
-  
-  .stats-card-value {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    line-height: 1;
-  }
-  
-  .stats-card-unit {
-    font-size: 14px;
-    font-weight: 500;
-    color: #94a3b8;
-    margin-left: 6px;
-  }
-  
-  .stats-card-divider {
-    height: 1px;
-    background: #e2e8f0;
-    margin: 12px 0;
-  }
-  
-  .stats-card-subvalue {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1;
-    opacity: 0.7;
-  }
-  
-  .stats-card-period {
-    font-size: 10px;
-    color: #64748b;
-    background: #f1f5f9;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: 700;
-    white-space: nowrap;
-    margin-top: 8px;
-  }
-  
-  .stats-card-progress {
-    margin-top: 16px;
-  }
-  
-  .stats-card-progress-bar {
-    height: 4px;
-    background: #e2e8f0;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  
-  .stats-card-progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  
-  .stats-card-progress-label {
-    font-size: 10px;
-    color: #94a3b8;
-    margin-top: 8px;
-    text-align: right;
-  }
-  
+  .stats-card:hover { transform:translateY(-5px); box-shadow:0 16px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06); border-color:#d4dbe8; }
+  .stats-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--card-color,#6366f1); border-radius:16px 16px 0 0; }
+  .stats-card::after { content:''; position:absolute; bottom:-30px; right:-30px; width:100px; height:100px; border-radius:50%; background:var(--card-color,#6366f1); opacity:0.04; transition:all 0.3s ease; }
+  .stats-card:hover::after { transform:scale(1.4); opacity:0.07; }
+  .stats-card-badge { position:absolute; top:18px; right:18px; width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,0.15); transition:all 300ms cubic-bezier(0.34,1.56,0.64,1); }
+  .stats-card:hover .stats-card-badge { transform:scale(1.12) rotate(-6deg); }
+  .stats-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-right:60px; }
+  .stats-card-label { font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+  .stats-card-value { font-size:34px; font-weight:800; letter-spacing:-1px; line-height:1; }
+  .stats-card-unit { font-size:14px; font-weight:500; color:#94a3b8; margin-left:5px; }
+  .stats-card-divider { height:1px; background:linear-gradient(90deg,#e2e8f0,transparent); margin:12px 0; }
+  .stats-card-subvalue { font-size:26px; font-weight:700; letter-spacing:-0.5px; line-height:1; opacity:0.65; }
+  .stats-card-period { font-size:10px; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:5px; font-weight:700; white-space:nowrap; margin-top:8px; display:inline-block; }
+  .stats-card-progress { margin-top:16px; }
+  .stats-card-progress-bar { height:3px; background:#e8edf5; border-radius:99px; overflow:hidden; }
+  .stats-card-progress-fill { height:100%; border-radius:99px; transition:width 700ms cubic-bezier(0.34,1.56,0.64,1); }
+  .stats-card-progress-label { font-size:10px; color:#94a3b8; margin-top:7px; text-align:right; }
 `;
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
@@ -505,15 +313,15 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
 }
 function teamPalette(teamName) {
   const palettes = {
-    "CSS Digital": { row: "#eef5ff", wk: "#d8e8f8", header: "#bfdbfe", border: "#3b82f6", text: "#1e40af", accent: "#3b82f6" },
-    "Mailing Solution": { row: "#f2eeff", wk: "#e0d4f8", header: "#ddd6fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
-    "MANAGER": { row: "#ecfdf5", wk: "#c6f0de", header: "#a7f3d0", border: "#059669", text: "#065f46", accent: "#059669" },
+    "CSS Digital":      { row: "#f0f5ff", wk: "#dce8fb", header: "#dbeafe", border: "#3b82f6", text: "#1d4ed8", accent: "#3b82f6" },
+    "Mailing Solution": { row: "#f5f0ff", wk: "#e4d8fb", header: "#ede9fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
+    "MANAGER":          { row: "#f0fdf7", wk: "#ccf0e0", header: "#d1fae5", border: "#10b981", text: "#065f46", accent: "#10b981" },
   };
   const defaults = [
-    { row: "#edfdf4", wk: "#cef0dc", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
-    { row: "#fff4e6", wk: "#fde4c0", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
-    { row: "#fef0f8", wk: "#f9d5ec", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
-    { row: "#e8fafa", wk: "#c4eaec", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
+    { row: "#f0fdf4", wk: "#d1fae5", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
+    { row: "#fff7ed", wk: "#fde8cc", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
+    { row: "#fdf2f8", wk: "#fce7f3", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
+    { row: "#ecfeff", wk: "#cffafe", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
   ];
   if (palettes[teamName]) return palettes[teamName];
   const idx = Math.abs((teamName || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % defaults.length;
@@ -1117,7 +925,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   return (
     <div style={adminStyle}>
       {/* ── Onglets ── */}
-      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "12px 16px", marginBottom: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
         <div style={{ display: "flex", gap: 6 }}>
           {TAB_CONFIG.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -1138,7 +946,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
       {tab === "agents" && (
         <div>
           {/* Barre de recherche et filtres */}
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)", marginBottom: 16 }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", marginBottom: 16 }}>
             <div style={{ padding: "14px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {/* Champ Rechercher */}
@@ -1218,7 +1026,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           </div>
 
           {/* Liste des agents filtrée */}
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#eef2ff,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#4338ca" }}>👥 {agents.filter(a => {
                 const matchSearch = searchQuery === "" || a.name.toLowerCase().includes(searchQuery.toLowerCase()) || a.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1287,7 +1095,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 return (
                   <div key={t.id || t.name}
                     onClick={() => setSelectedTeam(t)}
-                    style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "18px 16px", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", transition: "all 0.18s", position: "relative", overflow: "hidden" }}
+                    style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "18px 16px", cursor: "pointer", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", transition: "all 0.18s", position: "relative", overflow: "hidden" }}
                     onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.15)"; e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                     onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "#e8edf5"; e.currentTarget.style.transform = "translateY(0)"; }}>
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: teamGradient(t.name), borderRadius: "14px 14px 0 0" }} />
@@ -1330,7 +1138,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   {agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length} agent{agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.07)" }}>
                 <div style={{ padding: "10px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#0d9488" }}>Membres</span>
                   {agents.filter(a => a.role !== "admin" && a.team !== selectedTeam.name).length > 0 && (
@@ -1543,7 +1351,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
               </div>
             </div>
           )}
-          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}>
+          <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             {sortLeaveTypes(leaveTypes).map((lt, i) => (
               <div key={lt.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderBottom: i < leaveTypes.length - 1 ? "1px solid #f8fafc" : "none", transition: "background 0.1s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
@@ -1574,7 +1382,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           <div style={{ padding: "0 0 32px" }}>
             {/* Annonce active */}
             {announcement ? (
-              <div style={{ marginBottom: 24, borderRadius: 0, overflow: "hidden", border: `2px solid ${currentLs.border}`, boxShadow: `0 4px 20px ${currentLs.border}25` }}>
+              <div style={{ marginBottom: 24, borderRadius: 12, overflow: "hidden", border: `2px solid ${currentLs.border}`, boxShadow: `0 4px 20px ${currentLs.border}25` }}>
                 <div style={{ background: currentLs.grad, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 22 }}>{currentLs.icon}</span>
                   <div>
@@ -1595,7 +1403,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 </div>
               </div>
             ) : (
-              <div style={{ marginBottom: 24, padding: "16px 20px", borderRadius: 0, border: "1.5px dashed #e2e8f0", background: "#f8fafc", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ marginBottom: 24, padding: "16px 20px", borderRadius: 12, border: "1.5px dashed #e2e8f0", background: "#f8fafc", display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 24, opacity: 0.4 }}>📢</span>
                 <span style={{ fontSize: 13, color: "#94a3b8", fontStyle: "italic" }}>Aucune annonce active pour le moment.</span>
               </div>
@@ -1603,7 +1411,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
 
             {/* Formulaire création/édition */}
             {(!announcement || showAnnounceForm) && (
-              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "24px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
+              <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "24px", boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 10, background: ls.grad, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: `0 4px 12px ${ls.border}40` }}>{ls.icon}</div>
                   <div>
@@ -2759,7 +2567,17 @@ function PlanningApp({ currentUser, onLogout }) {
       {/* Grille */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "48px 48px", pointerEvents: "none", zIndex: 0 }} />
 
-      {notification && <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: notification.type === "error" ? "rgba(239,68,68,0.9)" : "rgba(16,185,129,0.9)", backdropFilter: "blur(10px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.5)" : "rgba(16,185,129,0.5)"}`, color: "#fff", padding: "12px 20px", borderRadius: 12, fontWeight: 600, fontSize: 14, boxShadow: notification.type === "error" ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(16,185,129,0.4)", animation: "slideInRight 0.4s cubic-bezier(0.34,1.56,0.64,1), pulse 2s ease-in-out 0.4s infinite" }}>{notification.msg}</div>}
+      {notification && (
+        <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, display: "flex", flexDirection: "column", gap: 0, minWidth: 240, maxWidth: 320, animation: "toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+          <div style={{ background: notification.type === "error" ? "linear-gradient(135deg,#7f1d1d,#991b1b)" : "linear-gradient(135deg,#065f46,#047857)", backdropFilter: "blur(16px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.35)" : "rgba(16,185,129,0.35)"}`, color: "#fff", padding: "13px 16px", borderRadius: "12px 12px 0 0", fontWeight: 600, fontSize: 13, boxShadow: notification.type === "error" ? "0 12px 32px rgba(239,68,68,0.3)" : "0 12px 32px rgba(16,185,129,0.3)", display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{notification.type === "error" ? "⚠️" : "✅"}</span>
+            <span style={{ flex: 1, lineHeight: 1.4 }}>{notification.msg}</span>
+          </div>
+          <div style={{ height: 3, background: "rgba(255,255,255,0.15)", borderRadius: "0 0 12px 12px", overflow: "hidden" }}>
+            <div style={{ height: "100%", background: notification.type === "error" ? "#f87171" : "#34d399", borderRadius: "0 0 12px 12px", animation: "progressDrain 3.5s linear forwards" }} />
+          </div>
+        </div>
+      )}
       {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} leave={contextMenu.leave} onDeleteDay={handleDeleteDay} onDeleteAll={handleDeleteAll} onClose={() => setContextMenu(null)} />}
       {astreinteContextMenu && (() => {
         const { x, y, aKey, teamName, rowId, rowType, dateKey: aDateKey, id } = astreinteContextMenu;
@@ -2811,77 +2629,89 @@ function PlanningApp({ currentUser, onLogout }) {
       })()}
 
       {/* SIDEBAR */}
-      <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.3) 100%)", backdropFilter: "blur(20px)", border: "1px solid rgba(148,163,184,0.1)", color: "#fff", display: "flex", flexDirection: "column", padding: "24px 0", flexShrink: 0, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}>
-        <div style={{ padding: "0 20px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
+      <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(8,12,30,0.85) 0%, rgba(12,18,40,0.75) 100%)", backdropFilter: "blur(24px)", borderRight: "1px solid rgba(255,255,255,0.07)", color: "#fff", display: "flex", flexDirection: "column", padding: "20px 0", flexShrink: 0, boxShadow: "4px 0 24px rgba(0,0,0,0.3)" }}>
+        {/* Logo */}
+        <div style={{ padding: "0 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#6366f1,#06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(99,102,241,0.4)", flexShrink: 0 }}>
+              <span style={{ fontSize: 16 }}>📆</span>
+            </div>
             <div>
-              <div style={{ fontSize: 16, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.3px" }}>Planning {new Date().getFullYear()}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 4 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: lastSync ? "#10b981" : "#64748b", display: "inline-block", boxShadow: lastSync ? "0 0 6px #10b981" : "none", animation: lastSync ? "pulse 2s ease-in-out infinite" : "none" }} />
-                <span style={{ fontSize: 10, color: lastSync ? "#6ee7b7" : "#64748b", fontWeight: 500 }}>
+              <div style={{ fontSize: 15, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.5px", fontFamily: "'Space Grotesk',sans-serif" }}>Planning {new Date().getFullYear()}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: lastSync ? "#10b981" : "#64748b", display: "inline-block", boxShadow: lastSync ? "0 0 6px #10b981" : "none", animation: lastSync ? "pulse 2s ease-in-out infinite" : "none" }} />
+                <span style={{ fontSize: 9, color: lastSync ? "#6ee7b7" : "#64748b", fontWeight: 600, letterSpacing: "0.3px" }}>
                   {lastSync ? `Sync ${lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "En attente…"}
                 </span>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(148,163,184,0.15)" }}>
+        {/* User */}
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", margin: "0 8px", borderRadius: 12, background: "rgba(255,255,255,0.03)", marginTop: 12, marginBottom: 4 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{ position: "relative" }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, boxShadow: "0 3px 10px rgba(0,0,0,0.3)" }}>
                 {currentUser.avatar_initials || getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`)}
               </div>
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 10, height: 10, borderRadius: "50%", background: "#10b981", border: "2px solid #0f172a" }} />
+              <div style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", background: "#10b981", border: "2px solid #0a0e1e", boxShadow: "0 0 6px #10b981" }} />
             </div>
             <div style={{ flex: 1, overflow: "hidden" }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.first_name} {currentUser.last_name}</div>
-              <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 500 }}>{currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.first_name} {currentUser.last_name}</div>
+              <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 600, marginTop: 1 }}>
+                {currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}
+              </div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", background: "transparent", borderRadius: 8, background: "transparent", border: "1px solid transparent", color: "#94a3b8", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(59,130,246,0.15)"; e.currentTarget.style.borderColor = "rgba(59,130,246,0.3)"; e.currentTarget.style.color = "#cbd5e1"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}>🚪 Déconnexion</button>
+          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", background: "transparent", borderRadius: 7, border: "1px solid rgba(255,255,255,0.07)", color: "#64748b", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s", letterSpacing: "0.3px" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)"; e.currentTarget.style.color = "#fca5a5"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#64748b"; }}>🚪 Déconnexion</button>
         </div>
-        <nav style={{ padding: "12px", flex: 1 }}>
+        <nav style={{ padding: "10px 10px", flex: 1 }}>
           {navItems.map(item => (
-            <button key={item.id} className="nav-btn" onClick={() => {
+            <button key={item.id} className={`nav-btn${view === item.id ? " nav-btn-active" : ""}`} onClick={() => {
               setView(item.id);
               if (item.id === "validations" && !isManager) {
                 const newSeen = myRequests.filter(r => r.status === "rejected").map(r => r.id);
                 setSeenRejected(newSeen);
                 localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
               }
-            }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(59,130,246,0.2),rgba(6,182,212,0.2))" : "transparent", color: view === item.id ? "#f1f5f9" : "#94a3b8", cursor: "pointer", fontSize: 14, fontWeight: view === item.id ? 600 : 400, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(59,130,246,0.3)" : "none", transition: "all 0.2s" }}>
-              <span style={{ fontSize: 16 }}>{item.icon}</span><span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
-              {item.badge > 0 && <span style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", borderRadius: 20, padding: "1px 7px", fontSize: 10, fontWeight: 700 }}>{item.badge}</span>}
+            }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.15))" : "transparent", color: view === item.id ? "#e0e7ff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: view === item.id ? 700 : 500, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(99,102,241,0.25), 0 2px 8px rgba(99,102,241,0.12)" : "none", transition: "all 0.18s ease", letterSpacing: "0.2px" }}>
+              <span style={{ fontSize: 15, opacity: view === item.id ? 1 : 0.6 }}>{item.icon}</span>
+              <span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
+              {item.badge > 0 && <span style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", borderRadius: 20, padding: "2px 7px", fontSize: 10, fontWeight: 800, boxShadow: "0 2px 8px rgba(239,68,68,0.4)", animation: "badgePulse 2s ease-in-out infinite" }}>{item.badge}</span>}
             </button>
           ))}
         </nav>
-        <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>Légende</div>
+        {/* Légende */}
+        <div style={{ padding: "14px 16px", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "0 0" }}>
+          <div style={{ fontSize: 9, color: "#475569", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>Légende</div>
           {leaveTypes.filter(t => !isPresenceType(t) && !/^(½ cp|½ rtt|_cp|_rtt)$/i.test((t.code || "").trim()) && !/^(½ cp|½ rtt)$/i.test((t.label || "").trim())).map(t => (
-            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
+            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+              <div style={{ width: 20, height: 7, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
+              <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label}</span>
             </div>
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(148,163,184,0.15)" }}>
-              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 600 }}>🏢 Présences site</div>
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: 9, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
-                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: 3, background: t.color }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>{t.label}</span>
+                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                  <div style={{ width: 20, height: 7, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label}</span>
                 </div>
               ))}
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, border: "1.5px dashed #fbbf24", background: "#fef9ec" }} /><span style={{ fontSize: 11, color: "#cbd5e1" }}>Jour férié</span>
+            <div style={{ width: 20, height: 7, borderRadius: 99, background: "repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 3px,transparent 3px,transparent 6px)", flexShrink: 0 }} />
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>Jour férié</span>
           </div>
         </div>
       </aside>
 
       {/* MAIN */}
-      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(15,23,42,0.2) 0%,rgba(30,58,138,0.15) 100%)" }}>
+      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(6,8,24,0.4) 0%,rgba(10,14,34,0.3) 100%)" }}>
 
         {/* ── BANDEAU ANNONCE ── */}
         {announcement && (() => {
@@ -2902,9 +2732,9 @@ function PlanningApp({ currentUser, onLogout }) {
           );
         })()}
 
-        <div style={{ background: "rgba(15,23,42,0.5)", backdropFilter: "blur(10px)", border: "1px solid rgba(148,163,184,0.1)", borderBottom: "2px solid rgba(59,130,246,0.2)", padding: "11px 24px", display: "flex", alignItems: "center", gap: 10 }}>
-          <h1 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>{view === "planning" ? "Planning" : view === "validations" ? "Demandes de congés" : view === "stats" ? "Bilan congés" : "Administration"}</h1>
-          {view === "validations" && <span style={{ fontSize: 12, color: "#94a3b8" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
+        <div style={{ background: "rgba(8,12,28,0.7)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 24px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 30 }}>
+          <h1 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#e2e8f0", letterSpacing: "-0.2px", fontFamily: "'Space Grotesk',sans-serif" }}>{view === "planning" ? "📅 Planning" : view === "validations" ? "✅ Validations" : view === "stats" ? "📊 Bilan congés" : "⚙️ Administration"}</h1>
+          {view === "validations" && <span style={{ fontSize: 11, color: "#475569", background: "rgba(255,255,255,0.05)", padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.07)" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
         </div>
 
         {view === "admin" && isManager && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
@@ -2925,23 +2755,15 @@ function PlanningApp({ currentUser, onLogout }) {
         {view === "planning" && (
           <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
             {/* BANDE COLORÉE INDICATEUR MODE */}
-            <div style={{ height: 4, borderRadius: 4, marginBottom: 12, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24)" : "linear-gradient(90deg,#6366f1,#818cf8)", boxShadow: filterMode === "presence" ? "0 2px 8px rgba(13,148,136,0.4)" : filterMode === "astreinte" ? "0 2px 8px rgba(245,158,11,0.4)" : "0 2px 8px rgba(99,102,241,0.4)" }} />
+            <div style={{ height: 3, borderRadius: 4, marginBottom: 14, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6,#0d9488)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)" : "linear-gradient(90deg,#6366f1,#818cf8,#06b6d4,#6366f1)", backgroundSize: "200% 100%", animation: "shimmer 3s linear infinite", boxShadow: filterMode === "presence" ? "0 1px 8px rgba(13,148,136,0.5)" : filterMode === "astreinte" ? "0 1px 8px rgba(245,158,11,0.5)" : "0 1px 8px rgba(99,102,241,0.5)" }} />
             {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.18)" }}>
-              {/* ========== ONGLETS ÉLÉGANTS ========== */}
-              <div style={{
-                display: 'flex',
-                gap: '0px',
-                borderBottom: '2px solid #e5e7eb',
-                backgroundColor: '#f9fafb',
-                padding: '0 0',
-                marginBottom: '24px',
-                borderRadius: '0px'
-              }}>
+            <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              {/* ========== ONGLETS ========== */}
+              <div style={{ display: 'flex', gap: 4, borderBottom: '1.5px solid #e8edf5', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px' }}>
                 {[
-                  { mode: 'all', label: 'Planning', icon: '📅' },
-                  { mode: 'presence', label: 'Présences sur site', icon: '👥' },
-                  { mode: 'astreinte', label: 'Astreintes', icon: '🔔' }
+                  { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
+                  { mode: 'presence', label: 'Présences sur site', icon: '🏢', color: '#0d9488' },
+                  { mode: 'astreinte', label: 'Astreintes', icon: '🔔', color: '#f59e0b' }
                 ].map(tab => {
                   const isActive = filterMode === tab.mode;
                   return (
@@ -2955,35 +2777,27 @@ function PlanningApp({ currentUser, onLogout }) {
                         }
                       }}
                       style={{
-                        padding: '16px 24px',
+                        padding: '13px 20px 11px',
                         border: 'none',
-                        background: 'transparent',
+                        background: isActive ? '#fff' : 'transparent',
                         cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: isActive ? '600' : '500',
-                        color: isActive ? '#4f46e5' : '#6b7280',
+                        fontSize: '13px',
+                        fontWeight: isActive ? '700' : '500',
+                        color: isActive ? tab.color : '#94a3b8',
                         position: 'relative',
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        borderBottom: isActive ? '3px solid #4f46e5' : '3px solid transparent',
+                        transition: 'all 0.2s ease',
+                        display: 'flex', alignItems: 'center', gap: '7px',
+                        borderBottom: isActive ? `2.5px solid ${tab.color}` : '2.5px solid transparent',
+                        borderRadius: '8px 8px 0 0',
+                        marginBottom: -1.5,
+                        boxShadow: isActive ? '0 -2px 8px rgba(0,0,0,0.05)' : 'none',
                         fontFamily: "'Outfit', sans-serif",
+                        letterSpacing: '0.2px',
                       }}
-                      onMouseEnter={e => {
-                        if (!isActive) {
-                          e.currentTarget.style.color = '#4b5563';
-                          e.currentTarget.style.background = 'rgba(79, 70, 229, 0.05)';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        if (!isActive) {
-                          e.currentTarget.style.color = '#6b7280';
-                          e.currentTarget.style.background = 'transparent';
-                        }
-                      }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = tab.color; e.currentTarget.style.background = `${tab.color}08`; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'transparent'; } }}
                     >
-                      <span style={{ fontSize: '18px' }}>{tab.icon}</span>
+                      <span style={{ fontSize: '16px' }}>{tab.icon}</span>
                       {tab.label}
                     </button>
                   );
@@ -3086,22 +2900,22 @@ function PlanningApp({ currentUser, onLogout }) {
               });
               if (absentAgents.length === 0) return null;
               return (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #e8edf5", borderRadius: 10, padding: "6px 12px", marginBottom: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.05)", flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", whiteSpace: "nowrap" }}>Absents :</span>
-                    <span style={{ background: "#fef2f2", color: "#ef4444", fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 10, border: "1px solid #fecaca" }}>{absentAgents.length}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#fff5f5,#fff)", border: "1px solid #fecaca", borderRadius: 12, padding: "8px 14px", marginBottom: 12, boxShadow: "0 2px 8px rgba(239,68,68,0.08)", flexWrap: "wrap" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                    <span style={{ fontSize: 14 }}>🚫</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#dc2626", whiteSpace: "nowrap", letterSpacing: "0.2px" }}>Absents aujourd'hui</span>
+                    <span style={{ background: "#ef4444", color: "#fff", fontSize: 10, fontWeight: 800, padding: "1px 7px", borderRadius: 99, boxShadow: "0 2px 6px rgba(239,68,68,0.3)" }}>{absentAgents.length}</span>
                   </span>
-                  <div style={{ width: 1, height: 16, background: "#e2e8f0", flexShrink: 0 }} />
+                  <div style={{ width: 1, height: 16, background: "#fecaca", flexShrink: 0 }} />
                   {absentAgents.map(a => {
                     const l = (leaves[a.id] || {})[todayKey];
                     const leaveArr = Array.isArray(l) ? l : (l ? [l] : []);
                     const leave = leaveArr.find(x => x.status !== "rejected");
                     return (
-                      <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 4, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 20, padding: "2px 8px 2px 4px" }}>
-                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 7, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#374151" }}>{a.first_name || a.name.split(" ")[0]}</span>
-                        {leave?.leaveLabel && <span style={{ fontSize: 10, color: "#64748b" }}>· {leave.leaveLabel}</span>}
+                      <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #fecaca", borderRadius: 99, padding: "3px 10px 3px 4px", boxShadow: "0 1px 3px rgba(239,68,68,0.1)" }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 7, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#374151" }}>{a.name.split(" ")[0]}</span>
+                        {leave?.label && <span style={{ fontSize: 10, color: leave.color || "#64748b", fontWeight: 600, background: (leave.color || "#64748b") + "15", padding: "0 5px", borderRadius: 99 }}>{leaveAbbr(leave.label)}</span>}
                       </div>
                     );
                   })}
@@ -3222,11 +3036,11 @@ function PlanningApp({ currentUser, onLogout }) {
               }
 
               return (
-                <div style={{ background: "#fff", borderRadius: 0, overflow: "hidden", border: "2px solid #f59e0b", boxShadow: "0 2px 24px rgba(245,158,11,0.15)" }}>
+                <div style={{ background: "#fff", borderRadius: 14, overflow: "hidden", border: "2px solid #f59e0b", boxShadow: "0 2px 24px rgba(245,158,11,0.15)" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                       <tr>
-                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}>🔔 ÉQUIPE / RÔLE</th>
                         {weekDays.map((d, i) => {
                           const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now), isFriday = d.getDay() === 5;
                           return (
@@ -3269,16 +3083,16 @@ function PlanningApp({ currentUser, onLogout }) {
             {planView === "month" && filterMode === "astreinte" && (
               <React.Fragment>
                 <div style={{
-                  background: "#fff", borderRadius: 0,
+                  background: "#fff", borderRadius: 14,
                   border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                   overflow: "auto",
-                  boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
+                  boxShadow: filterMode === "presence" ? "0 4px 24px rgba(13,148,136,0.12)" : filterMode === "astreinte" ? "0 4px 24px rgba(245,158,11,0.12)" : "0 4px 24px rgba(99,102,241,0.12)"
                 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                     <colgroup><col style={{ width: 200 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                     <thead>
                       <tr>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#fef9ec", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}>🔔 ÉQUIPE / RÔLE</th>
                         {Array.from({ length: daysInMonth }, (_, i) => {
                           const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day;
                           const isFriday = new Date(year, month, day).getDay() === 5;
@@ -3289,8 +3103,8 @@ function PlanningApp({ currentUser, onLogout }) {
                             borderBottom: `2px solid ${isFriday && !wk ? "#f59e0b" : isToday ? "#6366f1" : "#f1f5f9"}`,
                             borderLeft: "1px solid #f8fafc", minWidth: 26
                           }}>
-                            <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: isFriday && !wk ? "#d97706" : isToday ? "#6366f1" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
+                            <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: isToday ? "#fff" : isFriday && !wk ? "#d97706" : wk ? "#d1d5db" : "#475569", marginTop: 2, width: isToday ? 18 : "auto", height: isToday ? 18 : "auto", borderRadius: isToday ? "50%" : 0, background: isToday ? "#6366f1" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", margin: isToday ? "2px auto 0" : "2px 0 0", boxShadow: isToday ? "0 2px 8px rgba(99,102,241,0.5)" : "none" }}>{day}</div>
                           </th>;
                         })}
                       </tr>
@@ -3564,7 +3378,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
             {planView === "month" && filterMode !== "astreinte" && (
               <div style={{
-                background: "#fff", borderRadius: 0, overflow: "hidden",
+                background: "#fff", borderRadius: 14, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
@@ -3572,7 +3386,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <colgroup><col style={{ width: 200 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#94a3b8", fontWeight: 800, borderBottom: "2px solid #f1f5f9", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", textTransform: "uppercase", letterSpacing: "1px" }}>AGENT</th>
                       {Array.from({ length: daysInMonth }, (_, i) => {
                         const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day, isFer = !!feries[k];
                         const absent = countAbsents(k);
@@ -3616,7 +3430,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {(() => {
                             const tp = teamPalette(teamName); return (
                               <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                                <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                                <td colSpan={daysInMonth + 1} style={{ padding: "7px 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1px", background: "linear-gradient(135deg," + tp.header + "," + tp.header + "80)" }}>🏢 {teamName}</td>
                               </tr>
                             );
                           })()}
@@ -3662,11 +3476,11 @@ function PlanningApp({ currentUser, onLogout }) {
                                         const aAgentId = astreintes[aKey];
                                         const aAgent = aAgentId ? agents.find(a => a.id === (aAgentId?.agent_id ?? aAgentId)) : null;
                                         return aAgent ? (
-                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#fef3c7", border: "1.5px solid #f59e0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, background: "#fef3c7", border: "1.5px solid #f59e0b", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                             <span style={{ fontSize: 8, fontWeight: 800, color: "#92400e" }}>{aAgent.avatar}</span>
                                           </div>
                                         ) : (
-                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, border: "1px dashed #fcd34d", background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, border: "1px dashed #fcd34d", background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                             <span style={{ fontSize: 9, color: "#fcd34d" }}>+</span>
                                           </div>
                                         );
@@ -3675,7 +3489,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                       {filterMode !== "astreinte" && leave && !wk && !isFer && (
                                         filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
                                           <div style={{
-                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, overflow: "hidden", position: "relative",
+                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, overflow: "hidden", position: "relative",
                                             background: leave.status === "pending" ? "#fff" : leave.color,
                                             border: `1.5px solid ${leave.color}`,
                                             boxShadow: leave.status === "pending" ? "0 0 8px rgba(255,255,255,0.5)" : `0 1px 3px ${leave.color}50`,
@@ -3690,7 +3504,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                             </div>
                                           </div>
                                         ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                          <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}`, animation: "pulse 2s ease-in-out infinite", transition: "all 0.3s ease" }}>
+                                          <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}`, animation: "pulse 2s ease-in-out infinite", transition: "all 0.3s ease" }}>
                                             <span style={{ fontSize: 7, fontWeight: 700, color: leave.color }}>?</span>
                                           </div>
                                         ) : isHalfDay(leave) ? (
@@ -3715,7 +3529,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         )
                                       )}
-                                      {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
+                                      {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
                                     </td>;
                                   })
                                 }
@@ -3733,14 +3547,14 @@ function PlanningApp({ currentUser, onLogout }) {
             {/* VUE SEMAINE */}
             {planView === "week" && (
               <div style={{
-                background: "#fff", borderRadius: 0, overflow: "hidden",
+                background: "#fff", borderRadius: 14, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
                 boxShadow: filterMode === "presence" ? "0 2px 24px rgba(13,148,136,0.15)" : filterMode === "astreinte" ? "0 2px 24px rgba(245,158,11,0.15)" : "0 2px 24px rgba(99,102,241,0.15)"
               }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                     <tr>
-                      <th style={{ width: 200, padding: "12px 16px", textAlign: "left", fontSize: 10, color: "#64748b", fontWeight: 600, borderBottom: "1px solid #f1f5f9", background: "#f8fafc", textTransform: "uppercase", letterSpacing: "0.5px" }}>AGENT</th>
+                      <th style={{ width: 200, padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#94a3b8", fontWeight: 800, borderBottom: "2px solid #f1f5f9", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", textTransform: "uppercase", letterSpacing: "1px" }}>AGENT</th>
                       {weekDays.map((d, i) => {
                         const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now);
                         const feriesDay = getFeries(d.getFullYear());
@@ -3783,7 +3597,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           {(() => {
                             const tp = teamPalette(teamName); return (
                               <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                                <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: tp.text, textTransform: "uppercase", letterSpacing: "0.5px" }}>🏢 {teamName}</td>
+                                <td colSpan={8} style={{ padding: "7px 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1px", background: "linear-gradient(135deg," + tp.header + "," + tp.header + "80)" }}>🏢 {teamName}</td>
                               </tr>
                             );
                           })()}
@@ -3830,7 +3644,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     {leave && !wk && !isFer && (
                                       filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
                                         <div style={{
-                                          width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, overflow: "hidden", position: "relative",
+                                          width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 5, overflow: "hidden", position: "relative",
                                           background: leave.status === "pending" ? "#fff" : leave.color,
                                           border: `1.5px solid ${leave.color}`,
                                           boxShadow: leave.status === "pending" ? "none" : `0 1px 3px ${leave.color}40`
@@ -3843,7 +3657,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           </div>
                                         </div>
                                       ) : isHalfDay(leave) && leave.status === "pending" ? (
-                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
+                                        <div className="half-tooltip" data-tip={`${leaveAbbr(leave.label)} · ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`} style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", background: hexToLight(leave.color), border: `1px dashed ${leave.color}` }}>
                                           <span style={{ fontSize: 8, fontWeight: 700, color: leave.color }}>?</span>
                                         </div>
                                       ) : isHalfDay(leave) ? (
@@ -3868,7 +3682,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                         </div>
                                       )
                                     )}
-                                    {inSel && !leave && !isFer && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
+                                    {inSel && !leave && !isFer && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 5, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
                                   </td>;
                                 })}
                               </tr>
@@ -3966,7 +3780,7 @@ function PlanningApp({ currentUser, onLogout }) {
                 }
 
                 return (
-                  <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "10px 14px", marginBottom: 20, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "10px 14px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
                     {/* ── Sélecteur agent (managers uniquement) ── */}
                     {isManager && (<>
@@ -4334,13 +4148,13 @@ function PlanningApp({ currentUser, onLogout }) {
           return (
             <div onClick={e => e.stopPropagation()} style={{
               position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-              background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, boxShadow: "0 30px 80px rgba(0,0,0,0.6)",
-              zIndex: 99999, width: 310, overflow: "hidden", animation: "slideIn 0.2s ease"
+              background: "linear-gradient(160deg,#0d1425 0%,#162035 100%)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 18, boxShadow: "0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05) inset",
+              zIndex: 99999, width: 320, overflow: "hidden", animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)"
             }}>
               {/* Header */}
-              <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: 11, color: "#475569", fontWeight: 500, marginBottom: 2 }}>{isManager ? "Poser un congé" : "Nouvelle demande"}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#f1f5f9" }}>
+              <div style={{ padding: "16px 18px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(135deg,rgba(99,102,241,0.15),rgba(6,182,212,0.08))" }}>
+                <div style={{ fontSize: 10, color: "#6366f1", fontWeight: 700, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>{isManager ? "📅 Poser un congé" : "📅 Nouvelle demande"}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.3px" }}>
                   {requestModal.start === requestModal.end ? formatDate(requestModal.start) : `${formatDate(requestModal.start)} → ${formatDate(requestModal.end)}`}
                 </div>
               </div>
@@ -4394,7 +4208,9 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ padding: "8px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                 <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
               </div>
-              <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "10px", border: "none", borderTop: "1px solid rgba(255,255,255,0.08)", background: "none", cursor: "pointer", fontSize: 12, color: "#475569", fontWeight: 500 }}>✕ Annuler</button>
+              <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "11px", border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", cursor: "pointer", fontSize: 12, color: "#64748b", fontWeight: 600, letterSpacing: "0.2px", transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94a3b8"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; e.currentTarget.style.color = "#64748b"; }}>✕ Annuler</button>
             </div>
           );
         })()
@@ -4658,49 +4474,49 @@ function PlanningApp({ currentUser, onLogout }) {
 
 // ─── VALIDATIONS ───
 const STATUS_META = {
-  pending: { label: "En attente", dot: "#f59e0b", text: "#92400e", bg: "#fffbeb" },
-  approved: { label: "Approuvée", dot: "#10b981", text: "#065f46", bg: "#f0fdf4" },
-  rejected: { label: "Refusée", dot: "#ef4444", text: "#991b1b", bg: "#fef2f2" },
+  pending: { label: "En attente", dot: "#f59e0b", text: "#92400e", bg: "#fffbeb", border: "#fde68a", icon: "⏳" },
+  approved: { label: "Approuvée", dot: "#10b981", text: "#065f46", bg: "#f0fdf4", border: "#bbf7d0", icon: "✅" },
+  rejected: { label: "Refusée", dot: "#ef4444", text: "#991b1b", bg: "#fef2f2", border: "#fecaca", icon: "❌" },
 };
 
 function RequestRow({ req, isManager, onApprove, onReject }) {
-  const meta = STATUS_META[req.status] || { label: req.status, dot: "#94a3b8", text: "#64748b", bg: "#f8fafc" };
+  const meta = STATUS_META[req.status] || { label: req.status, dot: "#94a3b8", text: "#64748b", bg: "#f8fafc", border: "#e2e8f0", icon: "●" };
   const period = req.start === req.end ? formatDate(req.start) : `${formatDate(req.start)} – ${formatDate(req.end)}`;
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "40px 1fr auto", alignItems: "center", gap: 14, padding: "13px 18px", borderBottom: "1px solid #f1f5f9", transition: "all 0.15s", animation: "slideInLeft2 0.4s ease-out forwards", opacity: 0 }}
-      onMouseEnter={e => e.currentTarget.style.background = "#fafbff"}
+    <div style={{ display: "grid", gridTemplateColumns: "42px 1fr auto", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: "1px solid #f1f5f9", transition: "background 0.15s", animation: "slideInLeft2 0.4s ease-out forwards", opacity: 0 }}
+      onMouseEnter={e => e.currentTarget.style.background = "#f8faff"}
       onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
       {/* Avatar */}
-      <div style={{ width: 38, height: 38, borderRadius: "50%", background: teamGradient(req.agentTeam), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>{req.agentAvatar}</div>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", background: teamGradient(req.agentTeam), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, flexShrink: 0, boxShadow: "0 3px 10px rgba(0,0,0,0.12)" }}>{req.agentAvatar}</div>
       {/* Infos */}
       <div style={{ minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 3 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 4 }}>
           <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{req.agentName}</span>
-          {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "1px 7px", borderRadius: 10, fontWeight: 500, transition: "all 0.3s ease", boxShadow: "0 2px 6px rgba(100, 116, 139, 0.2)" }}>{req.agentTeam}</span>}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, borderRadius: 6, padding: "2px 8px", fontSize: 11, fontWeight: 700, animation: req.status === "pending" ? "badgePulse 2s ease-in-out infinite, badgeGlow 2.5s ease-in-out infinite" : "none", transition: "all 0.3s ease", boxShadow: req.status === "pending" ? "0 0 8px rgba(245, 158, 11, 0.4)" : "none" }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block", animation: req.status === "pending" ? "badgeBounce 1.5s ease-in-out infinite" : "none" }} />
+          {req.agentTeam && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "2px 8px", borderRadius: 99, fontWeight: 600, border: "1px solid #e2e8f0" }}>{req.agentTeam}</span>}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: meta.bg, color: meta.text, border: `1px solid ${meta.border}`, borderRadius: 99, padding: "2px 9px", fontSize: 10, fontWeight: 800, letterSpacing: "0.3px", animation: req.status === "pending" ? "badgePulse 2s ease-in-out infinite" : "none" }}>
+            <span style={{ fontSize: 11 }}>{meta.icon}</span>
             {meta.label}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>📅 {period}</span>
-          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#cbd5e1", display: "inline-block" }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: req.leaveType?.color || "#6366f1", background: req.leaveType?.color ? req.leaveType.color + "18" : "#eef2ff", padding: "1px 8px", borderRadius: 5, transition: "all 0.3s ease", boxShadow: `0 2px 8px ${req.leaveType?.color ? req.leaveType.color + "30" : "rgba(99, 102, 241, 0.2)"}` }}>{req.leaveType?.label}</span>
-          {req.reason && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>"{req.reason}"</span>}
-          {req.comment && <span style={{ fontSize: 11, color: "#ef4444", background: "#fef2f2", padding: "1px 7px", borderRadius: 5, fontWeight: 600 }}>↳ {req.comment}</span>}
+          <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>📅 <span style={{ color: "#374151" }}>{period}</span></span>
+          <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#d1d5db", display: "inline-block" }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: req.leaveType?.color || "#6366f1", background: req.leaveType?.color ? req.leaveType.color + "15" : "#eef2ff", padding: "2px 9px", borderRadius: 99, border: `1px solid ${req.leaveType?.color ? req.leaveType.color + "30" : "#c7d2fe"}` }}>{req.leaveType?.label}</span>
+          {req.reason && <span style={{ fontSize: 11, color: "#94a3b8", fontStyle: "italic", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{req.reason}"</span>}
+          {req.comment && <span style={{ fontSize: 11, color: "#ef4444", background: "#fef2f2", padding: "2px 8px", borderRadius: 99, fontWeight: 600, border: "1px solid #fecaca" }}>↳ {req.comment}</span>}
         </div>
       </div>
       {/* Actions */}
       {isManager && req.status === "pending" ? (
         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
           <button onClick={onApprove}
-            style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#10b981,#34d399)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 2px 10px rgba(16,185,129,0.35)", transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(16,185,129,0.45)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(16,185,129,0.35)"; e.currentTarget.style.transform = "none"; }}>✓ Approuver</button>
+            style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#059669,#10b981)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: "0 3px 12px rgba(16,185,129,0.3)", transition: "all 0.18s", display: "flex", alignItems: "center", gap: 5, letterSpacing: "0.2px" }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 5px 18px rgba(16,185,129,0.45)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 3px 12px rgba(16,185,129,0.3)"; e.currentTarget.style.transform = "none"; }}>✓ Approuver</button>
           <button onClick={onReject}
-            style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 5 }}
-            onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#ef4444"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#fca5a5"; e.currentTarget.style.transform = "none"; }}>✕ Refuser</button>
+            style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid #fecaca", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all 0.18s", display: "flex", alignItems: "center", gap: 5, letterSpacing: "0.2px" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#dc2626,#ef4444)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#ef4444"; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 5px 16px rgba(239,68,68,0.4)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#fecaca"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>✕ Refuser</button>
         </div>
       ) : <div />}
     </div>
@@ -4717,42 +4533,46 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
   const counts = { all: sourceList.length, pending: pending.length, approved: history.filter(r => r.status === "approved").length, rejected: history.filter(r => r.status === "rejected").length };
   return (
     <div style={{ padding: 24, maxWidth: 820, animation: "viewSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
-      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 0, padding: "12px 16px", marginBottom: 18, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "12px 16px", marginBottom: 18, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
         {/* Ligne 1 : filtres statut */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: isManager ? 10 : 0 }}>
           {[
-            { id: "all", label: "Toutes", color: "#6366f1", bg: "#eef2ff" },
-            { id: "pending", label: "En attente", color: "#f59e0b", bg: "#fffbeb" },
-            { id: "approved", label: "Approuvées", color: "#10b981", bg: "#f0fdf4" },
-            { id: "rejected", label: "Refusées", color: "#ef4444", bg: "#fef2f2" },
+            { id: "all", label: "Toutes", color: "#6366f1", bg: "#eef2ff", icon: "📋" },
+            { id: "pending", label: "En attente", color: "#f59e0b", bg: "#fffbeb", icon: "⏳" },
+            { id: "approved", label: "Approuvées", color: "#10b981", bg: "#f0fdf4", icon: "✅" },
+            { id: "rejected", label: "Refusées", color: "#ef4444", bg: "#fef2f2", icon: "❌" },
           ].map(f => (
             <button key={f.id} onClick={() => setStatusFilter(f.id)} style={{
-              padding: "6px 14px", borderRadius: 8,
-              border: `2px solid ${statusFilter === f.id ? f.color : "#e2e8f0"}`,
-              background: statusFilter === f.id ? f.bg : "#f8fafc",
-              color: statusFilter === f.id ? f.color : "#64748b",
+              padding: "6px 14px", borderRadius: 99,
+              border: `1.5px solid ${statusFilter === f.id ? f.color : "#e8edf5"}`,
+              background: statusFilter === f.id ? f.bg : "#fff",
+              color: statusFilter === f.id ? f.color : "#94a3b8",
               cursor: "pointer", fontSize: 12, fontWeight: statusFilter === f.id ? 700 : 500,
-              boxShadow: statusFilter === f.id ? `0 2px 8px ${f.color}25` : "none",
-              transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6
+              boxShadow: statusFilter === f.id ? `0 2px 10px ${f.color}20` : "none",
+              transition: "all 0.18s", display: "flex", alignItems: "center", gap: 6,
+              letterSpacing: "0.2px"
             }}
               onMouseEnter={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = f.color; e.currentTarget.style.color = f.color; e.currentTarget.style.background = f.bg; } }}
-              onMouseLeave={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#f8fafc"; } }}>
+              onMouseLeave={e => { if (statusFilter !== f.id) { e.currentTarget.style.borderColor = "#e8edf5"; e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.background = "#fff"; } }}>
+              <span style={{ fontSize: 13 }}>{f.icon}</span>
               {f.label}
-              {counts[f.id] > 0 && <span className={f.id === "pending" && counts[f.id] > 0 ? "pending-glow" : ""} style={{ background: statusFilter === f.id ? f.color : "#e2e8f0", color: statusFilter === f.id ? "#fff" : "#64748b", borderRadius: 10, padding: "0 6px", fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center" }}>{counts[f.id]}</span>}
+              {counts[f.id] > 0 && <span style={{ background: statusFilter === f.id ? f.color : "#f1f5f9", color: statusFilter === f.id ? "#fff" : "#64748b", borderRadius: 99, padding: "1px 7px", fontSize: 10, fontWeight: 800, minWidth: 18, textAlign: "center", animation: f.id === "pending" && counts[f.id] > 0 ? "badgePulse 2s ease-in-out infinite" : "none" }}>{counts[f.id]}</span>}
             </button>
           ))}
 
           {/* Bouton historique aligné à droite */}
           <button onClick={() => setShowHistory(h => !h)} style={{
-            marginLeft: "auto", padding: "6px 13px", borderRadius: 8,
-            border: `1.5px solid ${showHistory ? "#6366f1" : "#e2e8f0"}`,
-            background: showHistory ? "#eef2ff" : "#f8fafc",
-            color: showHistory ? "#4338ca" : "#64748b",
+            marginLeft: "auto", padding: "6px 14px", borderRadius: 99,
+            border: `1.5px solid ${showHistory ? "#6366f1" : "#e8edf5"}`,
+            background: showHistory ? "#eef2ff" : "#fff",
+            color: showHistory ? "#4338ca" : "#94a3b8",
             cursor: "pointer", fontSize: 12, fontWeight: 600,
-            display: "flex", alignItems: "center", gap: 5, transition: "all 0.15s"
-          }}>
-            <span style={{ fontSize: 13, transform: showHistory ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-            {showHistory ? "Masquer" : "Afficher"} l'historique
+            display: "flex", alignItems: "center", gap: 6, transition: "all 0.18s"
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = showHistory ? "#6366f1" : "#e8edf5"; e.currentTarget.style.color = showHistory ? "#4338ca" : "#94a3b8"; }}>
+            <span style={{ fontSize: 12, transform: showHistory ? "rotate(180deg)" : "none", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+            {showHistory ? "Masquer l'historique" : "Voir l'historique"}
           </button>
         </div>
 
@@ -4781,21 +4601,23 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
         )}
       </div>
       {!isManager && (
-        <div style={{ fontSize: 12, color: "#a5b4fc", background: "#eef2ff", border: "1.5px solid #c7d2fe", borderRadius: 10, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 18 }}>💡</span>
-          <span style={{ fontWeight: 500 }}>Sélectionnez des dates dans le planning pour déposer une demande de congé.</span>
+        <div style={{ fontSize: 12, color: "#6366f1", background: "linear-gradient(135deg,#eef2ff,#f0f4ff)", border: "1px solid #c7d2fe", borderRadius: 12, padding: "12px 18px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(99,102,241,0.1)" }}>
+          <span style={{ fontSize: 20 }}>💡</span>
+          <span style={{ fontWeight: 600, color: "#4338ca" }}>Sélectionnez des dates dans le planning pour déposer une demande de congé.</span>
         </div>
       )}
       {filtered.length === 0 ? (
-        <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 0, padding: "48px 0", textAlign: "center", color: "#94a3b8", fontSize: 13, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>Aucune demande</div>
+        <div style={{ background: "#fff", border: "1px solid #f1f5f9", borderRadius: 12, padding: "48px 0", textAlign: "center", color: "#94a3b8", fontSize: 13, boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+          <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.4 }}>📋</div>
+          <div style={{ fontWeight: 600, color: "#64748b" }}>Aucune demande</div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Rien à afficher pour le moment</div>
+        </div>
       ) : (
         <>
           {(statusFilter === "all" || statusFilter === "pending") && pending.length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 0, overflow: "hidden", marginBottom: 12, boxShadow: "0 2px 10px rgba(245,158,11,0.1)", transition: "all 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(245,158,11,0.15)"}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(245,158,11,0.1)"}>
-              <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#fffbeb,#fef9ec)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(245,158,11,0.3)", animation: "badgeBounce 1.5s ease-in-out infinite" }}>⏳</div>
+            <div style={{ background: "#fff", border: "1px solid #fde68a", borderRadius: 14, overflow: "hidden", marginBottom: 14, boxShadow: "0 4px 16px rgba(245,158,11,0.1)" }}>
+              <div style={{ padding: "14px 20px", background: "linear-gradient(135deg,#fffbeb,#fef9e7)", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#f59e0b,#fbbf24)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 4px 10px rgba(245,158,11,0.35)", animation: "badgeBounce 1.5s ease-in-out infinite" }}>⏳</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e" }}>En attente de validation</div>
                   <div style={{ fontSize: 11, color: "#b45309" }}>{pending.length} demande{pending.length > 1 ? "s" : ""} à traiter</div>
@@ -4807,11 +4629,9 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             </div>
           )}
           {showHistory && (statusFilter === "all" || statusFilter === "approved" || statusFilter === "rejected") && history.filter(r => statusFilter === "all" || r.status === statusFilter).length > 0 && (
-            <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 0, overflow: "hidden", boxShadow: "0 1px 6px rgba(0,0,0,0.05)", transition: "all 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)"}
-              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"}>
-              <div style={{ padding: "12px 18px", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#64748b,#94a3b8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 6px rgba(100,116,139,0.25)", animation: "badgeBounce 1.5s ease-in-out infinite" }}>📋</div>
+            <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              <div style={{ padding: "14px 20px", background: "linear-gradient(135deg,#f8fafc,#f1f5f9)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#475569,#64748b)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 3px 8px rgba(71,85,105,0.25)" }}>📋</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#374151" }}>Historique</div>
                   <div style={{ fontSize: 11, color: "#94a3b8" }}>{history.filter(r => statusFilter === "all" || r.status === statusFilter).length} demande{history.length > 1 ? "s" : ""}</div>
