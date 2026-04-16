@@ -653,28 +653,6 @@ function LoginPage({ onLogin }) {
             </button>
           </div>
 
-          {/* Comptes démo repliés */}
-          <div style={{ marginTop: "20px", animation: "slideInUp 0.7s ease 0.4s both" }}>
-            <button onClick={() => setShowDemo(s => !s)} style={{ width: "100%", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0" }}>
-              <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
-              <span style={{ fontSize: "11px", color: "rgba(148,163,184,0.5)", letterSpacing: "1.5px", textTransform: "uppercase", fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, whiteSpace: "nowrap" }}>Comptes de test {showDemo ? "▴" : "▾"}</span>
-              <span style={{ display: "inline-block", flex: 1, height: 1, background: "rgba(148,163,184,0.15)" }} />
-            </button>
-            {showDemo && (
-              <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {DEMO_USERS.map((u, i) => (
-                  <button key={i} onClick={() => { setEmail(u.email); setPassword(u.password); setError(""); }}
-                    style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)", borderRadius: "12px", padding: "10px 12px", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(99,102,241,0.18)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(99,102,241,0.08)"; e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)"; }}>
-                    <div style={{ color: "#e2e8f0", fontSize: "11px", fontWeight: "700", fontFamily: "'Space Grotesk', sans-serif" }}>{u.email.split("@")[0]}</div>
-                    <div style={{ color: "rgba(148,163,184,0.6)", fontSize: "10px", marginTop: 2 }}>{u.email}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
         </div>{/* fin colonne droite */}
 
       </div>
