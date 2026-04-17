@@ -408,6 +408,45 @@ function LoginPage({ onLogin }) {
         @keyframes floatIllus { 0%,100%{transform:translateY(0px);} 50%{transform:translateY(-8px);} }
         @keyframes pencilWiggle { 0%,90%,100%{transform:rotate(-18deg);} 92%{transform:rotate(-22deg);} 96%{transform:rotate(-14deg);} }
         @keyframes markPop { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.3);opacity:1;} }
+
+        /* ── ÉTOILES FILANTES ── */
+        @keyframes shooting {
+          0%   { transform: translateX(0) translateY(0) rotate(-35deg); opacity: 0; }
+          3%   { opacity: 1; }
+          70%  { opacity: 1; }
+          100% { transform: translateX(-900px) translateY(500px) rotate(-35deg); opacity: 0; }
+        }
+        @keyframes starTwinkle {
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          50%       { opacity: 0.8;  transform: scale(1.4); }
+        }
+        .shooting-star {
+          position: absolute;
+          width: 120px;
+          height: 1.5px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(165,180,252,0.7), transparent);
+          animation: shooting linear infinite;
+          will-change: transform, opacity;
+        }
+        .shooting-star::before {
+          content: '';
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.95);
+          box-shadow: 0 0 6px 2px rgba(165,180,252,0.8), 0 0 12px 4px rgba(99,102,241,0.4);
+        }
+        .star-dot {
+          position: absolute;
+          border-radius: 50%;
+          background: #fff;
+          animation: starTwinkle ease-in-out infinite;
+        }
       `}</style>
 
       {/* Aurora blobs */}
@@ -418,19 +457,46 @@ function LoginPage({ onLogin }) {
       {/* Grille */}
       <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px)", backgroundSize: "48px 48px", animation: "gridPulse 8s ease-in-out infinite" }} />
 
-      {/* Particules */}
-      {[...Array(12)].map((_, i) => (
-        <div key={i} style={{
-          position: "absolute",
-          left: `${8 + i * 7.5}%`,
-          bottom: `${10 + Math.sin(i * 1.3) * 15}%`,
-          width: i % 3 === 0 ? 3 : 2,
-          height: i % 3 === 0 ? 3 : 2,
-          borderRadius: "50%",
-          background: i % 2 === 0 ? "rgba(99,102,241,0.8)" : "rgba(6,182,212,0.6)",
-          animation: `particle ${4 + i * 0.7}s ease-in-out infinite`,
-          animationDelay: `${i * 0.4}s`,
-          willChange: "transform,opacity"
+      {/* ── ÉTOILES FIXES (scintillantes) ── */}
+      {[
+        { top: "8%",  left: "12%", size: 2,   delay: "0s",    dur: "2.8s" },
+        { top: "15%", left: "78%", size: 1.5, delay: "1.2s",  dur: "3.4s" },
+        { top: "22%", left: "34%", size: 1,   delay: "0.5s",  dur: "4.1s" },
+        { top: "5%",  left: "55%", size: 2.5, delay: "2s",    dur: "2.5s" },
+        { top: "35%", left: "88%", size: 1.5, delay: "0.8s",  dur: "3.8s" },
+        { top: "12%", left: "95%", size: 1,   delay: "1.6s",  dur: "3.1s" },
+        { top: "42%", left: "6%",  size: 2,   delay: "2.4s",  dur: "2.9s" },
+        { top: "18%", left: "48%", size: 1,   delay: "0.3s",  dur: "4.5s" },
+        { top: "28%", left: "68%", size: 1.5, delay: "1.9s",  dur: "3.2s" },
+        { top: "7%",  left: "25%", size: 1,   delay: "3.1s",  dur: "2.7s" },
+        { top: "50%", left: "92%", size: 2,   delay: "1.1s",  dur: "3.6s" },
+        { top: "3%",  left: "72%", size: 1.5, delay: "2.7s",  dur: "2.3s" },
+      ].map((s, i) => (
+        <div key={`star-${i}`} className="star-dot" style={{
+          top: s.top, left: s.left,
+          width: s.size, height: s.size,
+          animationDelay: s.delay, animationDuration: s.dur,
+          boxShadow: `0 0 ${s.size * 2}px ${s.size}px rgba(165,180,252,0.6)`
+        }} />
+      ))}
+
+      {/* ── ÉTOILES FILANTES ── */}
+      {[
+        { top: "5%",   left: "90%", delay: "0s",    dur: "5s",   width: 140 },
+        { top: "18%",  left: "75%", delay: "2.5s",  dur: "6s",   width: 100 },
+        { top: "2%",   left: "60%", delay: "5s",    dur: "4.5s", width: 160 },
+        { top: "35%",  left: "98%", delay: "1.2s",  dur: "7s",   width: 90  },
+        { top: "10%",  left: "45%", delay: "8s",    dur: "5.5s", width: 120 },
+        { top: "25%",  left: "85%", delay: "3.8s",  dur: "6.5s", width: 80  },
+        { top: "8%",   left: "30%", delay: "11s",   dur: "5s",   width: 150 },
+        { top: "40%",  left: "70%", delay: "6.5s",  dur: "4s",   width: 110 },
+      ].map((s, i) => (
+        <div key={`shooting-${i}`} className="shooting-star" style={{
+          top: s.top, left: s.left,
+          width: s.width,
+          animationDelay: s.delay,
+          animationDuration: s.dur,
+          opacity: 0,
         }} />
       ))}
 
