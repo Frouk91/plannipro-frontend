@@ -2742,12 +2742,12 @@ function PlanningApp({ currentUser, onLogout }) {
             </div>
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
-            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: 9, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>🏢 Présences site</div>
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: 9, color: "#475569", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>🏢 Présences site</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                  <div style={{ width: 20, height: 7, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label}</span>
+                  <div style={{ width: 20, height: 4, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label} <span style={{ color: "#475569", fontSize: 9 }}>(bande)</span></span>
                 </div>
               ))}
             </div>
@@ -3446,15 +3446,16 @@ function PlanningApp({ currentUser, onLogout }) {
                             {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
                             )}
-                            {filterMode === "presence" && !wk && (() => {
+                            {(filterMode === "presence" || filterMode === "all") && !wk && (() => {
                               const nRueil = countPresence(k, "rueil");
                               const nParis = countPresence(k, "paris");
                               const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
                               const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              if (nRueil === 0 && nParis === 0) return null;
                               return (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center" }}>
-                                  {nRueil > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nRueil}</div>}
-                                  {nParis > 0 && <div style={{ fontSize: 8, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 15, height: 15, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>{nParis}</div>}
+                                <div style={{ display: "flex", gap: 1, alignItems: "center" }}>
+                                  {nRueil > 0 && <div title={`${nRueil} à Rueil`} style={{ fontSize: 7, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: 99, padding: "1px 4px", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", minWidth: 13, textAlign: "center" }}>{nRueil}</div>}
+                                  {nParis > 0 && <div title={`${nParis} à Paris`} style={{ fontSize: 7, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: 99, padding: "1px 4px", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", minWidth: 13, textAlign: "center" }}>{nParis}</div>}
                                 </div>
                               );
                             })()}
@@ -3579,6 +3580,26 @@ function PlanningApp({ currentUser, onLogout }) {
                                         )
                                       )}
                                       {filterMode !== "astreinte" && inSel && !leave && !isFer && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
+                                      {/* ── INDICATEUR PRÉSENCE SITE en mode Planning ── */}
+                                      {filterMode === "all" && !wk && !isFer && (() => {
+                                        const pLeave = leaves[agent.id]?.[k + "__presence"];
+                                        if (!pLeave || (pLeave.status !== "approved" && pLeave.status !== "pending")) return null;
+                                        const siteColor = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil"
+                                          ? (leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488")
+                                          : (leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed");
+                                        const siteLabel = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil" ? "R" : "P";
+                                        return (
+                                          <div title={pLeave.label} style={{
+                                            position: "absolute", bottom: 1, left: 1, right: 1, height: 4,
+                                            borderRadius: 2,
+                                            background: pLeave.status === "pending"
+                                              ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
+                                              : siteColor,
+                                            opacity: pLeave.status === "pending" ? 0.6 : 0.85,
+                                            boxShadow: `0 0 4px ${siteColor}60`,
+                                          }} />
+                                        );
+                                      })()}
                                     </td>;
                                   })
                                 }
@@ -3732,6 +3753,25 @@ function PlanningApp({ currentUser, onLogout }) {
                                       )
                                     )}
                                     {inSel && !leave && !isFer && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 5, background: "#c7d2fe", border: "1px solid #818cf8" }} />}
+                                    {/* ── INDICATEUR PRÉSENCE SITE en mode Planning (semaine) ── */}
+                                    {filterMode === "all" && !wk && !isFer && (() => {
+                                      const pLeave = leaves[agent.id]?.[k + "__presence"];
+                                      if (!pLeave || (pLeave.status !== "approved" && pLeave.status !== "pending")) return null;
+                                      const siteColor = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil"
+                                        ? (leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488")
+                                        : (leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed");
+                                      return (
+                                        <div title={pLeave.label} style={{
+                                          position: "absolute", bottom: 1, left: 1, right: 1, height: 4,
+                                          borderRadius: 2,
+                                          background: pLeave.status === "pending"
+                                            ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
+                                            : siteColor,
+                                          opacity: pLeave.status === "pending" ? 0.6 : 0.85,
+                                          boxShadow: `0 0 4px ${siteColor}60`,
+                                        }} />
+                                      );
+                                    })()}
                                   </td>;
                                 })}
                               </tr>
