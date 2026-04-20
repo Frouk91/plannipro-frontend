@@ -3587,17 +3587,21 @@ function PlanningApp({ currentUser, onLogout }) {
                                         const siteColor = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil"
                                           ? (leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488")
                                           : (leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed");
-                                        const siteLabel = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil" ? "R" : "P";
+                                        const tipText = `${pLeave.label}${pLeave.status === "pending" ? " · En attente" : ""}`;
                                         return (
-                                          <div title={pLeave.label} style={{
-                                            position: "absolute", bottom: 1, left: 1, right: 1, height: 4,
-                                            borderRadius: 2,
-                                            background: pLeave.status === "pending"
-                                              ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
-                                              : siteColor,
-                                            opacity: pLeave.status === "pending" ? 0.6 : 0.85,
-                                            boxShadow: `0 0 4px ${siteColor}60`,
-                                          }} />
+                                          <div
+                                            className="half-tooltip"
+                                            data-tip={tipText}
+                                            onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { apiFetch(`/leaves/${pLeave.leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); } }}
+                                            style={{
+                                              position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
+                                              borderRadius: 3, cursor: "context-menu",
+                                              background: pLeave.status === "pending"
+                                                ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
+                                                : siteColor,
+                                              opacity: pLeave.status === "pending" ? 0.6 : 0.9,
+                                              boxShadow: `0 0 4px ${siteColor}60`,
+                                            }} />
                                         );
                                       })()}
                                     </td>;
@@ -3704,7 +3708,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const inSel = isWeekInSel(agent.id, k);
                                   const isToday = k === dKey(now);
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
-                                  const canInteract = (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
+                                  const canInteract = (filterMode === "astreinte" ? (canManageAstreintes && !wk) : (isManager || (currentUser.id === agent.id && (agentCanPresence || filterMode !== "presence")))) && !wk && (!isFer || isManager);
                                   return <td key={i}
                                     onClick={() => canInteract && handleWeekCellClick(agent.id, d)}
                                     onContextMenu={e => !wk && handleWeekCellRightClick(e, agent.id, d)}
@@ -3763,16 +3767,21 @@ function PlanningApp({ currentUser, onLogout }) {
                                       const siteColor = (pLeave.code || "").toLowerCase() === "rueil" || (pLeave.label || "").toLowerCase() === "rueil"
                                         ? (leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488")
                                         : (leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed");
+                                      const tipText = `${pLeave.label}${pLeave.status === "pending" ? " · En attente" : ""}`;
                                       return (
-                                        <div title={pLeave.label} style={{
-                                          position: "absolute", bottom: 1, left: 1, right: 1, height: 4,
-                                          borderRadius: 2,
-                                          background: pLeave.status === "pending"
-                                            ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
-                                            : siteColor,
-                                          opacity: pLeave.status === "pending" ? 0.6 : 0.85,
-                                          boxShadow: `0 0 4px ${siteColor}60`,
-                                        }} />
+                                        <div
+                                          className="half-tooltip"
+                                          data-tip={tipText}
+                                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { apiFetch(`/leaves/${pLeave.leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); } }}
+                                          style={{
+                                            position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
+                                            borderRadius: 3, cursor: "context-menu",
+                                            background: pLeave.status === "pending"
+                                              ? `repeating-linear-gradient(90deg,${siteColor} 0,${siteColor} 3px,transparent 3px,transparent 6px)`
+                                              : siteColor,
+                                            opacity: pLeave.status === "pending" ? 0.6 : 0.9,
+                                            boxShadow: `0 0 4px ${siteColor}60`,
+                                          }} />
                                       );
                                     })()}
                                   </td>;
