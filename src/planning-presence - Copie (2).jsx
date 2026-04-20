@@ -1933,17 +1933,18 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   function getAvailableLeaveTypesForAgent(agentId) {
-    const agent = agents.find(a => a.id === agentId);
-    const canPresence = isManager || (agent?.can_book_presence_sites);
     if (isManager) {
-      // Manager : tous les types + présences site
-      return leaveTypes.filter(t => !isPresenceType(t) || canPresence);
+      // Manager : Rueil/Paris seulement en mode présence, types normaux seulement en mode planning
+      if (filterMode === "presence") return leaveTypes.filter(t => isPresenceType(t));
+      return leaveTypes.filter(t => !isPresenceType(t));
     }
+    const agent = agents.find(a => a.id === agentId);
     if (!agent) return leaveTypes.filter(t => AGENT_ALLOWED_CODES.includes(t.code) && !isPresenceType(t));
     return leaveTypes.filter(t => {
+      const isAllowed = AGENT_ALLOWED_CODES.includes(t.code);
       const isPresence = isPresenceType(t);
-      if (isPresence) return agent.can_book_presence_sites;
-      return AGENT_ALLOWED_CODES.includes(t.code);
+      if (isPresence) return filterMode === "presence" && agent.can_book_presence_sites;
+      return isAllowed && filterMode !== "presence";
     });
   }
 
@@ -2810,6 +2811,7 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ display: 'flex', gap: 4, borderBottom: '1.5px solid #e8edf5', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px' }}>
                 {[
                   { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
+                  { mode: 'presence', label: 'Présences sur site', icon: '🏢', color: '#0d9488' },
                   { mode: 'astreinte', label: 'Astreintes', icon: '🔔', color: '#f59e0b' }
                 ].map(tab => {
                   const isActive = filterMode === tab.mode;
@@ -3440,22 +3442,20 @@ function PlanningApp({ currentUser, onLogout }) {
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
                         return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
-                          <div style={{ height: 18, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, marginBottom: 2 }}>
-                            {!wk && !isFer && absent > 0 && (
+                          <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
+                            {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
                             )}
-                            {!wk && (() => {
+                            {(filterMode === "presence" || filterMode === "all") && !wk && (() => {
                               const nRueil = countPresence(k, "rueil");
                               const nParis = countPresence(k, "paris");
-                              const total = nRueil + nParis;
-                              if (total === 0) return null;
-                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              if (nRueil === 0 && nParis === 0) return null;
                               return (
-                                <div title={`${nRueil > 0 ? nRueil + " Rueil" : ""}${nRueil > 0 && nParis > 0 ? " · " : ""}${nParis > 0 ? nParis + " Paris" : ""}`}
-                                  style={{ width: 16, height: 3, borderRadius: 99, overflow: "hidden", display: "flex" }}>
-                                  {nRueil > 0 && <div style={{ flex: nRueil, background: rueilColor }} />}
-                                  {nParis > 0 && <div style={{ flex: nParis, background: parisColor }} />}
+                                <div style={{ display: "flex", gap: 1, alignItems: "center" }}>
+                                  {nRueil > 0 && <div title={`${nRueil} à Rueil`} style={{ fontSize: 7, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: 99, padding: "1px 4px", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", minWidth: 13, textAlign: "center" }}>{nRueil}</div>}
+                                  {nParis > 0 && <div title={`${nParis} à Paris`} style={{ fontSize: 7, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: 99, padding: "1px 4px", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", minWidth: 13, textAlign: "center" }}>{nParis}</div>}
                                 </div>
                               );
                             })()}
@@ -3631,22 +3631,19 @@ function PlanningApp({ currentUser, onLogout }) {
                         const isFer = !!feriesDay[k];
                         const absent = countAbsents(k);
                         return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
-                          <div style={{ height: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, marginBottom: 4 }}>
-                            {!wk && !isFer && absent > 0 && (
+                          <div style={{ height: 24, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
+                            {filterMode !== "presence" && !wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
                             )}
-                            {!wk && (() => {
+                            {filterMode === "presence" && !wk && (() => {
                               const nRueil = countPresence(k, "rueil");
                               const nParis = countPresence(k, "paris");
-                              const total = nRueil + nParis;
-                              if (total === 0) return null;
-                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris" || (t.label || "").toLowerCase() === "paris")?.color || "#7c3aed";
                               return (
-                                <div title={`${nRueil > 0 ? nRueil + " Rueil" : ""}${nRueil > 0 && nParis > 0 ? " · " : ""}${nParis > 0 ? nParis + " Paris" : ""}`}
-                                  style={{ width: 20, height: 3, borderRadius: 99, overflow: "hidden", display: "flex" }}>
-                                  {nRueil > 0 && <div style={{ flex: nRueil, background: rueilColor }} />}
-                                  {nParis > 0 && <div style={{ flex: nParis, background: parisColor }} />}
+                                <div style={{ display: "flex", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
+                                  {nRueil > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: rueilColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nRueil}</div>}
+                                  {nParis > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: "#fff", background: parisColor, borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{nParis}</div>}
                                 </div>
                               );
                             })()}
@@ -4204,9 +4201,6 @@ function PlanningApp({ currentUser, onLogout }) {
       {
         requestModal && (() => {
           const allAvail = sortLeaveTypes(getAvailableLeaveTypesForAgent(requestModal.agentId || currentUser.id));
-          // Séparer présences et congés normaux
-          const presenceTypes = allAvail.filter(t => isPresenceType(t));
-          const normalTypes = allAvail.filter(t => !isPresenceType(t));
           // Séparer les types "groupés" (CP, RTT et leurs ½) des autres
           const isCpFamily = t => /^(cp|_cp|congé payé)$/i.test((t.code || "").trim()) || /^(cp|½ cp|congé payé)$/i.test((t.label || "").trim());
           const isRttFamily = t => /^(rtt|_rtt)$/i.test((t.code || "").trim()) || /^(rtt|½ rtt)$/i.test((t.label || "").trim());
@@ -4214,10 +4208,10 @@ function PlanningApp({ currentUser, onLogout }) {
           const isHalfCp = t => /^_cp$/i.test(t.code) || /^½ cp$/i.test(t.label);
           const isHalfRtt = t => /^_rtt$/i.test(t.code) || /^½ rtt$/i.test(t.label);
           // Types affichés dans la liste (sans les ½ CP et ½ RTT)
-          const displayTypes = normalTypes.filter(t => !isHalfCp(t) && !isHalfRtt(t));
+          const displayTypes = allAvail.filter(t => !isHalfCp(t) && !isHalfRtt(t));
           // Trouver les types ½ correspondants
-          const halfCpType = normalTypes.find(isHalfCp) || normalTypes.find(t => !isVeilleFamily(t) && (t.code || "").includes("cp") && isHalfDay(t));
-          const halfRttType = normalTypes.find(isHalfRtt) || normalTypes.find(t => !isVeilleFamily(t) && (t.code || "").includes("rtt") && isHalfDay(t));
+          const halfCpType = allAvail.find(isHalfCp) || allAvail.find(t => !isVeilleFamily(t) && (t.code || "").includes("cp") && isHalfDay(t));
+          const halfRttType = allAvail.find(isHalfRtt) || allAvail.find(t => !isVeilleFamily(t) && (t.code || "").includes("rtt") && isHalfDay(t));
           function handleTypeClick(t) {
             if (isCpFamily(t) || isRttFamily(t) || isVeilleFamily(t)) {
               setExpandedLeaveType(expandedLeaveType === t.id ? null : t.id);
@@ -4301,24 +4295,6 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
               {/* Raison */}
               <div style={{ padding: "8px 16px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                {/* ── SECTION PRÉSENCES SITE ── */}
-                {presenceTypes.length > 0 && (
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", padding: "8px 0 4px" }}>
-                    <div style={{ padding: "4px 16px 6px", fontSize: 9, fontWeight: 800, color: "#475569", textTransform: "uppercase", letterSpacing: "1px" }}>🏢 Présence sur site</div>
-                    <div style={{ display: "flex", gap: 6, padding: "0 14px 6px" }}>
-                      {presenceTypes.map(t => (
-                        <button key={t.id} onClick={() => { setRequestModal(null); setExpandedLeaveType(null); submitRequest(t, requestReason); }}
-                          style={{ flex: 1, padding: "9px 8px", borderRadius: 10, border: `2px solid ${t.color}`, background: t.color + "20", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = t.color; e.currentTarget.children[0].style.color = "#fff"; e.currentTarget.children[1].style.color = "#fff"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = t.color + "20"; e.currentTarget.children[0].style.color = t.color; e.currentTarget.children[1].style.color = "rgba(255,255,255,0.6)"; }}>
-                          <span style={{ fontSize: 18 }}>{(t.code || "").toLowerCase() === "rueil" || (t.label || "").toLowerCase() === "rueil" ? "🏢" : "🗼"}</span>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: t.color, transition: "color 0.15s" }}>{t.label}</span>
-                          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", transition: "color 0.15s" }}>Présence site</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 <input onChange={e => setRequestReason(e.target.value)} placeholder="Raison (optionnel)..." style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", fontSize: 12, color: "#cbd5e1", outline: "none", boxSizing: "border-box" }} />
               </div>
               <button onClick={() => { setRequestModal(null); setExpandedLeaveType(null); setRequestReason(""); }} style={{ width: "100%", padding: "11px", border: "none", borderTop: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)", cursor: "pointer", fontSize: 12, color: "#64748b", fontWeight: 600, letterSpacing: "0.2px", transition: "all 0.15s" }}
