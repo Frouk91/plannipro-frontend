@@ -318,9 +318,11 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
 }
 function teamPalette(teamName) {
   const palettes = {
-    "CSS Digital":      { row: "#f0f5ff", wk: "#dce8fb", header: "#dbeafe", border: "#3b82f6", text: "#1d4ed8", accent: "#3b82f6" },
-    "Mailing Solution": { row: "#f5f0ff", wk: "#e4d8fb", header: "#ede9fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
-    "MANAGER":          { row: "#f0fdf7", wk: "#ccf0e0", header: "#d1fae5", border: "#10b981", text: "#065f46", accent: "#10b981" },
+    "CSS Digital":        { row: "#f0f5ff", wk: "#dce8fb", header: "#dbeafe", border: "#3b82f6", text: "#1d4ed8", accent: "#3b82f6" },
+    "Equipe Digital 1":   { row: "#eff6ff", wk: "#dbeafe", header: "#bfdbfe", border: "#2563eb", text: "#1e40af", accent: "#2563eb" },
+    "Equipe Digital 2":   { row: "#f0f9ff", wk: "#bae6fd", header: "#bae6fd", border: "#0284c7", text: "#075985", accent: "#0284c7" },
+    "Mailing Solution":   { row: "#f5f0ff", wk: "#e4d8fb", header: "#ede9fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
+    "MANAGER":            { row: "#f0fdf7", wk: "#ccf0e0", header: "#d1fae5", border: "#10b981", text: "#065f46", accent: "#10b981" },
   };
   const defaults = [
     { row: "#f0fdf4", wk: "#d1fae5", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
@@ -931,7 +933,7 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
 }
 
 
-function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement }) {
+function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement, cssSubTeams, setCssSubTeams }) {
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
@@ -967,6 +969,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   const TAB_CONFIG = [
     { id: "agents", label: "👥 Agents", color: "#6366f1" },
     { id: "teams", label: "🏷 Équipes", color: "#0d9488" },
+    { id: "subteams", label: "🔵 Sous-équipes Digital", color: "#2563eb" },
     { id: "leavetypes", label: "📋 Types de congés", color: "#f59e0b" },
     { id: "announcement", label: "📢 Annonce", color: "#ec4899" },
   ];
@@ -1258,6 +1261,74 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           )}
         </div>
       )}
+      {tab === "subteams" && (() => {
+        const cssAgents = agents.filter(a => a.team === "CSS Digital" && a.role !== "admin");
+        const sub1 = cssAgents.filter(a => cssSubTeams[a.id] === "Equipe Digital 1");
+        const sub2 = cssAgents.filter(a => cssSubTeams[a.id] === "Equipe Digital 2");
+        const unassigned = cssAgents.filter(a => !cssSubTeams[a.id]);
+        function assignAgent(agentId, subTeam) {
+          const next = { ...cssSubTeams };
+          if (subTeam === null) delete next[agentId];
+          else next[agentId] = subTeam;
+          setCssSubTeams(next);
+          try { localStorage.setItem("cssSubTeams", JSON.stringify(next)); } catch {}
+        }
+        function AgentCard({ agent, subTeam }) {
+          const colorD1 = "#2563eb", colorD2 = "#0284c7";
+          const bgD1 = "#eff6ff", bgD2 = "#f0f9ff";
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: "#fff", border: "1px solid #e8edf5", borderRadius: 10, transition: "all 0.15s", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 3px 12px rgba(0,0,0,0.08)"; e.currentTarget.style.borderColor = "#c7d2fe"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.borderColor = "#e8edf5"; }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#3b82f6,#60a5fa)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{agent.avatar}</div>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{agent.name}</span>
+              <div style={{ display: "flex", gap: 5 }}>
+                <button onClick={() => assignAgent(agent.id, "Equipe Digital 1")}
+                  style={{ padding: "4px 10px", borderRadius: 7, border: `1.5px solid ${subTeam === "Equipe Digital 1" ? colorD1 : "#e2e8f0"}`, background: subTeam === "Equipe Digital 1" ? bgD1 : "#fff", color: subTeam === "Equipe Digital 1" ? colorD1 : "#94a3b8", cursor: "pointer", fontSize: 11, fontWeight: subTeam === "Equipe Digital 1" ? 700 : 400, transition: "all 0.12s" }}>D1</button>
+                <button onClick={() => assignAgent(agent.id, "Equipe Digital 2")}
+                  style={{ padding: "4px 10px", borderRadius: 7, border: `1.5px solid ${subTeam === "Equipe Digital 2" ? colorD2 : "#e2e8f0"}`, background: subTeam === "Equipe Digital 2" ? bgD2 : "#fff", color: subTeam === "Equipe Digital 2" ? colorD2 : "#94a3b8", cursor: "pointer", fontSize: 11, fontWeight: subTeam === "Equipe Digital 2" ? 700 : 400, transition: "all 0.12s" }}>D2</button>
+                {subTeam && <button onClick={() => assignAgent(agent.id, null)}
+                  style={{ padding: "4px 8px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 11, fontWeight: 600, transition: "all 0.12s" }}>✕</button>}
+              </div>
+            </div>
+          );
+        }
+        return (
+          <div>
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: "12px 16px", marginBottom: 18, fontSize: 12, color: "#1e40af", display: "flex", alignItems: "flex-start", gap: 10 }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
+              <span>Assignez les agents CSS Digital à <strong>Equipe Digital 1</strong> ou <strong>Equipe Digital 2</strong>. L'assignation est enregistrée localement et se reflète immédiatement dans le planning. Les agents non assignés restent dans le groupe principal <em>CSS Digital</em>.</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              {[{ label: "Equipe Digital 1", key: "Equipe Digital 1", color: "#2563eb", bg: "#eff6ff", border: "#bfdbfe", agents: sub1 },
+                { label: "Equipe Digital 2", key: "Equipe Digital 2", color: "#0284c7", bg: "#f0f9ff", border: "#bae6fd", agents: sub2 }].map(col => (
+                <div key={col.key} style={{ background: col.bg, border: `2px solid ${col.border}`, borderRadius: 12, overflow: "hidden" }}>
+                  <div style={{ padding: "10px 14px", borderBottom: `1px solid ${col.border}`, display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: col.color }} />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: col.color }}>{col.label}</span>
+                    <span style={{ marginLeft: "auto", fontSize: 11, color: col.color, background: col.border, padding: "1px 8px", borderRadius: 99, fontWeight: 700 }}>{col.agents.length} agent{col.agents.length !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6, minHeight: 60 }}>
+                    {col.agents.length === 0 && <div style={{ fontSize: 11, color: "#94a3b8", textAlign: "center", padding: "10px 0", fontStyle: "italic" }}>Aucun agent assigné</div>}
+                    {col.agents.map(a => <AgentCard key={a.id} agent={a} subTeam={cssSubTeams[a.id]} />)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {unassigned.length > 0 && (
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ padding: "10px 14px", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>Non assignés</span>
+                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#64748b", background: "#e2e8f0", padding: "1px 8px", borderRadius: 99, fontWeight: 700 }}>{unassigned.length}</span>
+                </div>
+                <div style={{ padding: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {unassigned.map(a => <AgentCard key={a.id} agent={a} subTeam={null} />)}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {tab === "leavetypes" && (
         <div>
           {/* Bouton Ajouter */}
@@ -1663,6 +1734,9 @@ function PlanningApp({ currentUser, onLogout }) {
   const [planView, setPlanView] = useState("month");
   const [weekAnchor, setWeekAnchor] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [filterTeam, setFilterTeam] = useState("Tous");
+  const [cssSubTeams, setCssSubTeams] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("cssSubTeams") || "{}"); } catch { return {}; }
+  });
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
   const [showAbsentBanner, setShowAbsentBanner] = useState(true);
@@ -2032,27 +2106,34 @@ function PlanningApp({ currentUser, onLogout }) {
     const sorted = sortedAgents;
     let filtered;
     if (filterTeam.startsWith("agent-")) {
-      // Filtre "Moi" - afficher seulement l'agent connecté
       const agentId = filterTeam.replace("agent-", "");
       filtered = sorted.filter(a => a.id === agentId);
     } else {
-      // Filtres normaux par équipe
       filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
     }
     const grouped = [];
     const teamMap = {};
     filtered.forEach(agent => {
-      const teamName = agent.team || "Sans équipe";
-      if (!teamMap[teamName]) {
-        teamMap[teamName] = [];
-        grouped.push([teamName, teamMap[teamName]]);
+      const rawTeam = agent.team || "Sans équipe";
+      // Scinder CSS Digital en sous-équipes si assigné
+      let displayTeam = rawTeam;
+      if (rawTeam === "CSS Digital") {
+        const sub = cssSubTeams[agent.id];
+        displayTeam = sub || "CSS Digital";
       }
-      teamMap[teamName].push(agent);
+      if (!teamMap[displayTeam]) {
+        teamMap[displayTeam] = [];
+        grouped.push([displayTeam, teamMap[displayTeam]]);
+      }
+      teamMap[displayTeam].push(agent);
     });
     grouped.sort(([a], [b]) => {
+      // CSS Digital et ses sous-équipes restent groupés ensemble
+      const parentA = a.startsWith("Equipe Digital") ? "CSS Digital~" + a : a;
+      const parentB = b.startsWith("Equipe Digital") ? "CSS Digital~" + b : b;
       if (a === "Sans équipe") return 1;
       if (b === "Sans équipe") return -1;
-      return a.localeCompare(b);
+      return parentA.localeCompare(parentB);
     });
     return grouped;
   }
@@ -2265,7 +2346,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }, [agents, filterTeam, currentUser.id]);
 
   // Cache les agents groupés par équipe pour éviter les recalculs
-  const agentsByTeam = useMemo(() => getAgentsByTeam(), [sortedAgents, filterTeam]);
+  const agentsByTeam = useMemo(() => getAgentsByTeam(), [sortedAgents, filterTeam, cssSubTeams]);
   const pendingRequests = useMemo(() => requests.filter(r => r.status === "pending"), [requests]);
   const myRequests = useMemo(() => requests.filter(r => r.agentId === currentUser.id), [requests, currentUser.id]);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
@@ -2845,6 +2926,7 @@ function PlanningApp({ currentUser, onLogout }) {
           announceMsg={announceMsg} setAnnounceMsg={setAnnounceMsg}
           showAnnounceForm={showAnnounceForm} setShowAnnounceForm={setShowAnnounceForm}
           handlePostAnnouncement={handlePostAnnouncement} handleDeleteAnnouncement={handleDeleteAnnouncement}
+          cssSubTeams={cssSubTeams} setCssSubTeams={setCssSubTeams}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
           onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
