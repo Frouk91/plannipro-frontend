@@ -3499,21 +3499,6 @@ function PlanningApp({ currentUser, onLogout }) {
                             {!wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
                             )}
-                            {!wk && (() => {
-                              const nRueil = countPresence(k, "rueil");
-                              const nParis = countPresence(k, "paris");
-                              const total = nRueil + nParis;
-                              if (total === 0) return null;
-                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
-                              return (
-                                <div title={`${nRueil > 0 ? nRueil + " Rueil" : ""}${nRueil > 0 && nParis > 0 ? " · " : ""}${nParis > 0 ? nParis + " Paris" : ""}`}
-                                  style={{ width: 16, height: 3, borderRadius: 99, overflow: "hidden", display: "flex" }}>
-                                  {nRueil > 0 && <div style={{ flex: nRueil, background: rueilColor }} />}
-                                  {nParis > 0 && <div style={{ flex: nParis, background: parisColor }} />}
-                                </div>
-                              );
-                            })()}
                           </div>
                           <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
                           <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
@@ -3696,10 +3681,6 @@ function PlanningApp({ currentUser, onLogout }) {
                                 {!wk && !isFer && tot > 0 && (
                                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                                     <span style={{ fontSize: 10, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
-                                    <div style={{ display: "flex", gap: 1 }}>
-                                      {nR > 0 && <div title={`${nR} Rueil`} style={{ width: Math.max(nR * 4, 5), height: 3, background: rueilColor, borderRadius: 2, boxShadow: `0 0 3px ${rueilColor}60` }} />}
-                                      {nP > 0 && <div title={`${nP} Paris`} style={{ width: Math.max(nP * 4, 5), height: 3, background: parisColor, borderRadius: 2, boxShadow: `0 0 3px ${parisColor}60` }} />}
-                                    </div>
                                   </div>
                                 )}
                               </td>
@@ -3734,21 +3715,6 @@ function PlanningApp({ currentUser, onLogout }) {
                             {!wk && !isFer && absent > 0 && (
                               <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
                             )}
-                            {!wk && (() => {
-                              const nRueil = countPresence(k, "rueil");
-                              const nParis = countPresence(k, "paris");
-                              const total = nRueil + nParis;
-                              if (total === 0) return null;
-                              const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
-                              const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
-                              return (
-                                <div title={`${nRueil > 0 ? nRueil + " Rueil" : ""}${nRueil > 0 && nParis > 0 ? " · " : ""}${nParis > 0 ? nParis + " Paris" : ""}`}
-                                  style={{ width: 20, height: 3, borderRadius: 99, overflow: "hidden", display: "flex" }}>
-                                  {nRueil > 0 && <div style={{ flex: nRueil, background: rueilColor }} />}
-                                  {nParis > 0 && <div style={{ flex: nParis, background: parisColor }} />}
-                                </div>
-                              );
-                            })()}
                           </div>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
@@ -3916,10 +3882,6 @@ function PlanningApp({ currentUser, onLogout }) {
                                 {!wk && !isFer && tot > 0 && (
                                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                                     <span style={{ fontSize: 13, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
-                                    <div style={{ display: "flex", gap: 2 }}>
-                                      {nR > 0 && <div title={`${nR} Rueil`} style={{ height: 4, width: Math.max(nR * 6, 8), background: rueilColor, borderRadius: 2, boxShadow: `0 0 4px ${rueilColor}60` }} />}
-                                      {nP > 0 && <div title={`${nP} Paris`} style={{ height: 4, width: Math.max(nP * 6, 8), background: parisColor, borderRadius: 2, boxShadow: `0 0 4px ${parisColor}60` }} />}
-                                    </div>
                                   </div>
                                 )}
                               </td>
