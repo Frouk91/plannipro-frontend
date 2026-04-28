@@ -1697,6 +1697,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [selectedAgentForStats, setSelectedAgentForStats] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [astreinteContextMenu, setAstreinteContextMenu] = useState(null); // { x, y, aKey, teamName, rowId, rowType, dateKey, id }
+  const [presenceContextMenu, setPresenceContextMenu] = useState(null); // { x, y, agentId, dateKey, leaveId, label, color }
   const [astreintes, setAstreintes] = useState({});
   const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
@@ -2466,7 +2467,7 @@ function PlanningApp({ currentUser, onLogout }) {
       if (data.leave) {
         const agentCanPresence = agents.find(a => a.id === agentId)?.can_book_presence_sites;
         const isPont = (leaveType.code || "").toLowerCase().includes("pont") || (leaveType.label || "").toLowerCase().includes("pont");
-        const autoApprove = (isManager && !isPont) || (filterMode === "presence" && agentCanPresence && isPresenceType(leaveType));
+        const autoApprove = (isManager && !isPont) || (agentCanPresence && isPresenceType(leaveType));
         if (autoApprove) {
           try {
             await apiFetch(`/leaves/${data.leave.id}`, token, { method: "PATCH", body: JSON.stringify({ status: "approved" }) });
@@ -2604,7 +2605,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
   return (
     <div style={{ fontFamily: "'Outfit','Segoe UI',sans-serif", minHeight: "100vh", background: "#060818", display: "flex", position: "relative" }}
-      onClick={() => { if (contextMenu) setContextMenu(null); if (astreinteContextMenu) setAstreinteContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
+      onClick={() => { if (contextMenu) setContextMenu(null); if (astreinteContextMenu) setAstreinteContextMenu(null); if (presenceContextMenu) setPresenceContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
       <style>{GLOBAL_STYLE}</style>
       <style>{`::-webkit-scrollbar-thumb{background:${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}!important;border-radius:10px}::-webkit-scrollbar-thumb:hover{background:${filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8"}!important}`}</style>
 
@@ -2669,6 +2670,42 @@ function PlanningApp({ currentUser, onLogout }) {
               </button>
             )}
             <button onClick={e => { e.stopPropagation(); setAstreinteContextMenu(null); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#475569" }}>
+              ✕ Annuler
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* MENU CONTEXTUEL PRÉSENCE SITE */}
+      {presenceContextMenu && (() => {
+        const { x, y, agentId, dateKey: pDateKey, leaveId, label, color } = presenceContextMenu;
+        const menuW = 240, menuH = 120;
+        const safeX = Math.min(x, window.innerWidth - menuW - 8);
+        const safeY = Math.min(y, window.innerHeight - menuH - 8);
+        // Trouver tous les jours de présence consécutifs pour cet agent
+        const allPresenceKeys = Object.keys(leaves[agentId] || {})
+          .filter(k => k.endsWith("__presence") && leaves[agentId][k]?.leaveId === leaveId)
+          .map(k => k.replace("__presence", "")).sort();
+        const isMulti = allPresenceKeys.length > 1;
+        return (
+          <div onClick={e => e.stopPropagation()} className="context-menu"
+            style={{ position: "fixed", top: safeY, left: safeX, zIndex: 99999, minWidth: menuW, overflow: "hidden" }}>
+            <div className="context-menu-item">
+              <span style={{ display: "inline-block", width: 10, height: 4, borderRadius: 2, background: color, marginRight: 8, verticalAlign: "middle" }} />
+              🏢 {label} — {pDateKey.split("-").reverse().join("/")}
+            </div>
+            <button onClick={e => { e.stopPropagation(); setPresenceContextMenu(null); apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); }}
+              style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>
+              ✂️ Supprimer ce jour seulement
+            </button>
+            {isMulti && (
+              <button onClick={e => { e.stopPropagation(); setPresenceContextMenu(null); apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#ef4444", fontWeight: 500 }}>
+                🗑 Supprimer toute la période ({allPresenceKeys.length} jours)
+              </button>
+            )}
+            <button onClick={e => { e.stopPropagation(); setPresenceContextMenu(null); }}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", borderTop: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 13, color: "#475569" }}>
               ✕ Annuler
             </button>
@@ -3512,7 +3549,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                     const leave = getLeaveForDay(agent.id, day), inSel = isInSelection(agent.id, day), isToday = todayDay === day;
                                     const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                     const isFridayCell = new Date(year, month, day).getDay() === 5;
-                                    const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (filterMode === "presence" ? (isManager || (currentUser.id === agent.id && agentCanPresence)) : (isManager || (isCoordinator && currentUser.id === agent.id))) && !wk && (!isFer || isManager);
+                                    const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (isManager || (currentUser.id === agent.id && (agentCanPresence || !isCoordinator))) && !wk && (!isFer || isManager);
                                     return <td key={i}
                                       onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
                                       onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
@@ -3592,7 +3629,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           <div
                                             className="half-tooltip"
                                             data-tip={tipText}
-                                            onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { apiFetch(`/leaves/${pLeave.leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); } }}
+                                            onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor }); } }}
                                             style={{
                                               position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
                                               borderRadius: 3, cursor: "context-menu",
@@ -3772,7 +3809,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                         <div
                                           className="half-tooltip"
                                           data-tip={tipText}
-                                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { apiFetch(`/leaves/${pLeave.leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); } }}
+                                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor }); } }}
                                           style={{
                                             position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
                                             borderRadius: 3, cursor: "context-menu",

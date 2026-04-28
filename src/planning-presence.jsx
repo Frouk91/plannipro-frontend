@@ -2679,7 +2679,7 @@ function PlanningApp({ currentUser, onLogout }) {
 
       {/* MENU CONTEXTUEL PRÉSENCE SITE */}
       {presenceContextMenu && (() => {
-        const { x, y, agentId, dateKey: pDateKey, leaveId, label, color } = presenceContextMenu;
+        const { x, y, agentId, dateKey: pDateKey, leaveId, label, color, leaveStart: pLeaveStart, leaveEnd: pLeaveEnd, leaveCode: pLeaveCode } = presenceContextMenu;
         const menuW = 240, menuH = 120;
         const safeX = Math.min(x, window.innerWidth - menuW - 8);
         const safeY = Math.min(y, window.innerHeight - menuH - 8);
@@ -2695,7 +2695,25 @@ function PlanningApp({ currentUser, onLogout }) {
               <span style={{ display: "inline-block", width: 10, height: 4, borderRadius: 2, background: color, marginRight: 8, verticalAlign: "middle" }} />
               🏢 {label} — {pDateKey.split("-").reverse().join("/")}
             </div>
-            <button onClick={e => { e.stopPropagation(); setPresenceContextMenu(null); apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" }).then(() => loadLeaves(leaveTypes, token, year, month)).catch(() => {}); }}
+            <button onClick={async e => {
+              e.stopPropagation();
+              setPresenceContextMenu(null);
+              try {
+                await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+                // Recréer la partie avant le jour supprimé
+                if (pLeaveStart && compareDates(pLeaveStart, pDateKey) < 0) {
+                  const r1 = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: pLeaveCode, start_date: pLeaveStart, end_date: addDays(pDateKey, -1), agent_id: agentId }) });
+                  if (r1.leave) await apiFetch(`/leaves/${r1.leave.id}`, token, { method: "PATCH", body: JSON.stringify({ status: "approved" }) }).catch(() => {});
+                }
+                // Recréer la partie après le jour supprimé
+                if (pLeaveEnd && compareDates(pDateKey, pLeaveEnd) < 0) {
+                  const r2 = await apiFetch("/leaves", token, { method: "POST", body: JSON.stringify({ leave_type_code: pLeaveCode, start_date: addDays(pDateKey, 1), end_date: pLeaveEnd, agent_id: agentId }) });
+                  if (r2.leave) await apiFetch(`/leaves/${r2.leave.id}`, token, { method: "PATCH", body: JSON.stringify({ status: "approved" }) }).catch(() => {});
+                }
+                loadLeaves(leaveTypes, token, year, month);
+                showNotif("Jour supprimé ✅");
+              } catch (err) { showNotif("Erreur", "error"); }
+            }}
               style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "11px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 13, color: "#d97706", fontWeight: 500 }}>
               ✂️ Supprimer ce jour seulement
             </button>
@@ -3629,7 +3647,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           <div
                                             className="half-tooltip"
                                             data-tip={tipText}
-                                            onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor }); } }}
+                                            onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor, leaveStart: pLeave.leaveStart, leaveEnd: pLeave.leaveEnd, leaveCode: pLeave.leaveCode || pLeave.code }); } }}
                                             style={{
                                               position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
                                               borderRadius: 3, cursor: "context-menu",
@@ -3650,6 +3668,46 @@ function PlanningApp({ currentUser, onLogout }) {
                         </React.Fragment>
                       );
                     })}
+                    {/* ── LIGNE TOTAUX PRÉSENCES SITE ── */}
+                    {filterMode !== "astreinte" && (() => {
+                      const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                      const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                      const hasAnyPresence = Array.from({ length: daysInMonth }, (_, i) => {
+                        const k = dateKey(year, month, i + 1);
+                        return !isWeekend(year, month, i + 1) && (countPresence(k, "rueil") + countPresence(k, "paris")) > 0;
+                      }).some(Boolean);
+                      if (!hasAnyPresence) return null;
+                      return (
+                        <tr style={{ height: 36, background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderTop: "2px solid #0d9488" }}>
+                          <td style={{ padding: "0 10px", verticalAlign: "middle", fontSize: 11, fontWeight: 700, color: "#065f46", whiteSpace: "nowrap", background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderRight: "1px solid #a7f3d0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ display: "flex", gap: 2 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: 2, background: rueilColor }} />
+                                <div style={{ width: 8, height: 8, borderRadius: 2, background: parisColor }} />
+                              </div>
+                              Présences site
+                            </div>
+                          </td>
+                          {Array.from({ length: daysInMonth }, (_, i) => {
+                            const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isFer = !!feries[k];
+                            const nR = countPresence(k, "rueil"), nP = countPresence(k, "paris"), tot = nR + nP;
+                            return (
+                              <td key={i} style={{ textAlign: "center", background: wk ? "#d1fae5" : isFer ? "#ccfbf1" : tot > 0 ? "#f0fdfa" : "transparent", border: "1px solid #a7f3d0", height: 36, verticalAlign: "middle" }}>
+                                {!wk && !isFer && tot > 0 && (
+                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                                    <span style={{ fontSize: 10, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
+                                    <div style={{ display: "flex", gap: 1 }}>
+                                      {nR > 0 && <div title={`${nR} Rueil`} style={{ width: Math.max(nR * 4, 5), height: 3, background: rueilColor, borderRadius: 2, boxShadow: `0 0 3px ${rueilColor}60` }} />}
+                                      {nP > 0 && <div title={`${nP} Paris`} style={{ width: Math.max(nP * 4, 5), height: 3, background: parisColor, borderRadius: 2, boxShadow: `0 0 3px ${parisColor}60` }} />}
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
@@ -3809,7 +3867,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                         <div
                                           className="half-tooltip"
                                           data-tip={tipText}
-                                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor }); } }}
+                                          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); if (pLeave.leaveId && (isManager || currentUser.id === agent.id)) { setPresenceContextMenu({ x: e.clientX, y: e.clientY, agentId: agent.id, dateKey: k, leaveId: pLeave.leaveId, label: pLeave.label, color: siteColor, leaveStart: pLeave.leaveStart, leaveEnd: pLeave.leaveEnd, leaveCode: pLeave.leaveCode || pLeave.code }); } }}
                                           style={{
                                             position: "absolute", bottom: 1, left: 1, right: 1, height: 5,
                                             borderRadius: 3, cursor: "context-menu",
@@ -3829,6 +3887,47 @@ function PlanningApp({ currentUser, onLogout }) {
                         </React.Fragment>
                       );
                     })}
+                    {/* ── LIGNE TOTAUX PRÉSENCES SITE (semaine) ── */}
+                    {filterMode !== "astreinte" && (() => {
+                      const rueilColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "rueil")?.color || "#0d9488";
+                      const parisColor = leaveTypes.find(t => (t.code || "").toLowerCase() === "paris")?.color || "#7c3aed";
+                      const hasAnyPresence = weekDays.some(d => {
+                        const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6;
+                        return !wk && (countPresence(k, "rueil") + countPresence(k, "paris")) > 0;
+                      });
+                      if (!hasAnyPresence) return null;
+                      return (
+                        <tr style={{ height: 42, background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderTop: "2px solid #0d9488" }}>
+                          <td style={{ width: 200, padding: "0 10px", verticalAlign: "middle", fontSize: 11, fontWeight: 700, color: "#065f46", whiteSpace: "nowrap", background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderRight: "1px solid #a7f3d0" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ display: "flex", gap: 2 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: 2, background: rueilColor }} />
+                                <div style={{ width: 8, height: 8, borderRadius: 2, background: parisColor }} />
+                              </div>
+                              Présences site
+                            </div>
+                          </td>
+                          {weekDays.map((d, i) => {
+                            const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6;
+                            const feriesDay = getFeries(d.getFullYear()), isFer = !!feriesDay[k];
+                            const nR = countPresence(k, "rueil"), nP = countPresence(k, "paris"), tot = nR + nP;
+                            return (
+                              <td key={i} style={{ textAlign: "center", background: wk ? "#d1fae5" : isFer ? "#ccfbf1" : tot > 0 ? "#f0fdfa" : "transparent", border: "1px solid #a7f3d0", height: 42, verticalAlign: "middle" }}>
+                                {!wk && !isFer && tot > 0 && (
+                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
+                                    <div style={{ display: "flex", gap: 2 }}>
+                                      {nR > 0 && <div title={`${nR} Rueil`} style={{ height: 4, width: Math.max(nR * 6, 8), background: rueilColor, borderRadius: 2, boxShadow: `0 0 4px ${rueilColor}60` }} />}
+                                      {nP > 0 && <div title={`${nP} Paris`} style={{ height: 4, width: Math.max(nP * 6, 8), background: parisColor, borderRadius: 2, boxShadow: `0 0 4px ${parisColor}60` }} />}
+                                    </div>
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
