@@ -3777,7 +3777,7 @@ function PlanningApp({ currentUser, onLogout }) {
             )}
 
             {/* VUE SEMAINE */}
-            {planView === "week" && (
+            {planView === "week" && filterMode !== "astreinte" && (
               <div style={{
                 background: "#fff", borderRadius: 14, overflow: "hidden",
                 border: `2px solid ${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}`,
