@@ -1271,7 +1271,14 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
           if (subTeam === null) delete next[agentId];
           else next[agentId] = subTeam;
           setCssSubTeams(next);
-          try { localStorage.setItem("cssSubTeams", JSON.stringify(next)); } catch {}
+          // Persister en BDD via API
+          apiFetch(`/agents/${agentId}`, token, {
+            method: "PATCH",
+            body: JSON.stringify({ sub_team: subTeam || null })
+          }).then(() => {
+            onAgentUpdated(agentId, { sub_team: subTeam || null });
+            showNotif("Sous-équipe enregistrée ✅");
+          }).catch(() => showNotif("Erreur de sauvegarde", "error"));
         }
         function AgentCard({ agent, subTeam }) {
           const colorD1 = "#2563eb", colorD2 = "#0284c7";
@@ -1734,9 +1741,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [planView, setPlanView] = useState("month");
   const [weekAnchor, setWeekAnchor] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [filterTeam, setFilterTeam] = useState("Tous");
-  const [cssSubTeams, setCssSubTeams] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("cssSubTeams") || "{}"); } catch { return {}; }
-  });
+  const [cssSubTeams, setCssSubTeams] = useState({});
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
   const [showAbsentBanner, setShowAbsentBanner] = useState(true);
@@ -2154,10 +2159,14 @@ function PlanningApp({ currentUser, onLogout }) {
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
-        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order }));
+        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order, sub_team: a.sub_team || null }));
         // Trier par agent_display_order depuis la BDD
         agentsList.sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
         setAgents(agentsList);
+        // Dériver cssSubTeams depuis les données agents (BDD)
+        const subTeamsFromDB = {};
+        agentsList.forEach(a => { if (a.sub_team) subTeamsFromDB[a.id] = a.sub_team; });
+        setCssSubTeams(subTeamsFromDB);
         // Initialiser agentsOrder depuis agent_display_order (BDD)
         const initialOrder = agentsList
           .sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999))
@@ -2928,7 +2937,7 @@ function PlanningApp({ currentUser, onLogout }) {
           handlePostAnnouncement={handlePostAnnouncement} handleDeleteAnnouncement={handleDeleteAnnouncement}
           cssSubTeams={cssSubTeams} setCssSubTeams={setCssSubTeams}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
-          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites } : a))}
+          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites, sub_team: data.sub_team !== undefined ? data.sub_team : a.sub_team } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
