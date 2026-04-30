@@ -50,180 +50,472 @@ const DEMO_USERS = [
 ];
 
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&family=Outfit:wght@300;400;600&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Outfit', sans-serif; background: linear-gradient(135deg, #060818 0%, #0a0e27 50%, #060818 100%); min-height: 100vh; }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+  /* ═══════════════════════════════════════════════
+     DESIGN TOKENS — PlanniPro Design System v2
+  ═══════════════════════════════════════════════ */
+  :root {
+    /* Brand */
+    --brand-primary: #6366f1;
+    --brand-primary-light: #818cf8;
+    --brand-primary-dark: #4f46e5;
+    --brand-accent: #06b6d4;
+    --brand-accent-light: #22d3ee;
+
+    /* Surfaces */
+    --surface-0: rgba(6,8,24,1);
+    --surface-1: rgba(10,14,30,0.95);
+    --surface-2: rgba(14,20,40,0.85);
+    --surface-glass: rgba(255,255,255,0.032);
+    --surface-glass-hover: rgba(255,255,255,0.055);
+    --surface-glass-active: rgba(99,102,241,0.12);
+
+    /* Borders */
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-default: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.15);
+    --border-brand: rgba(99,102,241,0.4);
+
+    /* Text */
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #475569;
+    --text-muted: #334155;
+
+    /* Status */
+    --status-success: #10b981;
+    --status-warning: #f59e0b;
+    --status-danger: #ef4444;
+    --status-info: #3b82f6;
+
+    /* Spacing scale (4px base) */
+    --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+    --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-10: 40px;
+
+    /* Radius */
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 28px; --r-full: 9999px;
+
+    /* Blur */
+    --blur-sm: blur(8px);
+    --blur-md: blur(20px);
+    --blur-lg: blur(40px);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+    --shadow-xl: 0 24px 64px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.35);
+    --shadow-brand: 0 4px 20px rgba(99,102,241,0.35);
+    --shadow-brand-lg: 0 8px 32px rgba(99,102,241,0.5);
+
+    /* Easing */
+    --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+    --ease-out-quint: cubic-bezier(0.22,1,0.36,1);
+    --ease-in-out: cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ═══════════════════════════════════════════════
+     RESET & BASE
+  ═══════════════════════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', system-ui, sans-serif;
+    background: #060818;
+    min-height: 100vh;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ═══════════════════════════════════════════════
+     SCROLLBAR
+  ═══════════════════════════════════════════════ */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.7); }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: var(--r-full); transition: background 0.2s; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
   ::-webkit-scrollbar-corner { background: transparent; }
 
-  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes slideIn { from { opacity:0; transform:scale(0.97) translateY(-4px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  /* ═══════════════════════════════════════════════
+     KEYFRAMES — Animation Library
+  ═══════════════════════════════════════════════ */
+  @keyframes fadeIn   { from { opacity:0; transform:translateY(6px);  } to { opacity:1; transform:translateY(0);  } }
+  @keyframes fadeUp   { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0);  } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-12px);} to { opacity:1; transform:translateY(0);  } }
+  @keyframes slideIn  { from { opacity:0; transform:scale(0.96) translateY(-6px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  @keyframes popIn    { 0% { opacity:0; transform:scale(0.92) translateY(8px); } 60% { transform:scale(1.015); } 100% { opacity:1; transform:scale(1) translateY(0); } }
+  @keyframes modalIn  { 0% { opacity:0; transform:translate(-50%,-48%) scale(0.94); } 60% { transform:translate(-50%,-50.5%) scale(1.01); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
   @keyframes modalPop { from { opacity:0; transform:scale(0.95) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-  @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeInDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes fadeInLeft { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes fadeInRight { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes slideInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes slideInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes slideInLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes slideInRight { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
-  @keyframes scaleIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
-  @keyframes popIn { 0% { opacity:0; transform:scale(0.92) translateY(6px); } 60% { transform:scale(1.02) translateY(-1px); } to { opacity:1; transform:scale(1) translateY(0); } }
-  @keyframes modalIn { 0% { opacity:0; transform:translate(-50%,-50%) scale(0.94); } 60% { transform:translate(-50%,-50%) scale(1.02); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
-  @keyframes bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
-  @keyframes shimmer { 0% { backgroundPosition:0% 50%; } 100% { backgroundPosition:100% 50%; } }
-  @keyframes modalIn { 
-    0% { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
-    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  }
-  @keyframes toastIn { from { opacity:0; transform:translateX(20px) scale(0.96); } to { opacity:1; transform:translateX(0) scale(1); } }
-  @keyframes progressDrain { from { width: 100%; } to { width: 0%; } }
-  
-  /* BADGE ANIMATIONS */
-  @keyframes badgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.05); } }
-  @keyframes badgeGlow { 0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 16px rgba(245,158,11,0.7); } }
-  @keyframes badgeBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-  @keyframes badgeShimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+  @keyframes scaleIn  { from { opacity:0; transform:scale(0.9);  } to { opacity:1; transform:scale(1);  } }
+  @keyframes spin     { to { transform:rotate(360deg); } }
+  @keyframes shimmer  { 0% { background-position:-1000px 0; } 100% { background-position:1000px 0; } }
+  @keyframes toastIn  { from { opacity:0; transform:translateX(24px) scale(0.95); } to { opacity:1; transform:translateX(0) scale(1); } }
+  @keyframes progressDrain { from { width:100%; } to { width:0%; } }
+  @keyframes loadBar  { 0%{width:0%} 100%{width:100%} }
+  @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
+
+  /* Pulse & Glow */
+  @keyframes pulse       { 0%,100%{opacity:0.3} 50%{opacity:1} }
+  @keyframes pulseRing   { 0%{transform:scale(1); opacity:0.8} 100%{transform:scale(2.2); opacity:0} }
+  @keyframes glow        { 0%,100%{box-shadow:0 0 8px rgba(99,102,241,0.3);} 50%{box-shadow:0 0 24px rgba(99,102,241,0.65);} }
+  @keyframes glowOrange  { 0%,100%{box-shadow:0 0 8px rgba(245,158,11,0.4);} 50%{box-shadow:0 0 20px rgba(245,158,11,0.8);} }
+
+  /* Badge */
+  @keyframes badgePulse  { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.85; transform:scale(1.06);} }
+  @keyframes badgeBounce { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3px);} }
+
+  /* View transitions */
+  @keyframes viewFadeIn  { 0%{opacity:0; transform:translateY(10px) scale(0.99);} 100%{opacity:1; transform:translateY(0) scale(1);} }
+  @keyframes viewFadeOut { 0%{opacity:1; transform:translateY(0);} 100%{opacity:0; transform:translateY(-8px);} }
+  @keyframes viewSlideIn { 0%{opacity:0; transform:translateX(-24px);} 100%{opacity:1; transform:translateX(0);} }
+  @keyframes cascadeIn   { 0%{opacity:0; transform:translateY(14px);} 100%{opacity:1; transform:translateY(0);} }
+  @keyframes slideInLeft2  { 0%{opacity:0; transform:translateX(-20px);} 100%{opacity:1; transform:translateX(0);} }
+  @keyframes slideInRight2 { 0%{opacity:0; transform:translateX(20px);} 100%{opacity:1; transform:translateX(0);} }
+  @keyframes slideInUp   { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Nav item stagger */
+  @keyframes navItemIn { 0%{opacity:0; transform:translateX(-16px);} 100%{opacity:1; transform:translateX(0);} }
+
+  /* Sidebar active indicator sweep */
+  @keyframes indicatorIn { from{height:0; opacity:0;} to{height:60%; opacity:1;} }
+
+  /* Aurora */
+  @keyframes aurora1 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(60px,-40px) scale(1.12);} 66%{transform:translate(-30px,50px) scale(0.92);} }
+  @keyframes aurora2 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(-80px,30px) scale(1.08);} 66%{transform:translate(50px,-60px) scale(1.18);} }
+  @keyframes aurora3 { 0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(40px,40px) scale(1.22);} }
+
+  /* Particle */
+  @keyframes particle { 0%{transform:translateY(0) scale(1);opacity:0;} 20%{opacity:1;} 80%{opacity:1;} 100%{transform:translateY(-120px) scale(0.4);opacity:0;} }
+  @keyframes floatIllus { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+  @keyframes markPop { 0%,100%{transform:scale(1); opacity:0.7;} 50%{transform:scale(1.3); opacity:1;} }
+  @keyframes handTick { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+  @keyframes handTickMin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+  @keyframes glowPulse { 0%,100%{box-shadow:0 0 40px rgba(99,102,241,0.3),0 25px 50px rgba(0,0,0,0.5);} 50%{box-shadow:0 0 80px rgba(99,102,241,0.5),0 25px 50px rgba(0,0,0,0.5);} }
+  @keyframes clockRing { 0%,100%{transform:rotate(0deg);} 10%{transform:rotate(-8deg);} 20%{transform:rotate(8deg);} 30%{transform:rotate(-6deg);} 40%{transform:rotate(6deg);} 50%{transform:rotate(-3deg);} 60%{transform:rotate(3deg);} 70%,100%{transform:rotate(0deg);} }
+  @keyframes bellBounce { 0%,100%{transform:translateY(0);} 25%{transform:translateY(-3px);} 75%{transform:translateY(2px);} }
+  @keyframes pencilWiggle { 0%,90%,100%{transform:rotate(-18deg);} 92%{transform:rotate(-22deg);} 96%{transform:rotate(-14deg);} }
+  @keyframes shooting { 0%{transform:translateX(0) translateY(0) rotate(-35deg); opacity:0;} 3%{opacity:1;} 70%{opacity:1;} 100%{transform:translateX(-900px) translateY(500px) rotate(-35deg); opacity:0;} }
+  @keyframes starTwinkle { 0%,100%{opacity:0.15; transform:scale(1);} 50%{opacity:0.8; transform:scale(1.4);} }
+  @keyframes badgeShimmer { 0%{background-position:-1000px 0;} 100%{background-position:1000px 0;} }
+  @keyframes badgeGlow { 0%,100%{box-shadow:0 0 8px rgba(245,158,11,0.4);} 50%{box-shadow:0 0 16px rgba(245,158,11,0.7);} }
+
   .badge-pending { animation: badgePulse 2s ease-in-out infinite; }
-  .badge-glow { animation: badgeGlow 2.5s ease-in-out infinite; }
-  .badge-bounce { animation: badgeBounce 1.5s ease-in-out infinite; }
+  .badge-glow    { animation: badgeGlow 2.5s ease-in-out infinite; }
+  .badge-bounce  { animation: badgeBounce 1.5s ease-in-out infinite; }
   .badge-shimmer { background: linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.3) 50%,rgba(255,255,255,0) 100%); background-size:1000px 100%; animation:badgeShimmer 3s linear infinite; }
-  
-  /* VIEW TRANSITIONS */
-  @keyframes viewFadeIn { 0% { opacity:0; transform:translateY(8px); } 100% { opacity:1; transform:translateY(0); } }
-  @keyframes viewFadeOut { 0% { opacity:1; transform:translateY(0); } 100% { opacity:0; transform:translateY(-8px); } }
-  @keyframes viewSlideIn { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
-  @keyframes viewSlideOut { 0% { opacity:1; transform:translateX(0); } 100% { opacity:0; transform:translateX(20px); } }
-  @keyframes cascadeIn { 0% { opacity:0; transform:translateY(16px); } 100% { opacity:1; transform:translateY(0); } }
-  @keyframes slideInLeft2 { 0% { opacity:0; transform:translateX(-20px); } 100% { opacity:1; transform:translateX(0); } }
-  @keyframes slideInRight2 { 0% { opacity:0; transform:translateX(20px); } 100% { opacity:1; transform:translateX(0); } }
-  .view-container { animation: viewFadeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+  .view-container    { animation: viewFadeIn 0.45s var(--ease-spring) forwards; }
   .view-container.exit { animation: viewFadeOut 0.3s ease-out forwards; }
-  .subview-container { animation: viewSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-  .row-animate { animation: cascadeIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
-  .request-animate { animation: slideInLeft2 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
-  .card-animate { animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; opacity:0; }
+  .subview-container { animation: viewSlideIn 0.38s var(--ease-spring) forwards; }
+  .row-animate       { animation: cascadeIn 0.5s var(--ease-spring) forwards; opacity:0; }
+  .request-animate   { animation: slideInLeft2 0.4s var(--ease-spring) forwards; opacity:0; }
+  .card-animate      { animation: popIn 0.5s var(--ease-spring) forwards; opacity:0; }
 
-  /* CELL HOVER */
-  .cell-hover { transition: background 0.18s ease, box-shadow 0.18s ease; }
-  .cell-hover:hover { background: rgba(99,102,241,0.08) !important; box-shadow: inset 0 0 0 1.5px rgba(99,102,241,0.25) !important; }
+  .glow         { animation: glow 2s ease-in-out infinite; }
+  .pending-glow { animation: glowOrange 2s ease-in-out infinite; }
 
-  /* NAV */
-  .nav-btn { transition: all 0.18s ease; position: relative; }
-  .nav-btn:hover { background: rgba(255,255,255,0.06) !important; color: #e2e8f0 !important; }
-  .nav-btn-active::before { content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px; background: linear-gradient(180deg,#6366f1,#06b6d4); border-radius: 0 3px 3px 0; }
+  /* ═══════════════════════════════════════════════
+     SHOOTING STARS & STAR DOTS (Login page)
+  ═══════════════════════════════════════════════ */
+  .shooting-star { position:absolute; width:120px; height:1.5px; border-radius:var(--r-full); background:linear-gradient(90deg,rgba(255,255,255,0.9),rgba(165,180,252,0.7),transparent); animation:shooting linear infinite; will-change:transform,opacity; }
+  .shooting-star::before { content:''; position:absolute; right:0; top:50%; transform:translateY(-50%); width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,0.95); box-shadow:0 0 6px 2px rgba(165,180,252,0.8),0 0 12px 4px rgba(99,102,241,0.4); }
+  .star-dot { position:absolute; border-radius:50%; background:#fff; animation:starTwinkle ease-in-out infinite; }
 
-  /* BUTTONS - no global hover lift (causes issues on table cells) */
-  button { transition: all 0.18s ease; }
-  button:active { transform: scale(0.98) !important; }
-  .btn-primary { 
-    background: linear-gradient(135deg,#6366f1,#818cf8);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(99,102,241,0.3);
-    padding: 10px 18px; border-radius: 9px; border: none;
-    font-size: 13px; font-weight: 700; cursor: pointer;
-    transition: all 200ms ease; letter-spacing: 0.2px;
+  /* ═══════════════════════════════════════════════
+     CELL HOVER — Planning table
+  ═══════════════════════════════════════════════ */
+  .cell-hover { transition: background 0.15s ease, box-shadow 0.15s ease; }
+  .cell-hover:hover { background: rgba(99,102,241,0.07) !important; box-shadow: inset 0 0 0 1.5px rgba(99,102,241,0.22) !important; }
+
+  /* ═══════════════════════════════════════════════
+     NAV BUTTONS — Sidebar
+  ═══════════════════════════════════════════════ */
+  .nav-btn {
+    transition: all 0.22s var(--ease-out-quint);
+    position: relative;
+    overflow: hidden;
   }
-  .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 6px 20px rgba(99,102,241,0.45); transform: translateY(-1px); }
-  .btn-secondary { background: rgba(255,255,255,0.05); color: #f1f5f9; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; }
-  .btn-secondary:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
-  .btn-danger { background: linear-gradient(135deg,#ef4444,#f87171); color:#fff; box-shadow:0 4px 14px rgba(239,68,68,0.3); border-radius:9px; }
-  .btn-danger:hover { filter:brightness(1.08); box-shadow:0 6px 20px rgba(239,68,68,0.4); transform:translateY(-1px); }
-  .btn-edit { padding:5px 12px; border-radius:7px; border:1.5px solid #c7d2fe; background:#eef2ff; cursor:pointer; font-size:11px; color:#4338ca; font-weight:600; transition:all 150ms; }
-  .btn-edit:hover { background:#6366f1; color:#fff; border-color:#6366f1; transform:translateY(-1px); }
-  .btn-delete { padding:5px 9px; border-radius:7px; border:1.5px solid #fca5a5; background:#fef2f2; cursor:pointer; font-size:12px; color:#ef4444; font-weight:700; transition:all 150ms; }
-  .btn-delete:hover { background:#ef4444; color:#fff; transform:translateY(-1px); }
+  .nav-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 0;
+    background: linear-gradient(180deg, var(--brand-primary), var(--brand-accent));
+    border-radius: 0 var(--r-sm) var(--r-sm) 0;
+    transition: height 0.28s var(--ease-spring);
+    opacity: 0;
+  }
+  .nav-btn-active::before {
+    height: 60%;
+    opacity: 1;
+    animation: indicatorIn 0.3s var(--ease-spring) forwards;
+  }
+  .nav-btn:not(.nav-btn-active):hover {
+    background: var(--surface-glass-hover) !important;
+    color: #e2e8f0 !important;
+    transform: translateX(2px);
+  }
+  .nav-btn-active {
+    background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(6,182,212,0.1)) !important;
+    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.2), 0 2px 12px rgba(99,102,241,0.12) !important;
+  }
 
-  /* INPUTS */
-  .input-field { width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:14px; transition:all 0.2s; outline:none; }
-  .input-field:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.18); }
-  .select-field { width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#f1f5f9; font-size:14px; transition:all 0.2s; cursor:pointer; outline:none; }
-  .select-field:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.18); }
-  .select-field option { background:#1e293b; color:#f1f5f9; }
-  input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.2) !important; }
-  select { appearance:none; background-color:#ffffff; }
-  select option { background:#1e293b; color:#f1f5f9; padding:8px; }
-  select option:checked { background:#6366f1; color:#ffffff; }
+  /* ═══════════════════════════════════════════════
+     BUTTONS
+  ═══════════════════════════════════════════════ */
+  button { transition: all 0.2s var(--ease-out-quint); }
+  button:active { transform: scale(0.97) !important; }
 
-  /* LABEL */
-  .label { display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.6px; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
+    color: #fff;
+    box-shadow: var(--shadow-brand);
+    padding: 10px 18px;
+    border-radius: var(--r-md);
+    border: none;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    transition: all 220ms var(--ease-out-quint);
+    letter-spacing: 0.2px;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary::after {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    opacity:0; transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  .btn-primary:hover { box-shadow: var(--shadow-brand-lg); transform: translateY(-1px); }
+  .btn-primary:hover::after { opacity: 1; }
 
-  /* BADGES */
-  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.2px; }
-  .badge-primary { background:rgba(99,102,241,0.12); color:#a5b4fc; border:1px solid rgba(99,102,241,0.2); }
-  .badge-danger { background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.2); }
-  .badge-success { background:rgba(34,197,94,0.1); color:#86efac; border:1px solid rgba(34,197,94,0.2); }
+  .btn-secondary {
+    background: var(--surface-glass);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: 9px 16px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-secondary:hover { background: var(--surface-glass-hover); border-color: var(--border-strong); }
 
-  /* MODALS */
-  .modal-header { padding:22px 28px 18px; background:linear-gradient(135deg,#4f46e5,#6366f1,#818cf8); color:#fff; border-radius:16px 16px 0 0; position:relative; overflow:hidden; }
-  .modal-header::before { content:''; position:absolute; top:-40%; right:-10%; width:200px; height:200px; background:rgba(255,255,255,0.08); border-radius:50%; }
-  .modal-body { padding:20px 28px; }
-  .modal-footer { padding:16px 28px; border-top:1px solid rgba(255,255,255,0.08); display:flex; gap:12px; justify-content:flex-end; }
+  .btn-danger {
+    background: linear-gradient(135deg,#ef4444,#f87171);
+    color:#fff;
+    box-shadow:0 4px 14px rgba(239,68,68,0.3);
+    border-radius: var(--r-md);
+    border: none; cursor: pointer; font-weight: 700;
+  }
+  .btn-danger:hover { box-shadow:0 6px 22px rgba(239,68,68,0.45); transform:translateY(-1px); }
 
-  /* CARDS */
-  .card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; transition:all 0.2s; }
-  .card:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,0.25); border-color:rgba(255,255,255,0.14); }
+  .btn-edit {
+    padding: 5px 12px; border-radius: var(--r-sm);
+    border: 1.5px solid #c7d2fe; background: #eef2ff;
+    cursor: pointer; font-size: 11px; color: #4338ca; font-weight: 600;
+    transition: all 150ms var(--ease-out-quint);
+  }
+  .btn-edit:hover { background: var(--brand-primary); color: #fff; border-color: var(--brand-primary); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(99,102,241,0.3); }
 
-  /* CONTEXT MENU */
-  .context-menu { background:linear-gradient(145deg,#0d1425,#162035); border-radius:14px; border:1px solid rgba(255,255,255,0.1); box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset; overflow:hidden; }
-  .context-menu-item { padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-size:12px; color:#94a3b8; font-weight:600; background:rgba(255,255,255,0.03); letter-spacing:0.2px; }
-  .context-menu button:hover { background:rgba(255,255,255,0.06) !important; }
+  .btn-delete {
+    padding: 5px 9px; border-radius: var(--r-sm);
+    border: 1.5px solid #fca5a5; background: #fef2f2;
+    cursor: pointer; font-size: 12px; color: #ef4444; font-weight: 700;
+    transition: all 150ms var(--ease-out-quint);
+  }
+  .btn-delete:hover { background: #ef4444; color: #fff; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(239,68,68,0.3); }
 
-  /* HALF-DAY TOOLTIP */
-  .half-tooltip { position:relative; }
-  .half-tooltip::before { content:''; position:absolute; bottom:calc(100% + 2px); left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:rgba(10,14,30,0.96); pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:9999; }
-  .half-tooltip::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%); background:rgba(10,14,30,0.96); color:#fff; font-size:11px; font-weight:600; font-family:'Outfit',sans-serif; padding:6px 12px; border-radius:9px; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity 0.15s ease; z-index:9999; letter-spacing:0.2px; box-shadow:0 4px 20px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); }
-  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity:1; }
+  /* ═══════════════════════════════════════════════
+     INPUTS
+  ═══════════════════════════════════════════════ */
+  .input-field {
+    width: 100%; padding: 10px 14px;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--border-default);
+    background: var(--surface-glass);
+    color: var(--text-primary); font-size: 14px;
+    transition: all 0.2s ease; outline: none;
+    font-family: 'Outfit', sans-serif;
+  }
+  .input-field:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.16); background: rgba(255,255,255,0.05); }
+  .input-field::placeholder { color: var(--text-tertiary); }
 
-  /* GLOW */
-  @keyframes glow { 0%,100%{box-shadow:0 0 5px rgba(99,102,241,0.3);} 50%{box-shadow:0 0 20px rgba(99,102,241,0.6);} }
-  .glow { animation:glow 2s ease-in-out infinite; }
-  @keyframes glowOrange { 0%,100%{box-shadow:0 0 8px rgba(245,158,11,0.4);} 50%{box-shadow:0 0 16px rgba(245,158,11,0.8);} }
-  .pending-glow { animation:glowOrange 2s ease-in-out infinite; }
+  .select-field {
+    width: 100%; padding: 10px 14px;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--border-default);
+    background: var(--surface-glass);
+    color: var(--text-primary); font-size: 14px;
+    transition: all 0.2s ease; cursor: pointer; outline: none;
+    font-family: 'Outfit', sans-serif;
+  }
+  .select-field:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.16); }
+  .select-field option { background: #1e293b; color: var(--text-primary); }
+  input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.18) !important; }
+  select { appearance: none; }
+  select option { background: #1e293b; color: var(--text-primary); padding: 8px; }
+  select option:checked { background: var(--brand-primary); color: #fff; }
 
-  /* BTN CONGE EXPAND */
-  .btn-conge-expand { display:flex; align-items:center; justify-content:flex-start; width:32px; height:32px; padding:0 9px; background:linear-gradient(135deg,#6366f1,#818cf8); color:white; border:none; border-radius:16px; cursor:pointer; overflow:hidden; transition:width 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s; box-shadow:0 4px 14px rgba(99,102,241,0.4); flex-shrink:0; }
-  .btn-conge-expand svg { flex-shrink:0; width:14px; height:14px; }
-  .btn-conge-expand .btn-label { font-family:'Outfit',sans-serif; font-weight:700; font-size:12px; white-space:nowrap; opacity:0; transition:opacity 0.15s ease-out 0.1s; margin-left:7px; }
-  .btn-conge-expand:hover { width:178px; box-shadow:0 6px 20px rgba(99,102,241,0.55); }
-  .btn-conge-expand:hover .btn-label { opacity:1; }
+  /* ═══════════════════════════════════════════════
+     LABELS & BADGES
+  ═══════════════════════════════════════════════ */
+  .label { display:block; font-size:11px; font-weight:700; color:var(--text-tertiary); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.7px; }
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:var(--r-full); font-size:11px; font-weight:700; letter-spacing:0.2px; gap:5px; }
+  .badge-primary { background:rgba(99,102,241,0.12); color:#a5b4fc; border:1px solid rgba(99,102,241,0.22); }
+  .badge-danger  { background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.22); }
+  .badge-success { background:rgba(34,197,94,0.1); color:#86efac; border:1px solid rgba(34,197,94,0.22); }
 
-  /* STATS CARDS */
-  .stats-card { 
-    background: linear-gradient(145deg,#ffffff 0%,#f8fafc 100%);
+  /* ═══════════════════════════════════════════════
+     MODALS — Glass morphism
+  ═══════════════════════════════════════════════ */
+  .modal-header {
+    padding: 22px 28px 18px;
+    background: linear-gradient(135deg, #4338ca, #6366f1, #818cf8);
+    color: #fff;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    position: relative; overflow: hidden;
+  }
+  .modal-header::before {
+    content: ''; position: absolute;
+    top: -50%; right: -10%; width: 220px; height: 220px;
+    background: rgba(255,255,255,0.07); border-radius: 50%;
+    pointer-events: none;
+  }
+  .modal-header::after {
+    content: ''; position: absolute;
+    bottom: -60%; left: -5%; width: 160px; height: 160px;
+    background: rgba(255,255,255,0.04); border-radius: 50%;
+    pointer-events: none;
+  }
+  .modal-body   { padding: 20px 28px; }
+  .modal-footer { padding: 16px 28px; border-top: 1px solid var(--border-subtle); display: flex; gap: 12px; justify-content: flex-end; }
+
+  /* ═══════════════════════════════════════════════
+     CARDS
+  ═══════════════════════════════════════════════ */
+  .card {
+    background: var(--surface-glass);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    transition: all 0.25s var(--ease-out-quint);
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute;
+    inset: 0; border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); border-color: var(--border-default); }
+
+  /* ═══════════════════════════════════════════════
+     CONTEXT MENU — Premium floating surface
+  ═══════════════════════════════════════════════ */
+  .context-menu {
+    background: linear-gradient(145deg, rgba(10,16,36,0.98), rgba(18,26,52,0.97));
+    backdrop-filter: var(--blur-lg);
+    -webkit-backdrop-filter: var(--blur-lg);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    overflow: hidden;
+    animation: popIn 0.22s var(--ease-spring);
+  }
+  .context-menu-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 11px; color: var(--text-secondary); font-weight: 700;
+    background: rgba(255,255,255,0.02); letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .context-menu button { transition: all 0.15s ease; }
+  .context-menu button:hover { background: var(--surface-glass-hover) !important; padding-left: 20px !important; }
+
+  /* ═══════════════════════════════════════════════
+     HALF-DAY TOOLTIP
+  ═══════════════════════════════════════════════ */
+  .half-tooltip { position: relative; }
+  .half-tooltip::before {
+    content: ''; position: absolute;
+    bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(8,12,28,0.97);
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.15s ease; z-index: 9999;
+  }
+  .half-tooltip::after {
+    content: attr(data-tip); position: absolute;
+    bottom: calc(100% + 13px); left: 50%; transform: translateX(-50%);
+    background: rgba(8,12,28,0.97);
+    color: #fff; font-size: 11px; font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    padding: 6px 12px; border-radius: 10px; white-space: nowrap;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.15s ease; z-index: 9999;
+    letter-spacing: 0.2px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    border: 1px solid var(--border-default);
+  }
+  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
+
+  /* ═══════════════════════════════════════════════
+     BTN CONGE EXPAND
+  ═══════════════════════════════════════════════ */
+  .btn-conge-expand {
+    display: flex; align-items: center; justify-content: flex-start;
+    width: 32px; height: 32px; padding: 0 9px;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-light));
+    color: white; border: none; border-radius: var(--r-full);
+    cursor: pointer; overflow: hidden;
+    transition: width 0.32s var(--ease-spring), box-shadow 0.2s ease;
+    box-shadow: var(--shadow-brand); flex-shrink: 0;
+  }
+  .btn-conge-expand svg { flex-shrink: 0; width: 14px; height: 14px; }
+  .btn-conge-expand .btn-label {
+    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 12px;
+    white-space: nowrap; opacity: 0;
+    transition: opacity 0.15s ease-out 0.1s; margin-left: 7px;
+  }
+  .btn-conge-expand:hover { width: 178px; box-shadow: var(--shadow-brand-lg); }
+  .btn-conge-expand:hover .btn-label { opacity: 1; }
+
+  /* ═══════════════════════════════════════════════
+     STATS CARDS
+  ═══════════════════════════════════════════════ */
+  .stats-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
     border: 1.5px solid #e8edf5;
-    border-radius: 16px;
+    border-radius: var(--r-lg);
     padding: 24px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
     position: relative; overflow: hidden;
-    transition: all 320ms cubic-bezier(0.34,1.56,0.64,1);
+    transition: all 320ms var(--ease-spring);
     cursor: default; height: 200px;
     display: flex; flex-direction: column; justify-content: center;
   }
-  .stats-card:hover { transform:translateY(-5px); box-shadow:0 16px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06); border-color:#d4dbe8; }
-  .stats-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--card-color,#6366f1); border-radius:16px 16px 0 0; }
-  .stats-card::after { content:''; position:absolute; bottom:-30px; right:-30px; width:100px; height:100px; border-radius:50%; background:var(--card-color,#6366f1); opacity:0.04; transition:all 0.3s ease; }
-  .stats-card:hover::after { transform:scale(1.4); opacity:0.07; }
-  .stats-card-badge { position:absolute; top:18px; right:18px; width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,0.15); transition:all 300ms cubic-bezier(0.34,1.56,0.64,1); }
-  .stats-card:hover .stats-card-badge { transform:scale(1.12) rotate(-6deg); }
+  .stats-card:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(0,0,0,0.1), 0 4px 14px rgba(0,0,0,0.06); border-color: #d4dbe8; }
+  .stats-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--card-color,var(--brand-primary)); border-radius:var(--r-lg) var(--r-lg) 0 0; }
+  .stats-card::after  { content:''; position:absolute; bottom:-30px; right:-30px; width:110px; height:110px; border-radius:50%; background:var(--card-color,var(--brand-primary)); opacity:0.04; transition:all 0.32s ease; }
+  .stats-card:hover::after { transform:scale(1.5); opacity:0.08; }
+  .stats-card-badge { position:absolute; top:18px; right:18px; width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,0.15); transition:all 320ms var(--ease-spring); }
+  .stats-card:hover .stats-card-badge { transform:scale(1.14) rotate(-7deg); }
   .stats-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-right:60px; }
-  .stats-card-label { font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
-  .stats-card-value { font-size:34px; font-weight:800; letter-spacing:-1px; line-height:1; }
-  .stats-card-unit { font-size:14px; font-weight:500; color:#94a3b8; margin-left:5px; }
-  .stats-card-divider { height:1px; background:linear-gradient(90deg,#e2e8f0,transparent); margin:12px 0; }
+  .stats-card-label  { font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+  .stats-card-value  { font-size:34px; font-weight:800; letter-spacing:-1px; line-height:1; }
+  .stats-card-unit   { font-size:14px; font-weight:500; color:#94a3b8; margin-left:5px; }
+  .stats-card-divider{ height:1px; background:linear-gradient(90deg,#e2e8f0,transparent); margin:12px 0; }
   .stats-card-subvalue { font-size:26px; font-weight:700; letter-spacing:-0.5px; line-height:1; opacity:0.65; }
-  .stats-card-period { font-size:10px; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:5px; font-weight:700; white-space:nowrap; margin-top:8px; display:inline-block; }
+  .stats-card-period { font-size:10px; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:6px; font-weight:700; white-space:nowrap; margin-top:8px; display:inline-block; }
   .stats-card-progress { margin-top:16px; }
-  .stats-card-progress-bar { height:3px; background:#e8edf5; border-radius:99px; overflow:hidden; }
-  .stats-card-progress-fill { height:100%; border-radius:99px; transition:width 700ms cubic-bezier(0.34,1.56,0.64,1); }
+  .stats-card-progress-bar  { height:3px; background:#e8edf5; border-radius:var(--r-full); overflow:hidden; }
+  .stats-card-progress-fill { height:100%; border-radius:var(--r-full); transition:width 700ms var(--ease-spring); }
   .stats-card-progress-label { font-size:10px; color:#94a3b8; margin-top:7px; text-align:right; }
 `;
+
+
+
 
 // ─── JOURS FÉRIÉS FRANÇAIS ───
 function getEaster(y) {
@@ -2699,21 +2991,37 @@ function PlanningApp({ currentUser, onLogout }) {
       <style>{GLOBAL_STYLE}</style>
       <style>{`::-webkit-scrollbar-thumb{background:${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}!important;border-radius:10px}::-webkit-scrollbar-thumb:hover{background:${filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8"}!important}`}</style>
 
-      {/* Auroras fond */}
-      <div style={{ position: "fixed", top: "-20%", left: "-15%", width: "60vw", height: "60vw", background: "radial-gradient(ellipse,rgba(99,102,241,0.18) 0%,transparent 65%)", borderRadius: "50%", filter: "blur(70px)", animation: "aurora1 18s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "fixed", bottom: "-20%", right: "-15%", width: "55vw", height: "55vw", background: "radial-gradient(ellipse,rgba(6,182,212,0.12) 0%,transparent 65%)", borderRadius: "50%", filter: "blur(80px)", animation: "aurora2 22s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-      <div style={{ position: "fixed", top: "30%", right: "5%", width: "35vw", height: "35vw", background: "radial-gradient(ellipse,rgba(139,92,246,0.1) 0%,transparent 65%)", borderRadius: "50%", filter: "blur(60px)", animation: "aurora3 15s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-      {/* Grille */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "48px 48px", pointerEvents: "none", zIndex: 0 }} />
+      {/* ── Background ambiance ── */}
+      <div style={{ position:"fixed", top:"-30%", left:"-20%", width:"65vw", height:"65vw", background:"radial-gradient(ellipse,rgba(99,102,241,0.14) 0%,transparent 62%)", borderRadius:"50%", filter:"blur(80px)", animation:"aurora1 20s ease-in-out infinite", pointerEvents:"none", zIndex:0 }} />
+      <div style={{ position:"fixed", bottom:"-25%", right:"-15%", width:"55vw", height:"55vw", background:"radial-gradient(ellipse,rgba(6,182,212,0.09) 0%,transparent 62%)", borderRadius:"50%", filter:"blur(90px)", animation:"aurora2 26s ease-in-out infinite", pointerEvents:"none", zIndex:0 }} />
+      <div style={{ position:"fixed", top:"35%", right:"8%", width:"30vw", height:"30vw", background:"radial-gradient(ellipse,rgba(139,92,246,0.07) 0%,transparent 62%)", borderRadius:"50%", filter:"blur(70px)", animation:"aurora3 17s ease-in-out infinite", pointerEvents:"none", zIndex:0 }} />
+      <div style={{ position:"fixed", inset:0, backgroundImage:"linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px)", backgroundSize:"52px 52px", pointerEvents:"none", zIndex:0 }} />
 
+      {/* ── TOAST NOTIFICATION ── */}
       {notification && (
-        <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, display: "flex", flexDirection: "column", gap: 0, minWidth: 240, maxWidth: 320, animation: "toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
-          <div style={{ background: notification.type === "error" ? "linear-gradient(135deg,#7f1d1d,#991b1b)" : "linear-gradient(135deg,#065f46,#047857)", backdropFilter: "blur(16px)", border: `1px solid ${notification.type === "error" ? "rgba(239,68,68,0.35)" : "rgba(16,185,129,0.35)"}`, color: "#fff", padding: "13px 16px", borderRadius: "12px 12px 0 0", fontWeight: 600, fontSize: 13, boxShadow: notification.type === "error" ? "0 12px 32px rgba(239,68,68,0.3)" : "0 12px 32px rgba(16,185,129,0.3)", display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{notification.type === "error" ? "⚠️" : "✅"}</span>
-            <span style={{ flex: 1, lineHeight: 1.4 }}>{notification.msg}</span>
+        <div style={{ position:"fixed", top:20, right:20, zIndex:9999, minWidth:260, maxWidth:340, animation:"toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+          <div style={{
+            background: notification.type === "error"
+              ? "linear-gradient(135deg,rgba(127,29,29,0.97),rgba(153,27,27,0.97))"
+              : "linear-gradient(135deg,rgba(6,78,59,0.97),rgba(4,120,87,0.97))",
+            backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
+            border:`1px solid ${notification.type==="error" ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)"}`,
+            color:"#fff", padding:"14px 18px",
+            borderRadius:"14px 14px 0 0", fontWeight:600, fontSize:13,
+            boxShadow: notification.type==="error" ? "0 16px 40px rgba(239,68,68,0.25)" : "0 16px 40px rgba(16,185,129,0.25)",
+            display:"flex", alignItems:"center", gap:12,
+          }}>
+            <div style={{
+              width:32, height:32, borderRadius:10, flexShrink:0,
+              background: notification.type==="error" ? "rgba(239,68,68,0.25)" : "rgba(16,185,129,0.25)",
+              display:"flex", alignItems:"center", justifyContent:"center", fontSize:16,
+            }}>
+              {notification.type==="error" ? "⚠️" : "✓"}
+            </div>
+            <span style={{ flex:1, lineHeight:1.4, letterSpacing:"0.1px" }}>{notification.msg}</span>
           </div>
-          <div style={{ height: 3, background: "rgba(255,255,255,0.15)", borderRadius: "0 0 12px 12px", overflow: "hidden" }}>
-            <div style={{ height: "100%", background: notification.type === "error" ? "#f87171" : "#34d399", borderRadius: "0 0 12px 12px", animation: "progressDrain 3.5s linear forwards" }} />
+          <div style={{ height:3, background:"rgba(255,255,255,0.1)", borderRadius:"0 0 14px 14px", overflow:"hidden" }}>
+            <div style={{ height:"100%", background: notification.type==="error" ? "rgba(248,113,113,0.9)" : "rgba(52,211,153,0.9)", animation:"progressDrain 3.5s linear forwards" }} />
           </div>
         </div>
       )}
@@ -2821,90 +3129,182 @@ function PlanningApp({ currentUser, onLogout }) {
         );
       })()}
 
-      {/* SIDEBAR */}
-      <aside style={{ width: 230, background: "linear-gradient(180deg, rgba(8,12,30,0.85) 0%, rgba(12,18,40,0.75) 100%)", backdropFilter: "blur(24px)", borderRight: "1px solid rgba(255,255,255,0.07)", color: "#fff", display: "flex", flexDirection: "column", padding: "20px 0", flexShrink: 0, boxShadow: "4px 0 24px rgba(0,0,0,0.3)" }}>
-        {/* Logo */}
-        <div style={{ padding: "0 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#6366f1,#06b6d4)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(99,102,241,0.4)", flexShrink: 0 }}>
-              <span style={{ fontSize: 16 }}>📆</span>
+      {/* ══════════════════════════════════
+           SIDEBAR — Luxury Glass Surface
+      ══════════════════════════════════ */}
+      <aside style={{
+        width: 242, flexShrink: 0,
+        background: "linear-gradient(180deg, rgba(7,10,26,0.96) 0%, rgba(10,15,34,0.93) 100%)",
+        backdropFilter: "blur(40px)",
+        WebkitBackdropFilter: "blur(40px)",
+        borderRight: "1px solid rgba(255,255,255,0.065)",
+        color: "#fff", display: "flex", flexDirection: "column",
+        boxShadow: "6px 0 32px rgba(0,0,0,0.4), inset -1px 0 0 rgba(255,255,255,0.04)",
+        position: "relative", zIndex: 20,
+      }}>
+        {/* Subtle inner glow top */}
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:180, background:"radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 70%)", pointerEvents:"none" }} />
+
+        {/* ── LOGO ── */}
+        <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", position:"relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+            {/* Logo mark */}
+            <div style={{
+              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+              background: "linear-gradient(135deg, #6366f1 0%, #818cf8 50%, #06b6d4 100%)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 16px rgba(99,102,241,0.45), 0 0 0 1px rgba(255,255,255,0.1) inset",
+              position: "relative", overflow: "hidden",
+            }}>
+              <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(255,255,255,0.2), transparent)", borderRadius:"inherit" }} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
             </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 900, color: "#f8fafc", letterSpacing: "-0.5px", fontFamily: "'Space Grotesk',sans-serif" }}>Planning {new Date().getFullYear()}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: lastSync ? "#10b981" : "#64748b", display: "inline-block", boxShadow: lastSync ? "0 0 6px #10b981" : "none", animation: lastSync ? "pulse 2s ease-in-out infinite" : "none" }} />
-                <span style={{ fontSize: 9, color: lastSync ? "#6ee7b7" : "#64748b", fontWeight: 600, letterSpacing: "0.3px" }}>
-                  {lastSync ? `Sync ${lastSync.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}` : "En attente…"}
-                </span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#f8fafc", letterSpacing: "-0.4px", fontFamily: "'Space Grotesk',sans-serif", lineHeight:1.2 }}>
+                PlanniPro
+              </div>
+              <div style={{ fontSize: 10, color: "#475569", fontWeight: 500, marginTop: 2, letterSpacing:"0.2px" }}>
+                {new Date().getFullYear()} · Gestion des congés
               </div>
             </div>
           </div>
+          {/* Live sync indicator */}
+          <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:10 }}>
+            <div style={{ position:"relative", width:8, height:8, flexShrink:0 }}>
+              <div style={{ width:8, height:8, borderRadius:"50%", background: lastSync ? "#10b981" : "#334155", position:"absolute" }} />
+              {lastSync && <div style={{ width:8, height:8, borderRadius:"50%", background:"#10b981", position:"absolute", animation:"pulseRing 2s ease-out infinite" }} />}
+            </div>
+            <span style={{ fontSize: 10, color: lastSync ? "#6ee7b7" : "#475569", fontWeight: 600, letterSpacing:"0.3px" }}>
+              {lastSync ? `Sync · ${lastSync.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", second:"2-digit" })}` : "En attente…"}
+            </span>
+          </div>
         </div>
-        {/* User */}
-        <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", margin: "0 8px", borderRadius: 12, background: "rgba(255,255,255,0.03)", marginTop: 12, marginBottom: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <div style={{ position: "relative" }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, boxShadow: "0 3px 10px rgba(0,0,0,0.3)" }}>
+
+        {/* ── USER CARD ── */}
+        <div style={{ margin: "12px 10px 4px", padding: "12px 14px", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background:"linear-gradient(135deg, rgba(99,102,241,0.04), transparent)", pointerEvents:"none", borderRadius:"inherit" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, position:"relative" }}>
+            {/* Avatar with ring */}
+            <div style={{ position: "relative", flexShrink:0 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: teamGradient(currentUser.team),
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontSize: 13, fontWeight: 700,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.4), 0 0 0 2px rgba(99,102,241,0.3)",
+              }}>
                 {currentUser.avatar_initials || getInitials(`${currentUser.first_name || ""} ${currentUser.last_name || ""}`)}
               </div>
-              <div style={{ position: "absolute", bottom: 0, right: 0, width: 9, height: 9, borderRadius: "50%", background: "#10b981", border: "2px solid #0a0e1e", boxShadow: "0 0 6px #10b981" }} />
+              <div style={{ position:"absolute", bottom:1, right:1, width:9, height:9, borderRadius:"50%", background:"#10b981", border:"2px solid #080a1a", boxShadow:"0 0 6px rgba(16,185,129,0.7)" }} />
             </div>
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#f8fafc", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{currentUser.first_name} {currentUser.last_name}</div>
-              <div style={{ fontSize: 10, color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7", fontWeight: 600, marginTop: 1 }}>
-                {currentUser.role === "admin" ? "👑 Admin" : currentUser.role === "manager" ? "👑 Manager" : currentUser.role === "coordinator" ? "📋 Coordinateur" : "👤 Agent"}
+            <div style={{ flex:1, overflow:"hidden" }}>
+              <div style={{ fontSize:12, fontWeight:700, color:"#f1f5f9", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", letterSpacing:"-0.2px" }}>
+                {currentUser.first_name} {currentUser.last_name}
+              </div>
+              <div style={{
+                display:"inline-flex", alignItems:"center", gap:4, marginTop:3,
+                fontSize:10, fontWeight:700, letterSpacing:"0.2px",
+                color: currentUser.role === "admin" ? "#fbbf24" : currentUser.role === "manager" ? "#a78bfa" : currentUser.role === "coordinator" ? "#38bdf8" : "#6ee7b7",
+              }}>
+                {currentUser.role === "admin" ? "⬡ Admin" : currentUser.role === "manager" ? "⬡ Manager" : currentUser.role === "coordinator" ? "⬡ Coordinateur" : "⬡ Agent"}
               </div>
             </div>
           </div>
-          <button onClick={onLogout} style={{ width: "100%", padding: "6px 0", background: "transparent", borderRadius: 7, border: "1px solid rgba(255,255,255,0.07)", color: "#64748b", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s", letterSpacing: "0.3px" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)"; e.currentTarget.style.color = "#fca5a5"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; e.currentTarget.style.color = "#64748b"; }}>🚪 Déconnexion</button>
+          {/* Logout */}
+          <button onClick={onLogout} style={{
+            width:"100%", padding:"7px 10px", background:"rgba(239,68,68,0)", borderRadius:9,
+            border:"1px solid rgba(255,255,255,0.07)", color:"#475569",
+            fontSize:11, cursor:"pointer", fontWeight:600, transition:"all 0.22s ease",
+            display:"flex", alignItems:"center", justifyContent:"center", gap:6, letterSpacing:"0.3px", position:"relative",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background="rgba(239,68,68,0.1)"; e.currentTarget.style.borderColor="rgba(239,68,68,0.28)"; e.currentTarget.style.color="#fca5a5"; }}
+            onMouseLeave={e => { e.currentTarget.style.background="rgba(239,68,68,0)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.07)"; e.currentTarget.style.color="#475569"; }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Déconnexion
+          </button>
         </div>
-        <nav style={{ padding: "10px 10px", flex: 1 }}>
-          {navItems.map(item => (
-            <button key={item.id} className={`nav-btn${view === item.id ? " nav-btn-active" : ""}`} onClick={() => {
-              setView(item.id);
-              if (item.id === "validations" && !isManager) {
-                const newSeen = myRequests.filter(r => r.status === "rejected").map(r => r.id);
-                setSeenRejected(newSeen);
-                localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
-              }
-            }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", border: "none", borderRadius: 10, background: view === item.id ? "linear-gradient(135deg,rgba(99,102,241,0.2),rgba(6,182,212,0.15))" : "transparent", color: view === item.id ? "#e0e7ff" : "#64748b", cursor: "pointer", fontSize: 13, fontWeight: view === item.id ? 700 : 500, marginBottom: 2, boxShadow: view === item.id ? "inset 0 0 0 1px rgba(99,102,241,0.25), 0 2px 8px rgba(99,102,241,0.12)" : "none", transition: "all 0.18s ease", letterSpacing: "0.2px" }}>
-              <span style={{ fontSize: 15, opacity: view === item.id ? 1 : 0.6 }}>{item.icon}</span>
-              <span style={{ flex: 1, textAlign: "left" }}>{item.label}</span>
-              {item.badge > 0 && <span style={{ background: "linear-gradient(135deg,#ef4444,#f97316)", color: "#fff", borderRadius: 20, padding: "2px 7px", fontSize: 10, fontWeight: 800, boxShadow: "0 2px 8px rgba(239,68,68,0.4)", animation: "badgePulse 2s ease-in-out infinite" }}>{item.badge}</span>}
-            </button>
-          ))}
+
+        {/* ── NAV ── */}
+        <nav style={{ padding: "10px 10px", flex: 1, display:"flex", flexDirection:"column", gap:2 }}>
+          {navItems.map((item, i) => {
+            const isActive = view === item.id;
+            const navIcons = {
+              planning:    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+              validations: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+              stats:       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+              admin:       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>,
+            };
+            return (
+              <button key={item.id}
+                className={`nav-btn${isActive ? " nav-btn-active" : ""}`}
+                onClick={() => {
+                  setView(item.id);
+                  if (item.id === "validations" && !isManager) {
+                    const newSeen = myRequests.filter(r => r.status === "rejected").map(r => r.id);
+                    setSeenRejected(newSeen);
+                    localStorage.setItem(`seenRejected_${currentUser.id}`, JSON.stringify(newSeen));
+                  }
+                }}
+                style={{
+                  display:"flex", alignItems:"center", gap:10, width:"100%",
+                  padding:"10px 14px", border:"none", borderRadius:11,
+                  background: isActive ? "linear-gradient(135deg,rgba(99,102,241,0.18),rgba(6,182,212,0.1))" : "transparent",
+                  color: isActive ? "#e0e7ff" : "#64748b",
+                  cursor:"pointer", fontSize:13, fontWeight: isActive ? 700 : 500,
+                  letterSpacing:"0.15px",
+                  animation: `navItemIn 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.06}s both`,
+                  outline:"none",
+                }}>
+                <span style={{ flexShrink:0, opacity: isActive ? 1 : 0.55, transition:"opacity 0.2s ease", display:"flex", alignItems:"center" }}>{navIcons[item.id]}</span>
+                <span style={{ flex:1, textAlign:"left" }}>{item.label}</span>
+                {item.badge > 0 && (
+                  <span style={{
+                    background:"linear-gradient(135deg,#ef4444,#f97316)",
+                    color:"#fff", borderRadius:99, padding:"2px 8px",
+                    fontSize:10, fontWeight:800, minWidth:20, textAlign:"center",
+                    boxShadow:"0 2px 8px rgba(239,68,68,0.45)",
+                    animation:"badgePulse 2s ease-in-out infinite",
+                    flexShrink:0,
+                  }}>{item.badge}</span>
+                )}
+              </button>
+            );
+          })}
         </nav>
-        {/* Légende */}
-        <div style={{ padding: "14px 16px", borderTop: "1px solid rgba(255,255,255,0.07)", margin: "0 0" }}>
-          <div style={{ fontSize: 9, color: "#475569", marginBottom: 10, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>Légende</div>
-          {leaveTypes.filter(t => !isPresenceType(t) && !/^(½ cp|½ rtt|_cp|_rtt)$/i.test((t.code || "").trim()) && !/^(½ cp|½ rtt)$/i.test((t.label || "").trim())).map(t => (
-            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-              <div style={{ width: 20, height: 7, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
-              <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label}</span>
+
+        {/* ── LEGEND ── */}
+        <div style={{ padding:"14px 14px 18px", borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ fontSize:9, color:"#334155", marginBottom:10, textTransform:"uppercase", letterSpacing:"1.4px", fontWeight:800 }}>Légende</div>
+          {leaveTypes.filter(t => !isPresenceType(t) && !/^(½ cp|½ rtt|_cp|_rtt)$/i.test((t.code||"").trim()) && !/^(½ cp|½ rtt)$/i.test((t.label||"").trim())).map(t => (
+            <div key={t.id} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+              <div style={{ width:18, height:5, borderRadius:99, background:t.color, flexShrink:0, boxShadow:`0 0 8px ${t.color}60` }} />
+              <span style={{ fontSize:11, color:"#64748b", letterSpacing:"0.1px" }}>{t.label}</span>
             </div>
           ))}
           {leaveTypes.filter(t => isPresenceType(t)).length > 0 && (
-            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: 9, color: "#475569", marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.2px", fontWeight: 700 }}>🏢 Présences site</div>
+            <div style={{ marginTop:8, paddingTop:8, borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontSize:9, color:"#334155", marginBottom:7, textTransform:"uppercase", letterSpacing:"1.4px", fontWeight:800 }}>Présences</div>
               {sortLeaveTypes(leaveTypes.filter(t => isPresenceType(t))).map(t => (
-                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                  <div style={{ width: 20, height: 4, borderRadius: 99, background: t.color, flexShrink: 0, boxShadow: `0 0 6px ${t.color}60` }} />
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>{t.label} <span style={{ color: "#475569", fontSize: 9 }}>(bande)</span></span>
+                <div key={t.id} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                  <div style={{ width:18, height:3, borderRadius:99, background:t.color, flexShrink:0, boxShadow:`0 0 6px ${t.color}60` }} />
+                  <span style={{ fontSize:11, color:"#64748b" }}>{t.label}</span>
                 </div>
               ))}
             </div>
           )}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-            <div style={{ width: 20, height: 7, borderRadius: 99, background: "repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 3px,transparent 3px,transparent 6px)", flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>Jour férié</span>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:6 }}>
+            <div style={{ width:18, height:5, borderRadius:99, background:"repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 3px,transparent 3px,transparent 6px)", flexShrink:0 }} />
+            <span style={{ fontSize:11, color:"#64748b" }}>Jour férié</span>
           </div>
         </div>
       </aside>
 
-      {/* MAIN */}
-      <main id="main-scroll" style={{ flex: 1, overflow: "auto", background: "linear-gradient(180deg,rgba(6,8,24,0.4) 0%,rgba(10,14,34,0.3) 100%)" }}>
+      {/* ══════════════════════════════════
+           MAIN CONTENT AREA
+      ══════════════════════════════════ */}
+      <main id="main-scroll" style={{ flex:1, overflow:"auto", background:"linear-gradient(180deg,rgba(6,8,24,0.5) 0%,rgba(10,14,34,0.35) 100%)" }}>
 
         {/* ── BANDEAU ANNONCE ── */}
         {announcement && (() => {
@@ -2925,9 +3325,61 @@ function PlanningApp({ currentUser, onLogout }) {
           );
         })()}
 
-        <div style={{ background: "rgba(8,12,28,0.7)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "12px 24px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 30 }}>
-          <h1 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#e2e8f0", letterSpacing: "-0.2px", fontFamily: "'Space Grotesk',sans-serif" }}>{view === "planning" ? "📅 Planning" : view === "validations" ? "✅ Validations" : view === "stats" ? "📊 Bilan congés" : "⚙️ Administration"}</h1>
-          {view === "validations" && <span style={{ fontSize: 11, color: "#475569", background: "rgba(255,255,255,0.05)", padding: "2px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.07)" }}>{canValidateRequests ? `${pendingRequests.length} en attente` : `${myRequests.length} demande(s)`}</span>}
+        {/* ══════════════════════════════════
+             TOPBAR — Glass frosted header
+        ══════════════════════════════════ */}
+        <div style={{
+          background: "rgba(6,8,24,0.75)",
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+          borderBottom: "1px solid rgba(255,255,255,0.065)",
+          padding: "0 28px",
+          display: "flex", alignItems: "center", gap: 14,
+          height: 56, position: "sticky", top: 0, zIndex: 30,
+          boxShadow: "0 1px 0 rgba(255,255,255,0.03), 0 4px 24px rgba(0,0,0,0.25)",
+        }}>
+          {/* View title + icon */}
+          <div style={{ display:"flex", alignItems:"center", gap:10, flex:1 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 9,
+              background: view === "planning" ? "linear-gradient(135deg,#6366f1,#818cf8)" :
+                          view === "validations" ? "linear-gradient(135deg,#10b981,#34d399)" :
+                          view === "stats" ? "linear-gradient(135deg,#f59e0b,#fbbf24)" :
+                          "linear-gradient(135deg,#475569,#64748b)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              boxShadow: view === "planning" ? "0 3px 10px rgba(99,102,241,0.4)" :
+                         view === "validations" ? "0 3px 10px rgba(16,185,129,0.4)" :
+                         view === "stats" ? "0 3px 10px rgba(245,158,11,0.4)" : "none",
+              flexShrink: 0,
+            }}>
+              {view === "planning" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+              {view === "validations" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>}
+              {view === "stats" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>}
+              {view === "admin" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>}
+            </div>
+            <div>
+              <h1 style={{ margin:0, fontSize:15, fontWeight:800, color:"#f1f5f9", letterSpacing:"-0.3px", fontFamily:"'Space Grotesk',sans-serif", lineHeight:1.1 }}>
+                {view === "planning" ? "Planning" : view === "validations" ? "Validations" : view === "stats" ? "Bilan congés" : "Administration"}
+              </h1>
+              {view === "validations" && (
+                <div style={{ fontSize:11, color: canValidateRequests ? (pendingRequests.length > 0 ? "#fbbf24" : "#475569") : "#475569", fontWeight:500, marginTop:1 }}>
+                  {canValidateRequests ? `${pendingRequests.length} demande${pendingRequests.length !== 1 ? "s" : ""} en attente` : `${myRequests.length} demande${myRequests.length !== 1 ? "s" : ""}`}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Breadcrumb dots */}
+          <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+            {["planning","validations","stats",...(isManager?["admin"]:[])]
+              .map(v => (
+              <div key={v} style={{
+                width: view===v ? 20 : 5, height:5, borderRadius:99,
+                background: view===v ? "linear-gradient(90deg,#6366f1,#06b6d4)" : "rgba(255,255,255,0.12)",
+                transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+                boxShadow: view===v ? "0 0 8px rgba(99,102,241,0.5)" : "none",
+              }} />
+            ))}
+          </div>
         </div>
 
         {view === "admin" && isManager && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
@@ -2948,10 +3400,25 @@ function PlanningApp({ currentUser, onLogout }) {
 
         {view === "planning" && (
           <div style={{ padding: 24, animation: "viewFadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)" }}>
-            {/* BANDE COLORÉE INDICATEUR MODE */}
-            <div style={{ height: 3, borderRadius: 4, marginBottom: 14, background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6,#0d9488)" : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)" : "linear-gradient(90deg,#6366f1,#818cf8,#06b6d4,#6366f1)", backgroundSize: "200% 100%", animation: "shimmer 3s linear infinite", boxShadow: filterMode === "presence" ? "0 1px 8px rgba(13,148,136,0.5)" : filterMode === "astreinte" ? "0 1px 8px rgba(245,158,11,0.5)" : "0 1px 8px rgba(99,102,241,0.5)" }} />
-            {/* BARRE DE CONTRÔLES */}
-            <div style={{ background: "#ffffff", border: "1px solid #e8edf5", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            {/* ── Mode indicator strip ── */}
+            <div style={{
+              height: 2, borderRadius: 4, marginBottom: 16,
+              background: filterMode === "presence" ? "linear-gradient(90deg,#0d9488,#14b8a6,#0d9488)"
+                : filterMode === "astreinte" ? "linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b)"
+                : "linear-gradient(90deg,#6366f1,#818cf8,#06b6d4,#6366f1)",
+              backgroundSize: "200% 100%",
+              animation: "shimmer 4s linear infinite",
+              boxShadow: filterMode === "presence" ? "0 0 10px rgba(13,148,136,0.45)"
+                : filterMode === "astreinte" ? "0 0 10px rgba(245,158,11,0.45)"
+                : "0 0 10px rgba(99,102,241,0.45)",
+            }} />
+            {/* ── Controls bar ── */}
+            <div style={{
+              background: "rgba(255,255,255,0.97)",
+              border: "1px solid rgba(0,0,0,0.07)",
+              borderRadius: 16, padding: "14px 18px", marginBottom: 14,
+              boxShadow: "0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)",
+            }}>
               {/* ========== ONGLETS ========== */}
               <div style={{ display: 'flex', gap: 4, borderBottom: '1.5px solid #e8edf5', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px' }}>
                 {[
