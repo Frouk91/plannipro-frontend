@@ -4223,12 +4223,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <tr style={{ height: 36, background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderTop: "2px solid #0d9488" }}>
                           <td style={{ padding: "0 10px", verticalAlign: "middle", fontSize: 11, fontWeight: 700, color: "#065f46", whiteSpace: "nowrap", background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderRight: "1px solid #a7f3d0" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <div style={{ display: "flex", gap: 2 }}>
-                                <div style={{ width: 8, height: 8, borderRadius: 2, background: rueilColor }} />
-                                <div style={{ width: 8, height: 8, borderRadius: 2, background: parisColor }} />
-                              </div>
-                              Présences site
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              🏢 Présences site
+                              <span style={{ fontSize:10, color:rueilColor, fontWeight:700 }}>R</span>
+                              <span style={{ fontSize:10, color:parisColor, fontWeight:700 }}>P</span>
                             </div>
                           </td>
                           {Array.from({ length: daysInMonth }, (_, i) => {
@@ -4236,9 +4234,20 @@ function PlanningApp({ currentUser, onLogout }) {
                             const nR = countPresence(k, "rueil"), nP = countPresence(k, "paris"), tot = nR + nP;
                             return (
                               <td key={i} style={{ textAlign: "center", background: wk ? "#d1fae5" : isFer ? "#ccfbf1" : tot > 0 ? "#f0fdfa" : "transparent", border: "1px solid #a7f3d0", height: 36, verticalAlign: "middle" }}>
-                                {!wk && !isFer && tot > 0 && (
-                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-                                    <span style={{ fontSize: 10, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
+                                                {!wk && !isFer && tot > 0 && (
+                                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:2 }}>
+                                    {nR > 0 && (
+                                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                                        <span style={{ fontSize:7, fontWeight:800, color:rueilColor, lineHeight:1, letterSpacing:"0.3px" }}>R</span>
+                                        <span style={{ fontSize:10, fontWeight:800, color:rueilColor, lineHeight:1 }}>{nR}</span>
+                                      </div>
+                                    )}
+                                    {nP > 0 && (
+                                      <div style={{ display:"flex", alignItems:"center", gap:2 }}>
+                                        <span style={{ fontSize:7, fontWeight:800, color:parisColor, lineHeight:1, letterSpacing:"0.3px" }}>P</span>
+                                        <span style={{ fontSize:10, fontWeight:800, color:parisColor, lineHeight:1 }}>{nP}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </td>
@@ -4423,12 +4432,10 @@ function PlanningApp({ currentUser, onLogout }) {
                       return (
                         <tr style={{ height: 42, background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderTop: "2px solid #0d9488" }}>
                           <td style={{ width: 200, padding: "0 10px", verticalAlign: "middle", fontSize: 11, fontWeight: 700, color: "#065f46", whiteSpace: "nowrap", background: "linear-gradient(135deg,#f0fdfa,#ecfdf5)", borderRight: "1px solid #a7f3d0" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <div style={{ display: "flex", gap: 2 }}>
-                                <div style={{ width: 8, height: 8, borderRadius: 2, background: rueilColor }} />
-                                <div style={{ width: 8, height: 8, borderRadius: 2, background: parisColor }} />
-                              </div>
-                              Présences site
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              🏢 Présences site
+                              <span style={{ fontSize:10, color:rueilColor, fontWeight:700 }}>R</span>
+                              <span style={{ fontSize:10, color:parisColor, fontWeight:700 }}>P</span>
                             </div>
                           </td>
                           {weekDays.map((d, i) => {
@@ -4438,8 +4445,19 @@ function PlanningApp({ currentUser, onLogout }) {
                             return (
                               <td key={i} style={{ textAlign: "center", background: wk ? "#d1fae5" : isFer ? "#ccfbf1" : tot > 0 ? "#f0fdfa" : "transparent", border: "1px solid #a7f3d0", height: 42, verticalAlign: "middle" }}>
                                 {!wk && !isFer && tot > 0 && (
-                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#065f46", lineHeight: 1 }}>{tot}</span>
+                                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
+                                    {nR > 0 && (
+                                      <div style={{ display:"flex", alignItems:"center", gap:3 }}>
+                                        <span style={{ fontSize:9, fontWeight:800, color:rueilColor, lineHeight:1 }}>R</span>
+                                        <span style={{ fontSize:13, fontWeight:800, color:rueilColor, lineHeight:1 }}>{nR}</span>
+                                      </div>
+                                    )}
+                                    {nP > 0 && (
+                                      <div style={{ display:"flex", alignItems:"center", gap:3 }}>
+                                        <span style={{ fontSize:9, fontWeight:800, color:parisColor, lineHeight:1 }}>P</span>
+                                        <span style={{ fontSize:13, fontWeight:800, color:parisColor, lineHeight:1 }}>{nP}</span>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </td>
