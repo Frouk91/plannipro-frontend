@@ -40,6 +40,7 @@ const AGENT_ALLOWED_CODES = ["cp", "_cp", "rtt", "_rtt", "teletravail", "pont", 
 const PRESENCE_CODES = ["rueil", "paris"];
 function isPresenceType(t) { return PRESENCE_CODES.includes((t.code || "").toLowerCase()) || ["rueil", "paris"].includes((t.label || "").toLowerCase()); }
 function isPresenceCode(code, label) { return PRESENCE_CODES.includes((code || "").toLowerCase()) || ["rueil", "paris"].includes((label || "").toLowerCase()); }
+function isExceptional(leave) { return !!(leave && leave.is_exceptional); }
 const PRESENCE_COLORS = { rueil: "#0d9488", paris: "#7c3aed" };
 const PRESENCE_MAX_PER_WEEK = 2;
 const DEMO_USERS = [
@@ -646,11 +647,10 @@ function getWeekDays(year, month, day) {
 function dKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 
 function leaveFromBackend(l) {
-  // Fallback si code NULL (type créé avant le fix backend)
   const code = l.leave_type_code || (l.leave_type_label || "").toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
-  return { id: code, code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color) };
+  return { id: code, code, label: l.leave_type_label, color: l.color, bg: hexToLight(l.color), is_exceptional: l.is_exceptional || false };
 }
 function requestFromBackend(l) {
   return {
@@ -1229,7 +1229,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
-  const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0] }); const [showAddLTModal, setShowAddLTModal] = useState(false); const [loading, setLoading] = useState(false);
+  const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0], is_exceptional: false }); const [showAddLTModal, setShowAddLTModal] = useState(false); const [loading, setLoading] = useState(false);
   const [teamModal, setTeamModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1247,7 +1247,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
   async function handleAddTeam() { if (!newTeam.trim()) return; try { const data = await apiFetch("/teams", token, { method: "POST", body: JSON.stringify({ name: newTeam.trim() }) }); if (data.id) { onTeamAdded(data); setNewTeam(""); showNotif("Équipe ajoutée ✅"); } } catch { showNotif("Erreur", "error"); } }
   async function handleDeleteTeam(team) { try { await apiFetch(`/teams/${team.id}`, token, { method: "DELETE" }); onTeamDeleted(team.id); showNotif("Équipe supprimée", "error"); } catch { showNotif("Erreur", "error"); } }
-  async function handleAddLT() { if (!newLT.label.trim()) return; try { const data = await apiFetch("/leave-types", token, { method: "POST", body: JSON.stringify({ label: newLT.label.trim(), color: newLT.color }) }); if (data.id) { onLeaveTypeAdded({ ...data, bg: hexToLight(data.color) }); setNewLT({ label: "", color: COLORS[0] }); showNotif("Type ajouté ✅"); } } catch { showNotif("Erreur", "error"); } }
+  async function handleAddLT() { if (!newLT.label.trim()) return; try { const data = await apiFetch("/leave-types", token, { method: "POST", body: JSON.stringify({ label: newLT.label.trim(), color: newLT.color, is_exceptional: newLT.is_exceptional }) }); if (data.id) { onLeaveTypeAdded({ ...data, bg: hexToLight(data.color), is_exceptional: data.is_exceptional || false }); setNewLT({ label: "", color: COLORS[0], is_exceptional: false }); showNotif("Type ajouté ✅"); } } catch { showNotif("Erreur", "error"); } }
   async function handleUpdateLT(lt, newLabel, newColor) { try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "PATCH", body: JSON.stringify({ label: newLabel, color: newColor }) }); onLeaveTypeUpdated(lt.id, { label: newLabel, color: newColor, bg: hexToLight(newColor) }); setEditLT(null); showNotif("Modifié ✅"); } catch { showNotif("Erreur", "error"); } }
   async function handleAssignAgentTeam(agentId, teamName) {
     try {
@@ -1691,6 +1691,18 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   <span style={{ fontSize: 11, color: "#475569", fontWeight: 600 }}>Aperçu :</span>
                   <span style={{ padding: "3px 10px", borderRadius: 6, background: newLT.color + "30", color: newLT.color, fontSize: 12, fontWeight: 700, border: `1px solid ${newLT.color}50`, transition: "all 0.2s ease" }}>{newLT.label || "Nom du type"}</span>
                   <div style={{ width: 28, height: 22, borderRadius: 4, background: newLT.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800, transition: "all 0.2s ease" }}>{newLT.label ? newLT.label.slice(0, 3).toUpperCase() : "???"}</div>
+                </div>
+
+                {/* Congé exceptionnel toggle */}
+                <div style={{ marginBottom: 20, padding: "12px 14px", borderRadius: 10, background: newLT.is_exceptional ? `${newLT.color}18` : "rgba(255,255,255,0.03)", border: `1.5px solid ${newLT.is_exceptional ? newLT.color + "55" : "rgba(255,255,255,0.08)"}`, display: "flex", alignItems: "center", gap: 12, cursor: "pointer", transition: "all 0.2s" }}
+                  onClick={() => setNewLT(p => ({ ...p, is_exceptional: !p.is_exceptional }))}>
+                  <div style={{ width: 36, height: 20, borderRadius: 99, background: newLT.is_exceptional ? newLT.color : "rgba(255,255,255,0.12)", position: "relative", flexShrink: 0, transition: "background 0.22s ease", boxShadow: newLT.is_exceptional ? `0 0 10px ${newLT.color}60` : "none" }}>
+                    <div style={{ position: "absolute", top: 2, left: newLT.is_exceptional ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.22s cubic-bezier(0.34,1.56,0.64,1)", boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: newLT.is_exceptional ? newLT.color : "#94a3b8" }}>🎯 Congé exceptionnel</div>
+                    <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>Cellule pleine couleur sans texte — motif visible au survol</div>
+                  </div>
                 </div>
 
                 {/* Boutons */}
@@ -2446,7 +2458,8 @@ function PlanningApp({ currentUser, onLogout }) {
           code: lt.code || (lt.label || "").toLowerCase()
             .normalize("NFD").replace(/[̀-ͯ]/g, "")
             .replace(/[^a-z0-9]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, ""),
-          bg: hexToLight(lt.color)
+          bg: hexToLight(lt.color),
+          is_exceptional: lt.is_exceptional || false
         })); setLeaveTypes(ltFormatted);
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
@@ -2895,9 +2908,10 @@ function PlanningApp({ currentUser, onLogout }) {
   }
 
   const navItems = [
-    { id: "planning", icon: "📆", label: "Planning" },
+    { id: "planning",    icon: "📆", label: "Planning" },
     { id: "validations", icon: "✅", label: "Validations", badge: validationBadge },
-    { id: "stats", icon: "📊", label: "Bilan congés" },
+    { id: "stats",       icon: "📊", label: "Bilan congés" },
+    ...(isAdmin ? [{ id: "exceptional", icon: "🎯", label: "Congés except." }] : []),
     ...(isManager ? [{ id: "admin", icon: "⚙️", label: "Administration" }] : []),
   ];
 
@@ -3359,7 +3373,7 @@ function PlanningApp({ currentUser, onLogout }) {
             </div>
             <div>
               <h1 style={{ margin:0, fontSize:15, fontWeight:800, color:"#f1f5f9", letterSpacing:"-0.3px", fontFamily:"'Space Grotesk',sans-serif", lineHeight:1.1 }}>
-                {view === "planning" ? "Planning" : view === "validations" ? "Validations" : view === "stats" ? "Bilan congés" : "Administration"}
+                {view === "planning" ? "Planning" : view === "validations" ? "Validations" : view === "stats" ? "Bilan congés" : view === "exceptional" ? "Congés exceptionnels" : "Administration"}
               </h1>
               {view === "validations" && (
                 <div style={{ fontSize:11, color: canValidateRequests ? (pendingRequests.length > 0 ? "#fbbf24" : "#475569") : "#475569", fontWeight:500, marginTop:1 }}>
@@ -3382,6 +3396,18 @@ function PlanningApp({ currentUser, onLogout }) {
           </div>
         </div>
 
+        {view === "exceptional" && isAdmin && (
+          <CongesExceptionnelsView
+            agents={agents} leaves={leaves} leaveTypes={leaveTypes}
+            requests={requests} token={token}
+            onDelete={async (leaveId) => {
+              await apiFetch(`/leaves/${leaveId}`, token, { method: "DELETE" });
+              await loadLeaves(leaveTypes, token, year, month);
+              setRequests(prev => prev.filter(r => r.id !== leaveId));
+              showNotif("Congé supprimé ✅");
+            }}
+          />
+        )}
         {view === "admin" && isManager && <AdminPanel agents={agents} teams={teams} leaveTypes={leaveTypes} token={token} showNotif={showNotif}
           announcement={announcement} announceLevel={announceLevel} setAnnounceLevel={setAnnounceLevel}
           announceMsg={announceMsg} setAnnounceMsg={setAnnounceMsg}
@@ -4135,7 +4161,15 @@ function PlanningApp({ currentUser, onLogout }) {
                                       })()}
                                       {filterMode !== "astreinte" && isFer && !wk && <div style={{ width: "calc(100% - 2px)", height: 20, margin: "0 1px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 8, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                       {filterMode !== "astreinte" && leave && !wk && !isFer && (
-                                        filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
+                                        isExceptional(leave) ? (
+                                          <div className="half-tooltip" data-tip={`🎯 ${leave.label}${leave.reason ? " · " + leave.reason.replace(/^\[.*?\]\s*/,"") : ""}`} style={{
+                                            width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 3,
+                                            background: leave.status === "pending" ? `repeating-linear-gradient(45deg,${leave.color}55,${leave.color}55 4px,${leave.color}22 4px,${leave.color}22 8px)` : leave.color,
+                                            border: leave.status === "pending" ? `1.5px dashed ${leave.color}` : "none",
+                                            boxShadow: leave.status === "pending" ? "none" : `0 1px 4px ${leave.color}60`,
+                                            animation: leave.status === "pending" ? "pulse 2s ease-in-out infinite" : "none",
+                                          }} />
+                                        ) : filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
                                           <div style={{
                                             width: "calc(100% - 2px)", height: 20, margin: "0 1px", borderRadius: 4, overflow: "hidden", position: "relative",
                                             background: leave.status === "pending" ? "#fff" : leave.color,
@@ -4347,7 +4381,15 @@ function PlanningApp({ currentUser, onLogout }) {
                                     style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.08)" : rowBg, border: isToday ? "1px solid rgba(99,102,241,0.25)" : "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === 6 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
-                                      filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
+                                      isExceptional(leave) ? (
+                                        <div className="half-tooltip" data-tip={`🎯 ${leave.label}${leave.reason ? " · " + leave.reason.replace(/^\[.*?\]\s*/,"") : ""}`} style={{
+                                          width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 4,
+                                          background: leave.status === "pending" ? `repeating-linear-gradient(45deg,${leave.color}55,${leave.color}55 5px,${leave.color}22 5px,${leave.color}22 10px)` : leave.color,
+                                          border: leave.status === "pending" ? `1.5px dashed ${leave.color}` : "none",
+                                          boxShadow: leave.status === "pending" ? "none" : `0 1px 4px ${leave.color}60`,
+                                          animation: leave.status === "pending" ? "pulse 2s ease-in-out infinite" : "none",
+                                        }} />
+                                      ) : filterMode === "presence" && isPresenceCode(leave.code, leave.label) ? (
                                         <div style={{
                                           width: "calc(100% - 4px)", height: 24, margin: "0 2px", borderRadius: 5, overflow: "hidden", position: "relative",
                                           background: leave.status === "pending" ? "#fff" : leave.color,
@@ -5439,6 +5481,209 @@ function ValidationsView({ isManager, isAdmin, requests, pendingRequests, myRequ
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+// ─── CONGÉS EXCEPTIONNELS VIEW ───
+function CongesExceptionnelsView({ agents, leaves, leaveTypes, requests, token, onDelete }) {
+  const [searchAgent, setSearchAgent] = useState("");
+  const [searchAgentDrop, setSearchAgentDrop] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  const exceptionalTypes = leaveTypes.filter(t => t.is_exceptional);
+  const exceptionalCodes = new Set(exceptionalTypes.map(t => t.code));
+
+  // Collecter tous les congés exceptionnels depuis leaves
+  const allExceptional = useMemo(() => {
+    const seen = new Set();
+    const result = [];
+    agents.forEach(agent => {
+      const agentLeaves = leaves[agent.id] || {};
+      Object.entries(agentLeaves).forEach(([dateKey, leave]) => {
+        if (dateKey.endsWith("__presence")) return;
+        if (!leave || !leave.leaveId) return;
+        if (!exceptionalCodes.has(leave.code) && !leave.is_exceptional) return;
+        const uid = `${leave.leaveId}`;
+        if (seen.has(uid)) return;
+        seen.add(uid);
+        result.push({
+          leaveId: leave.leaveId,
+          agent,
+          leaveType: leave,
+          start: leave.leaveStart,
+          end: leave.leaveEnd,
+          reason: leave.reason || "",
+          status: leave.status,
+          color: leave.color,
+          label: leave.label,
+        });
+      });
+    });
+    return result.sort((a, b) => (b.start || "").localeCompare(a.start || ""));
+  }, [agents, leaves, exceptionalCodes]);
+
+  // Filtres
+  const filtered = useMemo(() => allExceptional.filter(e => {
+    if (selectedAgent && e.agent.id !== selectedAgent) return false;
+    if (dateFrom && e.end < dateFrom) return false;
+    if (dateTo && e.start > dateTo) return false;
+    return true;
+  }), [allExceptional, selectedAgent, dateFrom, dateTo]);
+
+  const selAgent = selectedAgent ? agents.find(a => a.id === selectedAgent) : null;
+
+  return (
+    <div style={{ padding: 24, maxWidth: 860, animation: "viewFadeIn 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+
+      {/* ── Filtres ── */}
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, padding: "16px 20px", marginBottom: 20, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-end" }}>
+
+        {/* Agent picker */}
+        <div style={{ flex: "1 1 220px", position: "relative" }} onClick={e => e.stopPropagation()}>
+          <label style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Agent</label>
+          <div onClick={() => setSearchAgentDrop(p => !p)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${searchAgentDrop ? "#6366f1" : "#e2e8f0"}`, background: "#fff", cursor: "pointer", transition: "all 0.15s", boxShadow: searchAgentDrop ? "0 0 0 3px rgba(99,102,241,0.12)" : "none" }}>
+            {selAgent ? (
+              <>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#1e293b" }}>{selAgent.name}</span>
+                <button onClick={e => { e.stopPropagation(); setSelectedAgent(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
+              </>
+            ) : (
+              <span style={{ flex: 1, fontSize: 13, color: "#94a3b8" }}>Tous les agents</span>
+            )}
+            <span style={{ fontSize: 10, color: "#94a3b8", flexShrink: 0 }}>▾</span>
+          </div>
+          {searchAgentDrop && (
+            <div style={{ position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+              <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                <input autoFocus value={searchAgent} onChange={e => setSearchAgent(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid rgba(255,255,255,0.15)", background: "#0f172a", color: "#f1f5f9", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                <button onClick={() => { setSelectedAgent(null); setSearchAgentDrop(false); setSearchAgent(""); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 12px", border: "none", background: !selectedAgent ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer", color: "#f1f5f9", fontSize: 12 }}>Tous les agents</button>
+                {agents.filter(a => a.role !== "admin" && (!searchAgent || a.name.toLowerCase().includes(searchAgent.toLowerCase()))).map(a => (
+                  <button key={a.id} onClick={() => { setSelectedAgent(a.id); setSearchAgentDrop(false); setSearchAgent(""); }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "8px 12px", border: "none", background: selectedAgent === a.id ? "rgba(99,102,241,0.2)" : "none", cursor: "pointer", transition: "background 0.1s" }}
+                    onMouseEnter={e => { if (selectedAgent !== a.id) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                    onMouseLeave={e => { if (selectedAgent !== a.id) e.currentTarget.style.background = "none"; }}>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
+                    <span style={{ fontSize: 12, color: "#f1f5f9", fontWeight: 500 }}>{a.name}</span>
+                    {selectedAgent === a.id && <span style={{ marginLeft: "auto", color: "#818cf8" }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Date from */}
+        <div style={{ flex: "1 1 150px" }}>
+          <label style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Du</label>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+        </div>
+
+        {/* Date to */}
+        <div style={{ flex: "1 1 150px" }}>
+          <label style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>Au</label>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid #e2e8f0", fontSize: 13, color: "#1e293b", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={e => e.target.style.borderColor = "#6366f1"} onBlur={e => e.target.style.borderColor = "#e2e8f0"} />
+        </div>
+
+        {/* Reset */}
+        {(selectedAgent || dateFrom || dateTo) && (
+          <button onClick={() => { setSelectedAgent(null); setDateFrom(""); setDateTo(""); }} style={{ alignSelf: "flex-end", padding: "9px 14px", borderRadius: 9, border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#64748b", cursor: "pointer", fontSize: 12, fontWeight: 600, transition: "all 0.15s", flexShrink: 0 }}
+            onMouseEnter={e => { e.currentTarget.style.background = "#e2e8f0"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; }}>
+            ✕ Réinitialiser
+          </button>
+        )}
+      </div>
+
+      {/* ── Types exceptionnels disponibles ── */}
+      {exceptionalTypes.length > 0 && (
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+          {exceptionalTypes.map(t => (
+            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 99, background: t.color + "18", border: `1.5px solid ${t.color}40`, fontSize: 12, fontWeight: 700, color: t.color }}>
+              <div style={{ width: 10, height: 10, borderRadius: 2, background: t.color, flexShrink: 0 }} />
+              {t.label}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Résultats ── */}
+      <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div style={{ padding: "12px 20px", background: "linear-gradient(135deg,#fdf4ff,#faf5ff)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,#7c3aed,#a78bfa)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎯</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#5b21b6" }}>Congés exceptionnels</div>
+            <div style={{ fontSize: 11, color: "#94a3b8" }}>{filtered.length} enregistrement{filtered.length !== 1 ? "s" : ""}</div>
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div style={{ padding: "48px 0", textAlign: "center" }}>
+            <div style={{ fontSize: 36, marginBottom: 10, opacity: 0.3 }}>🎯</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#64748b" }}>Aucun congé exceptionnel trouvé</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Créez un type "Congé exceptionnel" dans Administration → Types de congés</div>
+          </div>
+        ) : (
+          filtered.map((e, i) => (
+            <div key={e.leaveId} style={{ display: "grid", gridTemplateColumns: "42px 1fr auto", alignItems: "center", gap: 14, padding: "13px 20px", borderBottom: i < filtered.length - 1 ? "1px solid #f1f5f9" : "none", transition: "background 0.12s", animation: `slideInLeft2 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.04}s both` }}
+              onMouseEnter={el => el.currentTarget.style.background = "#fdf8ff"}
+              onMouseLeave={el => el.currentTarget.style.background = "transparent"}>
+              {/* Avatar */}
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: teamGradient(e.agent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{e.agent.avatar}</div>
+              {/* Info */}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{e.agent.name}</span>
+                  {e.agent.team && <span style={{ fontSize: 10, color: "#64748b", background: "#f1f5f9", padding: "2px 8px", borderRadius: 99, fontWeight: 600 }}>{e.agent.team}</span>}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, background: e.color + "18", color: e.color, border: `1px solid ${e.color}35`, borderRadius: 99, padding: "2px 10px", fontSize: 11, fontWeight: 700 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: e.color, flexShrink: 0 }} />
+                    {e.label}
+                  </span>
+                  {e.status === "pending" && <span style={{ fontSize: 10, color: "#d97706", background: "#fef3c7", padding: "2px 8px", borderRadius: 99, fontWeight: 700, border: "1px solid #fde68a" }}>⏳ En attente</span>}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 11, color: "#64748b", fontWeight: 600 }}>
+                    📅 {formatDate(e.start)}{e.start !== e.end ? ` → ${formatDate(e.end)}` : ""}
+                  </span>
+                  {e.reason && e.reason.replace(/^\[.*?\]\s*/, "") && (
+                    <span style={{ fontSize: 11, color: "#7c3aed", fontStyle: "italic" }}>
+                      "{e.reason.replace(/^\[.*?\]\s*/, "")}"
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Delete */}
+              <button onClick={() => setConfirmDelete(e)} style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fef2f2", color: "#ef4444", cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all 0.15s", flexShrink: 0 }}
+                onMouseEnter={el => { el.currentTarget.style.background = "#ef4444"; el.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={el => { el.currentTarget.style.background = "#fef2f2"; el.currentTarget.style.color = "#ef4444"; }}>
+                🗑
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Confirm delete modal */}
+      {confirmDelete && (
+        <div onClick={() => setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "28px 28px 22px", width: 380, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "popIn 0.3s cubic-bezier(0.34,1.56,0.64,1)" }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#f1f5f9", marginBottom: 8 }}>🗑 Supprimer ce congé ?</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.5 }}>
+              Congé <strong style={{ color: confirmDelete.color }}>{confirmDelete.label}</strong> de <strong style={{ color: "#f1f5f9" }}>{confirmDelete.agent.name}</strong><br />
+              {formatDate(confirmDelete.start)}{confirmDelete.start !== confirmDelete.end ? ` → ${formatDate(confirmDelete.end)}` : ""}
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmDelete(null)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#94a3b8", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>Annuler</button>
+              <button onClick={() => { onDelete(confirmDelete.leaveId); setConfirmDelete(null); }} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#dc2626,#ef4444)", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(239,68,68,0.4)" }}>Supprimer</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
