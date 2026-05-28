@@ -3648,7 +3648,9 @@ function PlanningApp({ currentUser, onLogout }) {
                       const wk = d.getDay() === 0 || d.getDay() === 6;
                       const isFriday = d.getDay() === 5;
                       const isToday = k === dKey(now);
-                      const eligible = !wk && (fridayOnly ? isFriday : true);
+                      const feriesWeek = getFeries(d.getFullYear());
+                      const isFer = !!feriesWeek[k];
+                      const eligible = !wk && !isFer && (fridayOnly ? isFriday : true);
                       const canClick = canManageAstreintes && eligible;
                       const aKey = `${teamName}|${rowId}|${k}`;
                       const astrData = astreintes[aKey];
@@ -3683,7 +3685,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const dow2 = dd.getDay();
                                   const wk2 = dow2 === 0 || dow2 === 6;
                                   const isFri2 = dow2 === 5;
-                                  if (dk >= minK && dk <= maxK && !wk2 && (fridayOnly ? isFri2 : true)) {
+                                  const ferDD = getFeries(dd.getFullYear());
+                                  if (dk >= minK && dk <= maxK && !wk2 && !ferDD[dk] && (fridayOnly ? isFri2 : true)) {
                                     saveAstreinte(teamName, rowType, dk, astreinteSelStart.agentId);
                                   }
                                 });
@@ -3711,12 +3714,17 @@ function PlanningApp({ currentUser, onLogout }) {
                           className={canClick ? "cell-hover" : ""}
                           style={{
                             textAlign: "center", cursor: canClick ? "pointer" : "default",
-                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
+                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isFer ? "#fef9ec" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
                             borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
                             outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
-                            opacity: (!eligible && !wk) ? 0.25 : 1
+                            opacity: (!eligible && !wk && !isFer) ? 0.25 : 1
                           }}>
-                          {eligible && (aAgent ? (
+                          {isFer && !wk && (
+                            <div title={feriesWeek[k]} style={{ width: "calc(100% - 8px)", height: 36, margin: "0 4px", borderRadius: 6, background: "rgba(251,191,36,0.12)", border: "1px dashed #fbbf24", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: 14, opacity: 0.7 }}>🗓</span>
+                            </div>
+                          )}
+                          {eligible && !isFer && (aAgent ? (
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "4px 2px" }}>
                               <div style={{ width: 30, height: 30, borderRadius: "50%", background: teamGradient(aAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{aAgent.avatar}</div>
                               <span style={{ fontSize: 9, color: textColor, fontWeight: 700, maxWidth: 60, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{aAgent.name.split(" ")[0]}</span>
@@ -3823,8 +3831,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                 const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day);
                                 const dow = new Date(year, month, day).getDay();
                                 const isFriday = dow === 5;
+                                const isFer = !!feries[k];
                                 const isWorkday = !wk;
-                                const eligible = isWorkday && (fridayOnly ? isFriday : true);
+                                const eligible = isWorkday && !isFer && (fridayOnly ? isFriday : true);
                                 const canClick = canManageAstreintes && eligible;
                                 const aKey = `${teamName}|${rowId}|${k}`;
                                 const astrData = astreintes[aKey];
@@ -3867,7 +3876,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                           const dow2 = new Date(year, month, d).getDay();
                                           const wk2 = dow2 === 0 || dow2 === 6;
                                           const isFri2 = dow2 === 5;
-                                          if (dk >= minK && dk <= maxK && !wk2 && (fridayOnly ? isFri2 : true)) {
+                                          if (dk >= minK && dk <= maxK && !wk2 && !feries[dk] && (fridayOnly ? isFri2 : true)) {
                                             saveAstreinte(teamName, rowId, dk, astreinteSelStart.agentId);
                                           }
                                         }
@@ -3902,14 +3911,19 @@ function PlanningApp({ currentUser, onLogout }) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : fridayOnly && !isFriday ? "#fff" : eligible ? "#fff" : "#fff"; })(),
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : isFer ? "#fef9ec" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : "#fff"; })(),
                                     border: "1px solid #f1f5f9",
                                     height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
                                     transition: "all 0.3s ease",
                                     boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)"
                                   }}>
-                                  {eligible && (aAgent ? (
+                                  {isFer && !wk && (
+                                    <div title={feries[k]} style={{ width: "calc(100% - 4px)", height: 30, margin: "0 2px", borderRadius: 3, background: "rgba(251,191,36,0.12)", border: "1px dashed #fbbf24", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                      <span style={{ fontSize: 11, opacity: 0.7 }}>🗓</span>
+                                    </div>
+                                  )}
+                                  {eligible && !isFer && (aAgent ? (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                                       <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(aAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>{aAgent.avatar}</div>
                                       <span style={{ fontSize: 7, color: textColor, fontWeight: 700 }}>{aAgent.name.split(" ")[0]}</span>
