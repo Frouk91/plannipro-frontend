@@ -2513,6 +2513,10 @@ function PlanningApp({ currentUser, onLogout }) {
           });
           setAstreintes(obj);
         }
+        // Recharger l'annonce en temps réel
+        apiFetch("/announcement", token).then(d => {
+          setAnnouncement(d && d.id ? d : null);
+        }).catch(() => {});
         setLastSync(new Date());
       } catch { /* silencieux */ }
     };
