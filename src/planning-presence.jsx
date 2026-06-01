@@ -1414,15 +1414,31 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                   onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>{a.avatar}</div>
-                  <div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontWeight: 600, fontSize: 13, color: "#1e293b" }}>{a.name}</span>
+                      <span style={{ fontWeight: 600, fontSize: 13, color: a.is_active !== false ? "#1e293b" : "#94a3b8" }}>{a.name}</span>
+                      {a.is_active === false && <span style={{ background: "#fef3c7", color: "#d97706", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 700, border: "1px solid #fde68a" }}>⏸ Inactif</span>}
                       <span style={{ background: a.role === "admin" ? "#fef3c7" : a.role === "manager" ? "#ede9fe" : a.role === "coordinator" ? "#e0f2fe" : "#f1f5f9", color: a.role === "admin" ? "#92400e" : a.role === "manager" ? "#5b21b6" : a.role === "coordinator" ? "#0369a1" : "#64748b", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>{a.role === "admin" ? "Admin" : a.role === "manager" ? "Manager" : a.role === "coordinator" ? "Coordinateur" : "Agent"}</span>
                       {a.role === "agent" && a.can_book_presence_sites && <span style={{ background: "#dbeafe", color: "#0369a1", padding: "1px 7px", borderRadius: 4, fontSize: 10, fontWeight: 600 }}>🏢 Présences</span>}
                     </div>
                     <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 1 }}>{a.email}{a.team && <span style={{ marginLeft: 8, color: "#64748b" }}>· {a.team}</span>}</div>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      title={a.is_active !== false ? "Désactiver temporairement" : "Réactiver"}
+                      onClick={async () => {
+                        const newVal = a.is_active === false ? true : false;
+                        try {
+                          await apiFetch(`/agents/${a.id}`, token, { method: "PATCH", body: JSON.stringify({ is_active: newVal }) });
+                          onAgentUpdated(a.id, { is_active: newVal });
+                          showNotif(newVal ? "Agent réactivé ✅" : "Agent désactivé ⏸");
+                        } catch { showNotif("Erreur", "error"); }
+                      }}
+                      style={{ padding: "5px 10px", borderRadius: 7, border: `1.5px solid ${a.is_active !== false ? "#d1d5db" : "#fcd34d"}`, background: a.is_active !== false ? "#f8fafc" : "#fffbeb", cursor: "pointer", fontSize: 12, color: a.is_active !== false ? "#94a3b8" : "#d97706", fontWeight: 600, transition: "all 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = a.is_active !== false ? "#fef3c7" : "#f59e0b"; e.currentTarget.style.color = a.is_active !== false ? "#d97706" : "#fff"; e.currentTarget.style.borderColor = "#f59e0b"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = a.is_active !== false ? "#f8fafc" : "#fffbeb"; e.currentTarget.style.color = a.is_active !== false ? "#94a3b8" : "#d97706"; e.currentTarget.style.borderColor = a.is_active !== false ? "#d1d5db" : "#fcd34d"; }}>
+                      {a.is_active !== false ? "⏸" : "▶"}
+                    </button>
                     <button onClick={() => { const parts = a.name.split(" "); setEditModal(a); setEditData({ first_name: parts[0] || "", last_name: parts.slice(1).join(" ") || "", email: a.email, team: a.team, role: a.role, password: "", can_book_presence_sites: a.can_book_presence_sites || false }); }} className="btn-edit">✏️ Modifier</button>
                     {a.role !== "admin" && <button onClick={() => setDeleteModal(a)} className="btn-delete">✕</button>}
                   </div>
@@ -2427,7 +2443,8 @@ function PlanningApp({ currentUser, onLogout }) {
       const agentId = filterTeam.replace("agent-", "");
       filtered = sorted.filter(a => a.id === agentId);
     } else {
-      filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam)).filter(a => a.role !== "admin");
+      filtered = (filterTeam === "Tous" ? sorted : sorted.filter(a => a.team === filterTeam))
+        .filter(a => a.role !== "admin" && a.is_active !== false);
     }
     const grouped = [];
     const teamMap = {};
@@ -2473,7 +2490,7 @@ function PlanningApp({ currentUser, onLogout }) {
         const allowedFirst = ltFormatted.find(t => AGENT_ALLOWED_CODES.includes(t.code));
         if (ltFormatted.length > 0) setSelectedLTId((allowedFirst || ltFormatted[0]).id);
         const agentsRaw = agentsData.agents || (Array.isArray(agentsData) ? agentsData : []);
-        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order, sub_team: a.sub_team || null }));
+        const agentsList = agentsRaw.map(a => ({ id: a.id, name: `${a.first_name || ""} ${a.last_name || ""}`.trim(), email: a.email, role: a.role || "agent", team: a.team_name || a.team || "", avatar: a.avatar_initials || getInitials(`${a.first_name || ""} ${a.last_name || ""}`), can_book_presence_sites: a.can_book_presence_sites || false, agent_display_order: a.agent_display_order, sub_team: a.sub_team || null, is_active: a.is_active !== false }));
         // Trier par agent_display_order depuis la BDD
         agentsList.sort((a, b) => (a.agent_display_order || 999) - (b.agent_display_order || 999));
         setAgents(agentsList);
@@ -2668,7 +2685,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const allTeams = useMemo(() => ["Tous", ...teams.filter(t => t.name !== "Admin").map(t => t.name)], [teams]);
   const filteredAgents = useMemo(() => {
     let result = filterTeam.startsWith("agent-") ? agents.filter(a => a.id === filterTeam.replace("agent-", "")) : ((filterTeam === "Tous" ? agents : agents.filter(a => a.team === filterTeam)));
-    result = result.filter(a => a.role !== "admin");
+    result = result.filter(a => a.role !== "admin" && a.is_active !== false);
     return result;
   }, [agents, filterTeam, currentUser.id]);
 
@@ -3429,7 +3446,7 @@ function PlanningApp({ currentUser, onLogout }) {
           handlePostAnnouncement={handlePostAnnouncement} handleDeleteAnnouncement={handleDeleteAnnouncement}
           cssSubTeams={cssSubTeams} setCssSubTeams={setCssSubTeams}
           onAgentAdded={a => setAgents(prev => [...prev, a])}
-          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites, sub_team: data.sub_team !== undefined ? data.sub_team : a.sub_team } : a))}
+          onAgentUpdated={(id, data) => setAgents(prev => prev.map(a => a.id === id ? { ...a, ...(data.name ? { name: data.name, avatar: getInitials(data.name) } : {}), email: data.email || a.email, team: data.team !== undefined ? data.team : a.team, role: data.role || a.role, can_book_presence_sites: data.can_book_presence_sites !== undefined ? data.can_book_presence_sites : a.can_book_presence_sites, sub_team: data.sub_team !== undefined ? data.sub_team : a.sub_team, is_active: data.is_active !== undefined ? data.is_active : a.is_active } : a))}
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
