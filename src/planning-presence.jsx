@@ -3714,14 +3714,14 @@ function PlanningApp({ currentUser, onLogout }) {
                           className={canClick ? "cell-hover" : ""}
                           style={{
                             textAlign: "center", cursor: canClick ? "pointer" : "default",
-                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isFer ? "#fef9ec" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
+                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isFer ? "#f1f5f9" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
                             borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
                             outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
                             opacity: (!eligible && !wk && !isFer) ? 0.25 : 1
                           }}>
                           {isFer && !wk && (
-                            <div title={feriesWeek[k]} style={{ width: "calc(100% - 8px)", height: 36, margin: "0 4px", borderRadius: 6, background: "rgba(251,191,36,0.12)", border: "1px dashed #fbbf24", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ fontSize: 14, opacity: 0.7 }}>🗓</span>
+                            <div title={feriesWeek[k]} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", opacity: 0.4 }}>
+                              <span style={{ fontSize: 12 }}>🗓</span>
                             </div>
                           )}
                           {eligible && !isFer && (aAgent ? (
@@ -3911,7 +3911,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : isFer ? "#fef9ec" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : "#fff"; })(),
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : isFer ? "#f1f5f9" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : "#fff"; })(),
                                     border: "1px solid #f1f5f9",
                                     height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
@@ -3919,8 +3919,8 @@ function PlanningApp({ currentUser, onLogout }) {
                                     boxShadow: "inset 0 0 0 1px rgba(99,102,241,0)"
                                   }}>
                                   {isFer && !wk && (
-                                    <div title={feries[k]} style={{ width: "calc(100% - 4px)", height: 30, margin: "0 2px", borderRadius: 3, background: "rgba(251,191,36,0.12)", border: "1px dashed #fbbf24", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                      <span style={{ fontSize: 11, opacity: 0.7 }}>🗓</span>
+                                    <div title={feries[k]} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", opacity: 0.35 }}>
+                                      <span style={{ fontSize: 10 }}>🗓</span>
                                     </div>
                                   )}
                                   {eligible && !isFer && (aAgent ? (
