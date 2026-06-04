@@ -446,24 +446,27 @@ const GLOBAL_STYLE = `
   /* ═══════════════════════════════════════════════
      HALF-DAY TOOLTIP
   ═══════════════════════════════════════════════ */
-  .half-tooltip { position: relative; }
+  .half-tooltip { position: relative; z-index: 9999; }
+
+  /* Permettre aux tooltips de dépasser les cellules du tableau */
+  td { overflow: visible !important; }
   .half-tooltip::before {
     content: ''; position: absolute;
-    bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+    top: calc(100% + 2px); left: 50%; transform: translateX(-50%);
     border: 5px solid transparent;
-    border-top-color: rgba(8,12,28,0.97);
+    border-bottom-color: rgba(8,12,28,0.97);
     pointer-events: none; opacity: 0;
-    transition: opacity 0.15s ease; z-index: 9999;
+    transition: opacity 0.15s ease; z-index: 99999;
   }
   .half-tooltip::after {
     content: attr(data-tip); position: absolute;
-    bottom: calc(100% + 13px); left: 50%; transform: translateX(-50%);
+    top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
     background: rgba(8,12,28,0.97);
     color: #fff; font-size: 11px; font-weight: 600;
     font-family: 'Outfit', sans-serif;
     padding: 6px 12px; border-radius: 10px; white-space: nowrap;
     pointer-events: none; opacity: 0;
-    transition: opacity 0.15s ease; z-index: 9999;
+    transition: opacity 0.15s ease; z-index: 99999;
     letter-spacing: 0.2px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.5);
     border: 1px solid var(--border-default);
