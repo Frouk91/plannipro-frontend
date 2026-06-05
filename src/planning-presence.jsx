@@ -4232,13 +4232,20 @@ function PlanningApp({ currentUser, onLogout }) {
                                     const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                     const isFridayCell = new Date(year, month, day).getDay() === 5;
                                     const canInteract = filterMode === "astreinte" ? (canManageAstreintes && isFridayCell && !wk) : (isManager || (currentUser.id === agent.id && (agentCanPresence || !isCoordinator))) && !wk && (!isFer || isManager);
+                                    // Tooltip sur toute la cellule
+                                    const pLeave = filterMode === "all" && !wk && !isFer ? (leaves[agent.id]?.[k + "__presence"]) : null;
+                                    const cellTip = isFer ? null
+                                      : leave && isHalfDay(leave) ? `${leave.label} — ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`
+                                      : leave && isExceptional(leave, leaveTypes) ? `🎯 ${leave.label}${leave.reason ? " · " + leave.reason.replace(/^\[.*?\]\s*/, "") : ""}`
+                                      : leave ? leave.label
+                                      : pLeave ? `${pLeave.label}${pLeave.status === "pending" ? " · En attente" : ""}` : null;
                                     return <td key={i}
                                       onClick={e => { if (filterMode === "astreinte" && canInteract) { e.stopPropagation(); setAstreinteDropdown(d => d && d.key === dateKey(year, month, day) ? null : { key: dateKey(year, month, day), x: e.clientX, y: e.clientY }); } else canInteract && handleCellClick(agent.id, day); }}
                                       onContextMenu={e => !wk && handleCellRightClick(e, agent.id, day)}
                                       onMouseEnter={() => { if (selectedAgent === agent.id) setHoveredDay(day); }}
                                       onMouseLeave={() => setHoveredDay(null)}
                                       className={canInteract ? "cell-hover" : ""}
-                                      title={isFer ? `🗓 ${feries[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
+                                      data-tip={cellTip || undefined}
                                       style={{ padding: "2px 1px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.08)" : rowBg, border: isToday ? "1px solid rgba(99,102,241,0.25)" : "1px solid " + tp.border + "30", height: 36, position: "relative", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === daysInMonth - 1 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
                                       {filterMode === "astreinte" && isFridayCell && !wk && (() => {
                                         const aKey = dateKey(year, month, day);
@@ -4466,13 +4473,19 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const isToday = k === dKey(now);
                                   const agentCanPresence = !!agents.find(a => a.id === agent.id)?.can_book_presence_sites;
                                   const canInteract = (filterMode === "astreinte" ? (canManageAstreintes && !wk) : (isManager || (currentUser.id === agent.id && (agentCanPresence || filterMode !== "presence")))) && !wk && (!isFer || isManager);
+                                  const pLeaveW = filterMode === "all" && !wk && !isFer ? (leaves[agent.id]?.[k + "__presence"]) : null;
+                                  const cellTipW = isFer ? null
+                                    : leave && isHalfDay(leave) ? `${leave.label} — ${getHalfDayPeriod(leave) === "matin" ? "Matin" : "Après-midi"}`
+                                    : leave && isExceptional(leave, leaveTypes) ? `🎯 ${leave.label}${leave.reason ? " · " + leave.reason.replace(/^\[.*?\]\s*/, "") : ""}`
+                                    : leave ? leave.label
+                                    : pLeaveW ? `${pLeaveW.label}${pLeaveW.status === "pending" ? " · En attente" : ""}` : null;
                                   return <td key={i}
                                     onClick={() => canInteract && handleWeekCellClick(agent.id, d)}
                                     onContextMenu={e => !wk && handleWeekCellRightClick(e, agent.id, d)}
                                     onMouseEnter={() => { if (weekSelAgent === agent.id) setWeekHovered(k); }}
                                     onMouseLeave={() => setWeekHovered(null)}
                                     className={canInteract ? "cell-hover" : ""}
-                                    title={isFer ? `🗓 ${feriesDay[k]}` : (leave && isHalfDay(leave) ? (getHalfDayPeriod(leave) === "matin" ? `${leave.label} — Matin` : `${leave.label} — Après-midi`) : "")}
+                                    data-tip={cellTipW || undefined}
                                     style={{ padding: "2px 2px", textAlign: "center", cursor: canInteract ? "pointer" : "default", background: wk ? tp.wk : isFer ? "#fef9ec" : inSel ? "#e0e7ff" : isToday ? "rgba(99,102,241,0.08)" : rowBg, border: isToday ? "1px solid rgba(99,102,241,0.25)" : "1px solid " + tp.border + "30", height: 38, verticalAlign: "middle", transition: "all 0.3s ease", boxShadow: selectedAgentRow === agent.id ? "inset 0 2px 0 " + tp.border + ", inset 0 -2px 0 " + tp.border + (i === 0 ? ", inset 3px 0 0 " + tp.border : "") + (i === 6 ? ", inset -3px 0 0 " + tp.border : "") : "none" }}>
                                     {isFer && !wk && <div style={{ width: "calc(100% - 4px)", height: 24, margin: "0 2px", background: "rgba(251,191,36,0.15)", border: "1px dashed #fbbf24", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 9, color: "#d97706", fontWeight: 700 }}>🗓</span></div>}
                                     {leave && !wk && !isFer && (
