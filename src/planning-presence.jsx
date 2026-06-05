@@ -446,32 +446,11 @@ const GLOBAL_STYLE = `
   /* ═══════════════════════════════════════════════
      HALF-DAY TOOLTIP
   ═══════════════════════════════════════════════ */
-  .half-tooltip { position: relative; z-index: 9999; }
+  /* Tooltip via portail React — voir composant PlanningTooltip */
+  .half-tooltip { position: relative; }
 
   /* Permettre aux tooltips de dépasser les cellules du tableau */
   td { overflow: visible !important; }
-  .half-tooltip::before {
-    content: ''; position: absolute;
-    top: calc(100% + 2px); left: 50%; transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: rgba(8,12,28,0.97);
-    pointer-events: none; opacity: 0;
-    transition: opacity 0.15s ease; z-index: 99999;
-  }
-  .half-tooltip::after {
-    content: attr(data-tip); position: absolute;
-    top: calc(100% + 12px); left: 50%; transform: translateX(-50%);
-    background: rgba(8,12,28,0.97);
-    color: #fff; font-size: 11px; font-weight: 600;
-    font-family: 'Outfit', sans-serif;
-    padding: 6px 12px; border-radius: 10px; white-space: nowrap;
-    pointer-events: none; opacity: 0;
-    transition: opacity 0.15s ease; z-index: 99999;
-    letter-spacing: 0.2px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-    border: 1px solid var(--border-default);
-  }
-  .half-tooltip:hover::after, .half-tooltip:hover::before { opacity: 1; }
 
   /* ═══════════════════════════════════════════════
      BTN CONGE EXPAND
@@ -681,6 +660,72 @@ async function apiFetch(path, token, options = {}) {
 }
 
 // ─── LOGIN ───
+// ─── TOOLTIP GLOBAL — position:fixed, toujours au premier plan ───
+function PlanningTooltip() {
+  const [tip, setTip] = useState(null); // { text, x, y }
+
+  useEffect(() => {
+    let timeoutId;
+    function onMove(e) {
+      const el = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+      if (el) {
+        const text = el.getAttribute('data-tip');
+        if (text) {
+          clearTimeout(timeoutId);
+          setTip({ text, x: e.clientX, y: e.clientY });
+          return;
+        }
+      }
+      timeoutId = setTimeout(() => setTip(null), 80);
+    }
+    function onLeave() { timeoutId = setTimeout(() => setTip(null), 80); }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseleave', onLeave);
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseleave', onLeave);
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  if (!tip) return null;
+
+  const maxX = window.innerWidth - 160;
+  const tx = Math.min(Math.max(tip.x, 80), maxX);
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: tip.y + 16,
+      left: tx,
+      transform: 'translateX(-50%)',
+      background: 'rgba(8,12,28,0.97)',
+      color: '#fff',
+      fontSize: 11,
+      fontWeight: 600,
+      fontFamily: "'Outfit', sans-serif",
+      padding: '6px 12px',
+      borderRadius: 10,
+      zIndex: 9999999,
+      pointerEvents: 'none',
+      whiteSpace: 'nowrap',
+      boxShadow: '0 8px 28px rgba(0,0,0,0.55)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      letterSpacing: '0.2px',
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: -5, left: '50%', transform: 'translateX(-50%)',
+        width: 0, height: 0,
+        borderLeft: '5px solid transparent',
+        borderRight: '5px solid transparent',
+        borderBottom: '5px solid rgba(8,12,28,0.97)',
+      }} />
+      {tip.text}
+    </div>
+  );
+}
+
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [error, setError] = useState(""); const [loading, setLoading] = useState(false); const [showPwd, setShowPwd] = useState(false); const [showDemo, setShowDemo] = useState(false);
@@ -3037,6 +3082,8 @@ function PlanningApp({ currentUser, onLogout }) {
       onClick={() => { if (contextMenu) setContextMenu(null); if (astreinteContextMenu) setAstreinteContextMenu(null); if (presenceContextMenu) setPresenceContextMenu(null); if (showMonthPicker) setShowMonthPicker(false); if (alShowAgentDrop) setAlShowAgentDrop(false); if (statsPickerOpen) setStatsPickerOpen(false); if (statsAgentDropOpen) setStatsAgentDropOpen(false); if (astreinteDropdown) setAstreinteDropdown(null); if (astreinteEraseStart) { setAstreinteEraseStart(null); setAstreinteHovered(null); } }}>
       <style>{GLOBAL_STYLE}</style>
       <style>{`::-webkit-scrollbar-thumb{background:${filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"}!important;border-radius:10px}::-webkit-scrollbar-thumb:hover{background:${filterMode === "presence" ? "#14b8a6" : filterMode === "astreinte" ? "#fbbf24" : "#818cf8"}!important}`}</style>
+      {/* Tooltip portail — toujours au premier plan */}
+      <PlanningTooltip />
 
       {/* ── Background ambiance ── */}
       <div style={{ position:"fixed", top:"-30%", left:"-20%", width:"65vw", height:"65vw", background:"radial-gradient(ellipse,rgba(99,102,241,0.14) 0%,transparent 62%)", borderRadius:"50%", filter:"blur(80px)", animation:"aurora1 20s ease-in-out infinite", pointerEvents:"none", zIndex:0 }} />
