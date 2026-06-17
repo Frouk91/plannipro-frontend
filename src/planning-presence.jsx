@@ -3544,28 +3544,29 @@ function PlanningApp({ currentUser, onLogout }) {
                         }
                       }}
                       style={{
-                        padding: '13px 20px 11px',
+                        padding: '12px 22px 10px',
                         border: 'none',
                         background: isActive ? '#fff' : 'transparent',
                         cursor: 'pointer',
                         fontSize: '13px',
                         fontWeight: isActive ? '700' : '500',
-                        color: isActive ? tab.color : '#94a3b8',
+                        color: isActive ? tab.color : '#b0b8c8',
                         position: 'relative',
-                        transition: 'all 0.2s ease',
-                        display: 'flex', alignItems: 'center', gap: '7px',
-                        borderBottom: isActive ? `2.5px solid ${tab.color}` : '2.5px solid transparent',
-                        borderRadius: '8px 8px 0 0',
+                        transition: 'all 0.22s ease',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
+                        borderRadius: '10px 10px 0 0',
                         marginBottom: -1.5,
-                        boxShadow: isActive ? '0 -2px 8px rgba(0,0,0,0.05)' : 'none',
+                        boxShadow: isActive ? `0 -3px 12px ${tab.color}18, 0 2px 0 #fff` : 'none',
                         fontFamily: "'Outfit', sans-serif",
-                        letterSpacing: '0.2px',
+                        letterSpacing: '0.15px',
                       }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = tab.color; e.currentTarget.style.background = `${tab.color}08`; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'transparent'; } }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = tab.color; e.currentTarget.style.background = `${tab.color}0a`; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#b0b8c8'; e.currentTarget.style.background = 'transparent'; } }}
                     >
-                      <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+                      <span style={{ fontSize: '15px', filter: isActive ? 'none' : 'grayscale(0.5)', transition: 'filter 0.2s' }}>{tab.icon}</span>
                       {tab.label}
+                      {isActive && <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '40%', height: 3, borderRadius: '3px 3px 0 0', background: `linear-gradient(90deg,${tab.color}88,${tab.color})`, filter: `blur(1px)` }} />}
                     </button>
                   );
                 })}
@@ -3573,9 +3574,9 @@ function PlanningApp({ currentUser, onLogout }) {
               {/* Ligne 1 */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {/* Toggle Mois/Semaine */}
-                <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 2, gap: 2 }}>
+                <div style={{ display: "flex", background: "#f0f2f8", borderRadius: 10, padding: 3, gap: 2 }}>
                   {[{ v: "month", l: "Mois" }, { v: "week", l: "Semaine" }].map(({ v, l }) => (
-                    <button key={v} onClick={() => setPlanView(v)} style={{ padding: "3px 10px", borderRadius: 6, border: "none", background: planView === v ? "#fff" : "transparent", color: planView === v ? "#1e293b" : "#94a3b8", cursor: "pointer", fontSize: 11, fontWeight: planView === v ? 700 : 400, boxShadow: planView === v ? "0 1px 4px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>{l}</button>
+                    <button key={v} onClick={() => setPlanView(v)} style={{ padding: "5px 13px", borderRadius: 8, border: "none", background: planView === v ? "#fff" : "transparent", color: planView === v ? "#374151" : "#9ca3af", cursor: "pointer", fontSize: 12, fontWeight: planView === v ? 700 : 500, boxShadow: planView === v ? "0 1px 6px rgba(0,0,0,0.1)" : "none", transition: "all 0.18s" }}>{l}</button>
                   ))}
                 </div>
                 {/* Navigation date */}
@@ -3641,14 +3642,33 @@ function PlanningApp({ currentUser, onLogout }) {
                 {filterMode === "presence" && !(isManager || isCoordinator || agents.find(a => a.id === currentUser.id)?.can_book_presence_sites) && (
                   <span style={{ fontSize: 11, color: "#94a3b8" }}>🔒 Consultation uniquement</span>
                 )}
-                {filterMode === "presence" && <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>}
-                {filterMode === "all" && <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>}
-                <div style={{ display: "flex", gap: 4 }}>
+                {(filterMode === "presence" || filterMode === "all") && <span style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.8px" }}>Filtrer</span>}
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                   {allTeams.map(t => (
-                    <button key={t} onClick={() => setFilterTeam(t)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 400, background: filterTeam === t ? "#1e293b" : "#fff", color: filterTeam === t ? "#fff" : "#64748b", borderColor: filterTeam === t ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{t}</button>
+                    <button key={t} onClick={() => setFilterTeam(t)} style={{
+                      padding: "5px 13px", borderRadius: 99, border: "1.5px solid",
+                      fontSize: 12, cursor: "pointer", fontWeight: filterTeam === t ? 700 : 500,
+                      background: filterTeam === t ? "#1e293b" : "#fff",
+                      color: filterTeam === t ? "#fff" : "#6b7280",
+                      borderColor: filterTeam === t ? "#1e293b" : "#e5e7eb",
+                      boxShadow: filterTeam === t ? "0 2px 8px rgba(0,0,0,0.18)" : "none",
+                      transition: "all 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+                    }}
+                      onMouseEnter={e => { if (filterTeam !== t) { e.currentTarget.style.borderColor = "#374151"; e.currentTarget.style.color = "#374151"; } }}
+                      onMouseLeave={e => { if (filterTeam !== t) { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#6b7280"; } }}
+                    >{t}</button>
                   ))}
                   {!isAdmin && (
-                    <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 400, background: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#fff", color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#64748b", borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e2e8f0", transition: "all 0.15s" }}>👤 Moi</button>
+                    <button onClick={() => setFilterTeam(`agent-${currentUser.id}`)} style={{
+                      padding: "5px 13px", borderRadius: 99, border: "1.5px solid",
+                      fontSize: 12, cursor: "pointer",
+                      fontWeight: filterTeam === `agent-${currentUser.id}` ? 700 : 500,
+                      background: filterTeam === `agent-${currentUser.id}` ? "linear-gradient(135deg,#6366f1,#818cf8)" : "#fff",
+                      color: filterTeam === `agent-${currentUser.id}` ? "#fff" : "#6b7280",
+                      borderColor: filterTeam === `agent-${currentUser.id}` ? "#6366f1" : "#e5e7eb",
+                      boxShadow: filterTeam === `agent-${currentUser.id}` ? "0 2px 10px rgba(99,102,241,0.35)" : "none",
+                      transition: "all 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+                    }}>👤 Moi</button>
                   )}
                 </div>
               </div>}
@@ -4173,16 +4193,22 @@ function PlanningApp({ currentUser, onLogout }) {
                         const absent = countAbsents(k);
                         const isFriday = new Date(year, month, day).getDay() === 5;
                         const isAstrDay = filterMode === "astreinte" && isFriday && !wk;
-                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc", minWidth: 26 }}>
-                          <div style={{ height: 18, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, marginBottom: 2 }}>
+                        return <th key={i} style={{ padding: "4px 2px", textAlign: "center", fontSize: 9, fontWeight: 600, background: isAstrDay ? "#fef3c7" : isToday ? "linear-gradient(180deg,#eef2ff,#e0e7ff)" : isFer ? "#fef9ec" : wk ? "#f5f5f7" : "#f8fafc", color: isAstrDay ? "#d97706" : isToday ? "#4f46e5" : isFer ? "#d97706" : wk ? "#c4c4cc" : "#94a3b8", borderBottom: `2px solid ${isAstrDay ? "#f59e0b" : isToday ? "#6366f1" : isFer ? "#fde68a" : "#f0f0f4"}`, borderLeft: "1px solid rgba(0,0,0,0.04)", minWidth: 26 }}>
+                          <div style={{ height: 18, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
                             {!wk && !isFer && absent > 0 && (
-                              <div style={{ fontSize: 9, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.25)" }}>{absent}</div>
+                              <div style={{
+                                fontSize: 9, color: "#fff", fontWeight: 800,
+                                background: absent >= 4 ? "linear-gradient(135deg,#dc2626,#ef4444)" : absent >= 2 ? "linear-gradient(135deg,#ea580c,#f97316)" : "linear-gradient(135deg,#4f46e5,#818cf8)",
+                                borderRadius: 99, minWidth: 17, height: 17, padding: "0 4px",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                boxShadow: absent >= 4 ? "0 2px 6px rgba(220,38,38,0.4)" : absent >= 2 ? "0 2px 6px rgba(234,88,12,0.4)" : "0 2px 6px rgba(99,102,241,0.4)",
+                              }}>{absent}</div>
                             )}
                           </div>
-                          <div style={{ textTransform: "uppercase" }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#e2e8f0" : "#475569", marginTop: 1 }}>{day}</div>
-                          {isFer && !wk && <div title={feries[k]} style={{ fontSize: 8, color: "#f59e0b" }}>🗓</div>}
-                          {isToday && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#6366f1", margin: "1px auto 0" }} />}
+                          <div style={{ textTransform: "uppercase", letterSpacing: "0.5px", fontSize: 8 }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
+                          <div style={{ fontSize: 12, fontWeight: isToday ? 800 : 600, color: isToday ? "#4f46e5" : isFer ? "#d97706" : wk ? "#d1d5db" : "#374151", marginTop: 1, lineHeight: 1 }}>{day}</div>
+                          {isFer && !wk && <div title={feries[k]} style={{ fontSize: 7, color: "#f59e0b", marginTop: 1 }}>●</div>}
+                          {isToday && <div style={{ width: 18, height: 2, borderRadius: 99, background: "linear-gradient(90deg,#6366f1,#06b6d4)", margin: "2px auto 0", boxShadow: "0 0 6px rgba(99,102,241,0.6)" }} />}
                         </th>;
                       })}
                     </tr>
@@ -4199,7 +4225,10 @@ function PlanningApp({ currentUser, onLogout }) {
                           {(() => {
                             const tp = teamPalette(teamName); return (
                               <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                                <td colSpan={daysInMonth + 1} style={{ padding: "7px 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1px", background: "linear-gradient(135deg," + tp.header + "," + tp.header + "80)" }}>🏢 {teamName}</td>
+                                <td colSpan={daysInMonth + 1} style={{ padding: "0 0 0 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1.2px", height: 28, position: "relative", overflow: "hidden" }}>
+                                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg,${tp.border},${tp.accent})` }} />
+                                  🏢 {teamName}
+                                </td>
                               </tr>
                             );
                           })()}
@@ -4416,7 +4445,12 @@ function PlanningApp({ currentUser, onLogout }) {
                         return <th key={i} style={{ padding: "10px 4px", textAlign: "center", fontSize: 10, fontWeight: 600, background: isToday ? "#e0e7ff" : isFer ? "#fef9ec" : wk ? "#fafafa" : "#f8fafc", color: isToday ? "#6366f1" : isFer ? "#d97706" : wk ? "#d1d5db" : "#94a3b8", borderBottom: `2px solid ${isToday ? "#6366f1" : isFer ? "#fde68a" : "#f1f5f9"}`, borderLeft: "1px solid #f8fafc" }}>
                           <div style={{ height: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 3, marginBottom: 4 }}>
                             {!wk && !isFer && absent > 0 && (
-                              <div style={{ fontSize: 10, color: "#fff", background: absent >= 3 ? "#ef4444" : absent >= 2 ? "#f97316" : "#6366f1", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}>{absent}</div>
+                              <div style={{ fontSize: 10, color: "#fff", fontWeight: 800,
+                                background: absent >= 4 ? "linear-gradient(135deg,#dc2626,#ef4444)" : absent >= 2 ? "linear-gradient(135deg,#ea580c,#f97316)" : "linear-gradient(135deg,#4f46e5,#818cf8)",
+                                borderRadius: 99, minWidth: 20, height: 20, padding: "0 5px",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                boxShadow: absent >= 4 ? "0 2px 8px rgba(220,38,38,0.45)" : absent >= 2 ? "0 2px 8px rgba(234,88,12,0.45)" : "0 2px 8px rgba(99,102,241,0.45)",
+                              }}>{absent}</div>
                             )}
                           </div>
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
@@ -4438,7 +4472,10 @@ function PlanningApp({ currentUser, onLogout }) {
                           {(() => {
                             const tp = teamPalette(teamName); return (
                               <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
-                                <td colSpan={8} style={{ padding: "7px 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1px", background: "linear-gradient(135deg," + tp.header + "," + tp.header + "80)" }}>🏢 {teamName}</td>
+                                <td colSpan={8} style={{ padding: "0 0 0 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1.2px", height: 28, position: "relative", overflow: "hidden" }}>
+                                  <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg,${tp.border},${tp.accent})` }} />
+                                  🏢 {teamName}
+                                </td>
                               </tr>
                             );
                           })()}
