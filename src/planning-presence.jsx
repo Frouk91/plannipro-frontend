@@ -3527,7 +3527,7 @@ function PlanningApp({ currentUser, onLogout }) {
               boxShadow: "0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)",
             }}>
               {/* ========== ONGLETS ========== */}
-              <div style={{ display: 'flex', gap: 4, borderBottom: '1.5px solid #e8edf5', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid #f0f0f4', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px', position: 'relative' }}>
                 {[
                   { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
                   { mode: 'astreinte', label: 'Astreintes', icon: '🔔', color: '#f59e0b' }
@@ -3544,8 +3544,9 @@ function PlanningApp({ currentUser, onLogout }) {
                         }
                       }}
                       style={{
-                        padding: '12px 22px 10px',
+                        padding: '12px 22px 12px',
                         border: 'none',
+                        borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
                         background: isActive ? '#fff' : 'transparent',
                         cursor: 'pointer',
                         fontSize: '13px',
@@ -3554,10 +3555,9 @@ function PlanningApp({ currentUser, onLogout }) {
                         position: 'relative',
                         transition: 'all 0.22s ease',
                         display: 'flex', alignItems: 'center', gap: '8px',
-                        borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
                         borderRadius: '10px 10px 0 0',
-                        marginBottom: -1.5,
-                        boxShadow: isActive ? `0 -3px 12px ${tab.color}18, 0 2px 0 #fff` : 'none',
+                        marginBottom: -2,
+                        boxShadow: isActive ? `0 -2px 10px ${tab.color}12` : 'none',
                         fontFamily: "'Outfit', sans-serif",
                         letterSpacing: '0.15px',
                       }}
