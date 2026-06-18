@@ -3390,7 +3390,9 @@ function PlanningApp({ currentUser, onLogout }) {
             </div>
           )}
           <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:6 }}>
-            <div style={{ width:18, height:5, borderRadius:99, background:"repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 3px,transparent 3px,transparent 6px)", flexShrink:0 }} />
+            <div style={{ width:18, height:14, borderRadius:3, border:"1.5px dashed #fbbf24", background:"rgba(251,191,36,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <span style={{ fontSize:7, lineHeight:1 }}>🗓</span>
+            </div>
             <span style={{ fontSize:11, color:"#64748b" }}>Jour férié</span>
           </div>
         </div>
