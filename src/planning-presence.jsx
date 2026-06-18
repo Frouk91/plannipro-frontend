@@ -4206,7 +4206,6 @@ function PlanningApp({ currentUser, onLogout }) {
                           <div style={{ textTransform: "uppercase", letterSpacing: "0.5px", fontSize: 8 }}>{DAYS_FR[(i + firstDay) % 7].slice(0, 1)}</div>
                           <div style={{ fontSize: 12, fontWeight: isToday ? 800 : 600, color: isToday ? "#4f46e5" : isFer ? "#d97706" : wk ? "#d1d5db" : "#374151", marginTop: 1, lineHeight: 1 }}>{day}</div>
                           {isFer && !wk && <div title={feries[k]} style={{ fontSize: 7, color: "#f59e0b", marginTop: 1 }}>●</div>}
-                          {isToday && <div style={{ width: 18, height: 2, borderRadius: 99, background: "linear-gradient(90deg,#6366f1,#06b6d4)", margin: "2px auto 0", boxShadow: "0 0 6px rgba(99,102,241,0.6)" }} />}
                         </th>;
                       })}
                     </tr>
