@@ -3527,7 +3527,7 @@ function PlanningApp({ currentUser, onLogout }) {
               boxShadow: "0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)",
             }}>
               {/* ========== ONGLETS ========== */}
-              <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid #f0f0f4', backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px', position: 'relative' }}>
+              <div style={{ display: 'flex', gap: 0, backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px', borderBottom: '2px solid #e8edf5' }}>
                 {[
                   { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
                   { mode: 'astreinte', label: 'Astreintes', icon: '🔔', color: '#f59e0b' }
@@ -3544,7 +3544,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         }
                       }}
                       style={{
-                        padding: '12px 22px 12px',
+                        padding: '11px 22px',
                         border: 'none',
                         borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
                         background: isActive ? '#fff' : 'transparent',
@@ -3557,7 +3557,6 @@ function PlanningApp({ currentUser, onLogout }) {
                         display: 'flex', alignItems: 'center', gap: '8px',
                         borderRadius: '10px 10px 0 0',
                         marginBottom: -2,
-                        boxShadow: isActive ? `0 -2px 10px ${tab.color}12` : 'none',
                         fontFamily: "'Outfit', sans-serif",
                         letterSpacing: '0.15px',
                       }}
@@ -3566,7 +3565,6 @@ function PlanningApp({ currentUser, onLogout }) {
                     >
                       <span style={{ fontSize: '15px', filter: isActive ? 'none' : 'grayscale(0.5)', transition: 'filter 0.2s' }}>{tab.icon}</span>
                       {tab.label}
-                      {isActive && <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '40%', height: 3, borderRadius: '3px 3px 0 0', background: `linear-gradient(90deg,${tab.color}88,${tab.color})`, filter: `blur(1px)` }} />}
                     </button>
                   );
                 })}
