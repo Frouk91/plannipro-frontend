@@ -477,33 +477,33 @@ const GLOBAL_STYLE = `
      STATS CARDS
   ═══════════════════════════════════════════════ */
   .stats-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-    border: 1.5px solid #e8edf5;
-    border-radius: var(--r-lg);
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+    background: linear-gradient(160deg, #ffffff 0%, #fbfbfe 100%);
+    border: 1px solid #eceef5;
+    border-radius: var(--r-xl);
+    padding: 26px 24px;
+    box-shadow: 0 2px 14px rgba(20,20,50,0.05), 0 1px 3px rgba(0,0,0,0.03);
     position: relative; overflow: hidden;
-    transition: all 320ms var(--ease-spring);
-    cursor: default; height: 200px;
+    transition: all 340ms var(--ease-spring);
+    cursor: default; height: 204px;
     display: flex; flex-direction: column; justify-content: center;
   }
-  .stats-card:hover { transform: translateY(-5px); box-shadow: 0 18px 44px rgba(0,0,0,0.1), 0 4px 14px rgba(0,0,0,0.06); border-color: #d4dbe8; }
-  .stats-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--card-color,var(--brand-primary)); border-radius:var(--r-lg) var(--r-lg) 0 0; }
-  .stats-card::after  { content:''; position:absolute; bottom:-30px; right:-30px; width:110px; height:110px; border-radius:50%; background:var(--card-color,var(--brand-primary)); opacity:0.04; transition:all 0.32s ease; }
-  .stats-card:hover::after { transform:scale(1.5); opacity:0.08; }
-  .stats-card-badge { position:absolute; top:18px; right:18px; width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; box-shadow:0 4px 14px rgba(0,0,0,0.15); transition:all 320ms var(--ease-spring); }
-  .stats-card:hover .stats-card-badge { transform:scale(1.14) rotate(-7deg); }
-  .stats-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-right:60px; }
-  .stats-card-label  { font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
-  .stats-card-value  { font-size:34px; font-weight:800; letter-spacing:-1px; line-height:1; }
-  .stats-card-unit   { font-size:14px; font-weight:500; color:#94a3b8; margin-left:5px; }
-  .stats-card-divider{ height:1px; background:linear-gradient(90deg,#e2e8f0,transparent); margin:12px 0; }
-  .stats-card-subvalue { font-size:26px; font-weight:700; letter-spacing:-0.5px; line-height:1; opacity:0.65; }
-  .stats-card-period { font-size:10px; color:#64748b; background:#f1f5f9; padding:3px 8px; border-radius:6px; font-weight:700; white-space:nowrap; margin-top:8px; display:inline-block; }
-  .stats-card-progress { margin-top:16px; }
-  .stats-card-progress-bar  { height:3px; background:#e8edf5; border-radius:var(--r-full); overflow:hidden; }
+  .stats-card:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(20,20,50,0.1), 0 6px 16px rgba(0,0,0,0.05); border-color: #d8dcec; }
+  .stats-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--card-color,var(--brand-primary)),transparent 140%); border-radius:var(--r-xl) var(--r-xl) 0 0; }
+  .stats-card::after  { content:''; position:absolute; bottom:-36px; right:-36px; width:130px; height:130px; border-radius:50%; background:var(--card-color,var(--brand-primary)); opacity:0.05; transition:all 0.35s ease; }
+  .stats-card:hover::after { transform:scale(1.4); opacity:0.09; }
+  .stats-card-badge { position:absolute; top:20px; right:20px; width:46px; height:46px; border-radius:15px; display:flex; align-items:center; justify-content:center; transition:all 340ms var(--ease-spring); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03); }
+  .stats-card:hover .stats-card-badge { transform:scale(1.1) rotate(-5deg); }
+  .stats-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding-right:54px; }
+  .stats-card-label  { font-size:10px; font-weight:800; color:#a0a8ba; text-transform:uppercase; letter-spacing:1.1px; margin-bottom:12px; }
+  .stats-card-value  { font-size:36px; font-weight:800; letter-spacing:-1.2px; line-height:1; }
+  .stats-card-unit   { font-size:13px; font-weight:600; color:#b4bacb; margin-left:5px; }
+  .stats-card-divider{ height:1px; background:linear-gradient(90deg,#eceef5,transparent); margin:13px 0; }
+  .stats-card-subvalue { font-size:25px; font-weight:700; letter-spacing:-0.6px; line-height:1; opacity:0.6; }
+  .stats-card-period { font-size:9.5px; color:#8b92a8; background:#f4f5fa; padding:4px 9px; border-radius:7px; font-weight:700; white-space:nowrap; margin-top:9px; display:inline-block; letter-spacing:0.2px; }
+  .stats-card-progress { margin-top:17px; }
+  .stats-card-progress-bar  { height:4px; background:#eef0f7; border-radius:var(--r-full); overflow:hidden; }
   .stats-card-progress-fill { height:100%; border-radius:var(--r-full); transition:width 700ms var(--ease-spring); }
-  .stats-card-progress-label { font-size:10px; color:#94a3b8; margin-top:7px; text-align:right; }
+  .stats-card-progress-label { font-size:9.5px; color:#b4bacb; margin-top:8px; text-align:right; font-weight:600; letter-spacing:0.2px; }
 `;
 
 
@@ -4741,33 +4741,33 @@ function PlanningApp({ currentUser, onLogout }) {
                 }
 
                 return (
-                  <div style={{ background: "#fff", border: "1px solid #e8edf5", borderRadius: 12, padding: "10px 14px", marginBottom: 16, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ background: "linear-gradient(145deg,#ffffff,#fafbff)", border: "1px solid #eceef5", borderRadius: 18, padding: "16px 20px", marginBottom: 20, boxShadow: "0 4px 20px rgba(99,102,241,0.06), 0 1px 3px rgba(0,0,0,0.04)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }} onClick={e => e.stopPropagation()}>
 
                     {/* ── Sélecteur agent (managers uniquement) ── */}
                     {isManager && (<>
                       <div style={{ position: "relative", flexShrink: 0 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4, display: "flex", alignItems: "center", gap: 4 }}>
-                          <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Agent
+                        <div style={{ fontSize: 9, fontWeight: 800, color: "#a0a8ba", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ width: 3, height: 11, background: "linear-gradient(180deg,#6366f1,#818cf8)", borderRadius: 2, display: "inline-block" }} /> Agent
                         </div>
                         <div onClick={() => { setStatsAgentDropOpen(p => !p); setStatsAgentSearch(""); }}
-                          style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (statsAgentDropOpen ? "#6366f1" : "#6366f1"), background: "#eef2ff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 3px rgba(99,102,241,0.15)" : "0 1px 6px rgba(99,102,241,0.2)", transition: "all 0.15s", userSelect: "none", minWidth: 200 }}>
+                          style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 12, border: statsAgentDropOpen ? "1.5px solid #6366f1" : "1.5px solid #e3e6f0", background: statsAgentDropOpen ? "#eef2ff" : "#fff", cursor: "pointer", boxShadow: statsAgentDropOpen ? "0 0 0 4px rgba(99,102,241,0.1)" : "0 1px 3px rgba(0,0,0,0.04)", transition: "all 0.2s ease", userSelect: "none", minWidth: 210 }}>
                           {selAgent ? (<>
-                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{selAgent.avatar}</div>
+                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(selAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{selAgent.avatar}</div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
-                              <div style={{ fontSize: 11, color: "#94a3b8" }}>{selAgent.team}</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#3730a3", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{selAgent.name}</div>
+                              <div style={{ fontSize: 10, color: "#9ca3af" }}>{selAgent.team}</div>
                             </div>
                           </>) : (<>
-                            <div style={{ width: 20, height: 20, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 8, fontWeight: 700, flexShrink: 0 }}>{currentUser.avatar}</div>
+                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: teamGradient(currentUser.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0, boxShadow: "0 2px 6px rgba(0,0,0,0.15)" }}>{currentUser.avatar}</div>
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#4338ca" }}>{currentUser.first_name} {currentUser.last_name}</div>
-                              <div style={{ fontSize: 11, color: "#94a3b8" }}>Mon profil</div>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: "#3730a3" }}>{currentUser.first_name} {currentUser.last_name}</div>
+                              <div style={{ fontSize: 10, color: "#9ca3af" }}>Mon profil</div>
                             </div>
                           </>)}
-                          <span style={{ fontSize: 11, color: "#94a3b8", transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", flexShrink: 0 }}>▾</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.25s ease" }}><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
                         {statsAgentDropOpen && (
-                          <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#1e293b", borderRadius: 14, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", border: "1px solid #334155", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease", minWidth: 220 }}>
+                          <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#1a1f35", borderRadius: 16, boxShadow: "0 24px 60px rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)", minWidth: 230 }}>
                             <div style={{ padding: "10px 12px", borderBottom: "1px solid #334155", position: "sticky", top: 0, background: "#1e293b", zIndex: 1 }}>
                               <div style={{ position: "relative" }}>
                                 <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
@@ -4836,36 +4836,37 @@ function PlanningApp({ currentUser, onLogout }) {
                       </div>
 
                       {/* ── Séparateur vertical ── */}
-                      <div style={{ width: 1, height: 36, background: "#e8edf5", borderRadius: 1, flexShrink: 0 }} />
+                      <div style={{ width: 1, height: 38, background: "linear-gradient(180deg,transparent,#e3e6f0,transparent)", flexShrink: 0 }} />
                     </>)}
 
                     {/* ── Navigateur mois ‹ / label / › ── */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", display: "flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ width: 3, height: 10, background: "#6366f1", borderRadius: 2, display: "inline-block" }} /> Période
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+                      <div style={{ fontSize: 9, fontWeight: 800, color: "#a0a8ba", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: 5 }}>
+                        <span style={{ width: 3, height: 11, background: "linear-gradient(180deg,#6366f1,#818cf8)", borderRadius: 2, display: "inline-block" }} /> Période
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ display: "flex", alignItems: "center", background: "#f8fafc", borderRadius: 10, border: "1.5px solid " + (!isYearMode ? "#6366f1" : "#e2e8f0"), overflow: "visible", boxShadow: !isYearMode ? "0 2px 10px rgba(99,102,241,0.2)" : "none", transition: "all 0.2s" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ display: "flex", alignItems: "center", background: "#fff", borderRadius: 12, border: !isYearMode ? "1.5px solid #6366f1" : "1.5px solid #e3e6f0", overflow: "visible", boxShadow: !isYearMode ? "0 2px 12px rgba(99,102,241,0.16)" : "0 1px 3px rgba(0,0,0,0.04)", transition: "all 0.2s" }}>
                           <button onClick={navPrev} title="Mois précédent"
-                            style={{ padding: "5px 10px", border: "none", borderRight: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "8px 0 0 8px", transition: "background 0.15s" }}
+                            style={{ padding: "7px 11px", border: "none", borderRight: "1px solid #eef0f6", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#d1d5db", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "10px 0 0 10px", transition: "background 0.15s" }}
                             onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                             onMouseLeave={e => e.currentTarget.style.background = "none"}>‹</button>
                           <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
                             <button
                               onClick={() => { if (!isYearMode) { setStatsFilter("month"); setStatsCustomMonth(null); } setStatsPickerOpen(p => !p); }}
-                              style={{ padding: "5px 12px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#4338ca" : "#94a3b8", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 130, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s" }}>
-                              📅 {MONTHS_FR[navMonth]} {navYear}
-                              {!isYearMode && <span style={{ fontSize: 9, marginLeft: 5, opacity: 0.5 }}>{statsPickerOpen ? "▲" : "▼"}</span>}
+                              style={{ padding: "7px 14px", border: "none", background: statsPickerOpen && !isYearMode ? "#eef2ff" : "none", color: !isYearMode ? "#3730a3" : "#9ca3af", cursor: !isYearMode ? "pointer" : "default", fontSize: 13, fontWeight: 700, minWidth: 140, textAlign: "center", whiteSpace: "nowrap", letterSpacing: "0.2px", transition: "background 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.7 }}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                              {MONTHS_FR[navMonth]} {navYear}
+                              {!isYearMode && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, transform: statsPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>}
                             </button>
                             {statsPickerOpen && (
-                              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 14, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", border: "1px solid #e2e8f0", zIndex: 9999, width: 272, animation: "slideIn 0.15s ease" }}>
+                              <div style={{ position: "absolute", top: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 18, boxShadow: "0 28px 70px rgba(20,20,60,0.18)", border: "1px solid #eceef5", zIndex: 9999, width: 280, animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
                                 {yearsAvailable.map(yr => (
                                   <div key={yr}>
-                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px 8px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: yr === yearsAvailable[0] ? "14px 14px 0 0" : 0 }}>
-                                      <span style={{ fontSize: 12, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
-                                      <span style={{ fontSize: 10, color: "#64748b" }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois avec congés</span>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 9px", borderBottom: "1px solid #f2f3f8", background: "linear-gradient(135deg,#fafbff,#f5f6fc)", borderRadius: yr === yearsAvailable[0] ? "18px 18px 0 0" : 0 }}>
+                                      <span style={{ fontSize: 13, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
+                                      <span style={{ fontSize: 9.5, color: "#9ca3af", fontWeight: 600 }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois actifs</span>
                                     </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4, padding: "10px 12px 12px" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 5, padding: "11px 13px 13px" }}>
                                       {Array.from({ length: 12 }, (_, mi) => {
                                         const hasLeave = !!monthsWithLeaves[`${yr}-${String(mi + 1).padStart(2, "0")}`];
                                         const isAct = (!isYearMode && navYear === yr && navMonth === mi);
@@ -4877,9 +4878,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                               else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
                                               setStatsPickerOpen(false);
                                             }}
-                                            style={{ padding: "7px 4px", borderRadius: 8, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 500 : 400, textAlign: "center", transition: "all 0.1s" }}
-                                            onMouseEnter={e => { if (!isAct) e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = isAct ? "#6366f1" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#1e293b" : "#cbd5e1"; }}>
+                                            style={{ padding: "8px 4px", borderRadius: 9, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#374151" : "#d1d5db", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 600 : 400, textAlign: "center", transition: "all 0.15s", boxShadow: isAct ? "0 3px 10px rgba(99,102,241,0.35)" : "none" }}
+                                            onMouseEnter={e => { if (!isAct) { e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; } }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#374151" : "#d1d5db"; }}>
                                             {MONTHS_FR[mi].slice(0, 3)}
                                           </button>
                                         );
@@ -4891,21 +4892,22 @@ function PlanningApp({ currentUser, onLogout }) {
                             )}
                           </div>
                           <button onClick={navNext} title="Mois suivant"
-                            style={{ padding: "5px 10px", border: "none", borderLeft: "1px solid #e8edf5", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#cbd5e1", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 8px 8px 0", transition: "background 0.15s" }}
+                            style={{ padding: "7px 11px", border: "none", borderLeft: "1px solid #eef0f6", background: "none", cursor: "pointer", color: !isYearMode ? "#6366f1" : "#d1d5db", fontSize: 15, fontWeight: 700, lineHeight: 1, userSelect: "none", borderRadius: "0 10px 10px 0", transition: "background 0.15s" }}
                             onMouseEnter={e => { if (!isYearMode) e.currentTarget.style.background = "#eef2ff"; }}
                             onMouseLeave={e => e.currentTarget.style.background = "none"}>›</button>
                         </div>
 
                         {/* ── Séparateur ── */}
-                        <div style={{ width: 1, height: 28, background: "#e8edf5", borderRadius: 1 }} />
+                        <div style={{ width: 1, height: 30, background: "linear-gradient(180deg,transparent,#e3e6f0,transparent)" }} />
 
                         {/* ── Bouton Année ── */}
                         <button
                           onClick={() => { setStatsFilter(isYearMode ? "month" : "year"); setStatsPickerOpen(false); }}
-                          style={{ padding: "5px 12px", borderRadius: 8, border: "1.5px solid " + (isYearMode ? "#6366f1" : "#e2e8f0"), background: isYearMode ? "#6366f1" : "#fff", color: isYearMode ? "#fff" : "#64748b", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: isYearMode ? "0 3px 12px rgba(99,102,241,0.35)" : "none", transition: "all 0.18s", whiteSpace: "nowrap", letterSpacing: "0.1px" }}
+                          style={{ padding: "7px 14px", borderRadius: 11, border: isYearMode ? "1.5px solid #6366f1" : "1.5px solid #e3e6f0", background: isYearMode ? "linear-gradient(135deg,#6366f1,#818cf8)" : "#fff", color: isYearMode ? "#fff" : "#6b7280", cursor: "pointer", fontSize: 12, fontWeight: 700, boxShadow: isYearMode ? "0 4px 14px rgba(99,102,241,0.38)" : "0 1px 3px rgba(0,0,0,0.04)", transition: "all 0.2s", whiteSpace: "nowrap", letterSpacing: "0.1px", display: "flex", alignItems: "center", gap: 6 }}
                           onMouseEnter={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#6366f1"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.background = "#eef2ff"; } }}
-                          onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.background = "#fff"; } }}>
-                          📆 Année {navYear}
+                          onMouseLeave={e => { if (!isYearMode) { e.currentTarget.style.borderColor = "#e3e6f0"; e.currentTarget.style.color = "#6b7280"; e.currentTarget.style.background = "#fff"; } }}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          Année {navYear}
                         </button>
                       </div>
                     </div>
@@ -4914,12 +4916,12 @@ function PlanningApp({ currentUser, onLogout }) {
                 );
               })()}
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18 }}>
                 {loadingYearStats && (statsFilter === "year" || statsFilter === "custom") && (
-                  <div style={{ gridColumn: "1 / -1", padding: 24, textAlign: "center" }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#eef2ff", border: "1px solid #c7d2fe", borderRadius: 8 }}>
-                      <div style={{ width: 16, height: 16, border: "2px solid #6366f1", borderTop: "2px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-                      <span style={{ fontSize: 12, color: "#a5b4fc", fontWeight: 600 }}>Chargement des statistiques de l'année...</span>
+                  <div style={{ gridColumn: "1 / -1", padding: 28, textAlign: "center" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 20px", background: "linear-gradient(135deg,#eef2ff,#f0f4ff)", border: "1px solid #d4d9f7", borderRadius: 14, boxShadow: "0 4px 16px rgba(99,102,241,0.1)" }}>
+                      <div style={{ width: 16, height: 16, border: "2.5px solid #6366f1", borderTop: "2.5px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                      <span style={{ fontSize: 12, color: "#4338ca", fontWeight: 600 }}>Chargement des statistiques de l'année…</span>
                     </div>
                   </div>
                 )}
@@ -4935,12 +4937,12 @@ function PlanningApp({ currentUser, onLogout }) {
                   const pontLT = leaveTypes.find(t => (t.code || "") === "pont" || (t.label || "").toLowerCase() === "pont");
                   const absenceLT = leaveTypes.find(t => (t.code || "") === "absence" || (t.label || "").toLowerCase() === "absence");
                   const stats = [
-                    { key: "cp", label: "Congés Payés", color: cpLT?.color || "#6366f1", icon: "✏️", days: counts.cp },
-                    { key: "rtt", label: "RTT", color: rttLT?.color || "#10b981", icon: "⏱️", days: counts.rtt },
-                    { key: "pont", label: "Ponts", color: pontLT?.color || "#f59e0b", icon: "🌉", days: counts.pont },
-                    { key: "absence", label: "Absences", color: absenceLT?.color || "#ef4444", icon: "❌", days: counts.absence },
-                    { key: "veille_cp", label: "Veille de CP", color: veilleCpLT?.color || "#8b5cf6", icon: "🌙", days: counts.veille_cp },
-                    { key: "veille_ferie", label: "Veille de Férié", color: veilleEFerieLT?.color || "#f97316", icon: "🎉", days: counts.veille_ferie },
+                    { key: "cp", label: "Congés Payés", color: cpLT?.color || "#6366f1", icon: "sun", days: counts.cp },
+                    { key: "rtt", label: "RTT", color: rttLT?.color || "#10b981", icon: "clock", days: counts.rtt },
+                    { key: "pont", label: "Ponts", color: pontLT?.color || "#f59e0b", icon: "bridge", days: counts.pont },
+                    { key: "absence", label: "Absences", color: absenceLT?.color || "#ef4444", icon: "x", days: counts.absence },
+                    { key: "veille_cp", label: "Veille de CP", color: veilleCpLT?.color || "#8b5cf6", icon: "moon", days: counts.veille_cp },
+                    { key: "veille_ferie", label: "Veille de Férié", color: veilleEFerieLT?.color || "#f97316", icon: "star", days: counts.veille_ferie },
                   ];
                   const periodLabel = statsFilter === "month" ? `${MONTHS_FR[month]} ${year}` : statsFilter === "custom" && statsCustomMonth ? `${MONTHS_FR[statsCustomMonth.month]} ${statsCustomMonth.year}` : `Année ${year}`;
                   const totalDays = stats.reduce((s, x) => s + x.days, 0);
@@ -4948,13 +4950,16 @@ function PlanningApp({ currentUser, onLogout }) {
                     <>
                       {/* Bandeau agent si manager */}
                       {isManager && selectedAgentForStats && (
-                        <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 12, marginBottom: 4 }}>
-                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700 }}>{displayAgent.avatar}</div>
+                        <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", background: "linear-gradient(135deg,#fafbff,#f5f6fc)", border: "1px solid #e8eaf5", borderRadius: 14, marginBottom: 4, boxShadow: "0 2px 10px rgba(0,0,0,0.03)" }}>
+                          <div style={{ width: 32, height: 32, borderRadius: "50%", background: teamGradient(displayAgent.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>{displayAgent.avatar}</div>
                           <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
-                            <div style={{ fontSize: 11, color: "#94a3b8" }}>{displayAgent.team} · {periodLabel}</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b" }}>{displayAgent.name}</div>
+                            <div style={{ fontSize: 11, color: "#9ca3af" }}>{displayAgent.team} · {periodLabel}</div>
                           </div>
-                          <div style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600, color: "#64748b" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })} j total</div>
+                          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", background: "#fff", borderRadius: 99, border: "1px solid #e8eaf5" }}>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: "#4338ca" }}>{totalDays.toLocaleString("fr-FR", { minimumFractionDigits: totalDays % 1 === 0 ? 0 : 1, maximumFractionDigits: 1 })}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af" }}>jours au total</span>
+                          </div>
                         </div>
                       )}
                       {stats.map(s => {
@@ -4990,8 +4995,13 @@ function PlanningApp({ currentUser, onLogout }) {
                                 )}
                               </div>
                               {/* Badge moderne */}
-                              <div className="stats-card-badge" style={{ background: s.color + "20", color: s.color }}>
-                                {s.icon || "●"}
+                              <div className="stats-card-badge" style={{ background: `linear-gradient(135deg,${s.color}22,${s.color}12)`, color: s.color }}>
+                                {s.icon === "sun" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>}
+                                {s.icon === "clock" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                                {s.icon === "bridge" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h20M4 20V10a2 2 0 0 1 2-2h0M20 20V10a2 2 0 0 0-2-2h0M8 20V8a4 4 0 0 1 8 0v12"/></svg>}
+                                {s.icon === "x" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>}
+                                {s.icon === "moon" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>}
+                                {s.icon === "star" && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
                               </div>
                             </div>
                             {/* Barre de progression */}
