@@ -2187,41 +2187,6 @@ function PlanningApp({ currentUser, onLogout }) {
   const canManageAstreintes = currentUser.role === "manager" || currentUser.role === "admin" || currentUser.role === "coordinator";
   const feries = getFeries(year);
 
-  // ========== AUTO-LOGOUT APRÈS 15 MIN D'INACTIVITÉ ==========
-  const inactivityTimeoutRef = useRef(null);
-
-  const handleInactivity = useCallback(() => {
-    if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
-
-    inactivityTimeoutRef.current = setTimeout(() => {
-      console.log('⏰ Inactivité détectée - Déconnexion');
-      onLogout();
-    }, 15 * 60 * 1000); // 15 minutes
-  }, [onLogout]);
-
-  const resetInactivityTimer = useCallback(() => {
-    handleInactivity();
-  }, [handleInactivity]);
-
-  useEffect(() => {
-    // Écoute l'activité de l'utilisateur
-    window.addEventListener('mousedown', resetInactivityTimer);
-    window.addEventListener('keydown', resetInactivityTimer);
-    window.addEventListener('scroll', resetInactivityTimer);
-    window.addEventListener('touchstart', resetInactivityTimer);
-
-    // Démarre le timer au montage
-    handleInactivity();
-
-    return () => {
-      window.removeEventListener('mousedown', resetInactivityTimer);
-      window.removeEventListener('keydown', resetInactivityTimer);
-      window.removeEventListener('scroll', resetInactivityTimer);
-      window.removeEventListener('touchstart', resetInactivityTimer);
-      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
-    };
-  }, [handleInactivity, resetInactivityTimer]);
-
   // ========== CHARGER ASTREINTES DEPUIS L'API ==========
   useEffect(() => {
     const loadAstreintes = async () => {
@@ -5849,36 +5814,47 @@ export default function App() {
     catch { return null; }
   });
 
-  // Déconnexion automatique après 60 minutes d'inactivité
+  // ========== DÉCONNEXION AUTOMATIQUE — 60 min — robuste ==========
+  // Utilise localStorage pour survivre aux onglets en arrière-plan
+  const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 60 minutes
+  const LS_LAST_ACTIVITY = "plannipro_last_activity";
+
   useEffect(() => {
     if (!currentUser) return;
 
-    const SESSION_TIMEOUT = 60 * 60 * 1000; // 60 minutes
-    let timeoutId;
-
-    const resetTimeout = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        handleLogout();
-      }, SESSION_TIMEOUT);
+    // Écrire le timestamp de dernière activité
+    const markActivity = () => {
+      try { localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString()); } catch {}
     };
 
-    // Réinitialiser le timeout à chaque interaction utilisateur
-    window.addEventListener('mousemove', resetTimeout);
-    window.addEventListener('keypress', resetTimeout);
-    window.addEventListener('click', resetTimeout);
-    window.addEventListener('scroll', resetTimeout);
-    window.addEventListener('touchstart', resetTimeout);
+    // Vérifier si la session a expiré
+    const checkExpiry = () => {
+      try {
+        const last = parseInt(localStorage.getItem(LS_LAST_ACTIVITY) || "0");
+        if (last > 0 && Date.now() - last > INACTIVITY_TIMEOUT) {
+          handleLogout();
+        }
+      } catch {}
+    };
 
-    resetTimeout(); // Initialiser le timer
+    // Initialiser l'activité au montage
+    markActivity();
+
+    // Écouter les interactions
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+    events.forEach(e => window.addEventListener(e, markActivity, { passive: true }));
+
+    // Vérifier à intervalle régulier (toutes les 60 secondes)
+    const intervalId = setInterval(checkExpiry, 60 * 1000);
+
+    // Vérifier immédiatement quand l'onglet redevient visible (cas arrière-plan)
+    const onVisible = () => { if (document.visibilityState === "visible") checkExpiry(); };
+    document.addEventListener("visibilitychange", onVisible);
 
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('mousemove', resetTimeout);
-      window.removeEventListener('keypress', resetTimeout);
-      window.removeEventListener('click', resetTimeout);
-      window.removeEventListener('scroll', resetTimeout);
-      window.removeEventListener('touchstart', resetTimeout);
+      events.forEach(e => window.removeEventListener(e, markActivity));
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(intervalId);
     };
   }, [currentUser]);
 
