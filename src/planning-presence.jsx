@@ -2530,7 +2530,35 @@ function PlanningApp({ currentUser, onLogout }) {
     if (!dataLoaded || leaveTypes.length === 0) return;
     const poll = async () => {
       try {
-        await loadLeaves(leaveTypes, token, year, month);
+        // Si on est en mode année, recharger tous les mois pour ne pas écraser les stats
+        if (statsFilter === "year" || statsFilter === "custom") {
+          const monthRequests = [];
+          for (let m = 0; m < 12; m++) {
+            const monthStr = `${year}-${String(m + 1).padStart(2, "0")}`;
+            monthRequests.push(apiFetch(`/leaves?month=${monthStr}`, token));
+          }
+          const allMonthsData = await Promise.all(monthRequests);
+          const allLeavesMap = {};
+          allMonthsData.forEach(data => {
+            const leavesData = (Array.isArray(data) ? data : (data.leaves || [])).filter(l => l.status !== "cancelled" && l.status !== "rejected");
+            leavesData.forEach(l => {
+              if (!allLeavesMap[l.agent_id]) allLeavesMap[l.agent_id] = {};
+              const lt = leaveFromBackend(l);
+              const leaveStart = l.start_date.split("T")[0], leaveEnd = l.end_date.split("T")[0];
+              const isPresence = PRESENCE_CODES.includes((l.leave_type_code || "").toLowerCase());
+              for (let d = new Date(l.start_date); d <= new Date(l.end_date); d.setDate(d.getDate() + 1)) {
+                const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                const entry = { ...lt, status: l.status, leaveId: l.id, leaveStart, leaveEnd, leaveCode: l.leave_type_code, agentId: l.agent_id, reason: l.reason };
+                if (isPresence) allLeavesMap[l.agent_id][k + "__presence"] = entry;
+                else allLeavesMap[l.agent_id][k] = entry;
+              }
+            });
+          });
+          setLeaves(allLeavesMap);
+          sessionStorage.setItem(`yearLeaves_${year}`, JSON.stringify(allLeavesMap));
+        } else {
+          await loadLeaves(leaveTypes, token, year, month);
+        }
         await loadRequests(token);
         // Recharger les astreintes
         const res = await fetch(`${API}/astreintes`, { headers: { Authorization: `Bearer ${token}` } });
@@ -2552,7 +2580,7 @@ function PlanningApp({ currentUser, onLogout }) {
     };
     pollingRef.current = setInterval(poll, 30000);
     return () => clearInterval(pollingRef.current);
-  }, [dataLoaded, token, year, month, leaveTypes.length]);
+  }, [dataLoaded, token, year, month, leaveTypes.length, statsFilter]);
 
   useEffect(() => {
     if (!dataLoaded || leaveTypes.length === 0) return;
