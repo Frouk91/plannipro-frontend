@@ -5825,64 +5825,79 @@ function CongesExceptionnelsView({ agents, leaves, leaveTypes, requests, token, 
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
-    try { const saved = localStorage.getItem("plannipro_user"); return saved ? JSON.parse(saved) : null; }
+    try {
+      // sessionStorage : effacé automatiquement à la fermeture de l'onglet/navigateur
+      const saved = sessionStorage.getItem("plannipro_user");
+      if (saved) return JSON.parse(saved);
+      // Fallback : nettoyer localStorage si présent (migration)
+      localStorage.removeItem("plannipro_user");
+      return null;
+    }
     catch { return null; }
   });
 
-  // ========== DÉCONNEXION AUTOMATIQUE — 60 min — robuste ==========
-  // Utilise localStorage pour survivre aux onglets en arrière-plan
-  const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 60 minutes
+  // ========== DÉCONNEXION AUTO — 60 min d'inactivité ==========
+  const INACTIVITY_TIMEOUT = 60 * 60 * 1000;
   const LS_LAST_ACTIVITY = "plannipro_last_activity";
 
   useEffect(() => {
     if (!currentUser) return;
 
-    // Écrire le timestamp de dernière activité
     const markActivity = () => {
-      try { localStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString()); } catch {}
+      try { sessionStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString()); } catch {}
     };
 
-    // Vérifier si la session a expiré
     const checkExpiry = () => {
       try {
-        const last = parseInt(localStorage.getItem(LS_LAST_ACTIVITY) || "0");
-        if (last > 0 && Date.now() - last > INACTIVITY_TIMEOUT) {
-          handleLogout();
-        }
+        const last = parseInt(sessionStorage.getItem(LS_LAST_ACTIVITY) || "0");
+        if (last > 0 && Date.now() - last > INACTIVITY_TIMEOUT) handleLogout();
       } catch {}
     };
 
-    // Initialiser l'activité au montage
+    // Effacer la session à la fermeture de l'onglet
+    const onUnload = () => {
+      try {
+        sessionStorage.removeItem("plannipro_user");
+        sessionStorage.removeItem(LS_LAST_ACTIVITY);
+      } catch {}
+    };
+
     markActivity();
 
-    // Écouter les interactions
     const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
     events.forEach(e => window.addEventListener(e, markActivity, { passive: true }));
 
-    // Vérifier à intervalle régulier (toutes les 60 secondes)
     const intervalId = setInterval(checkExpiry, 60 * 1000);
 
-    // Vérifier immédiatement quand l'onglet redevient visible (cas arrière-plan)
     const onVisible = () => { if (document.visibilityState === "visible") checkExpiry(); };
     document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("beforeunload", onUnload);
 
     return () => {
       events.forEach(e => window.removeEventListener(e, markActivity));
       document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("beforeunload", onUnload);
       clearInterval(intervalId);
     };
   }, [currentUser]);
 
   function handleLogin(user) {
-    try { localStorage.setItem("plannipro_user", JSON.stringify(user)); } catch { }
+    try {
+      sessionStorage.setItem("plannipro_user", JSON.stringify(user));
+      sessionStorage.setItem(LS_LAST_ACTIVITY, Date.now().toString());
+      // Nettoyer l'ancienne clé localStorage si elle existe
+      localStorage.removeItem("plannipro_user");
+    } catch {}
     setCurrentUser(user);
   }
 
   function handleLogout() {
-    try { localStorage.removeItem("plannipro_user"); } catch { }
+    try {
+      sessionStorage.removeItem("plannipro_user");
+      sessionStorage.removeItem(LS_LAST_ACTIVITY);
+      localStorage.removeItem("plannipro_user");
+    } catch {}
     setCurrentUser(null);
-
-    // Refresh du cache (Ctrl+F5)
     setTimeout(() => {
       window.location.href = window.location.pathname + '?t=' + Date.now();
     }, 300);
