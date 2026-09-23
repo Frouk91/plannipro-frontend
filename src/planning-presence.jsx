@@ -1282,12 +1282,13 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
 }
 
 
-function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement, cssSubTeams, setCssSubTeams }) {
+function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onTeamRenamed, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement, cssSubTeams, setCssSubTeams }) {
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
   const [newTeam, setNewTeam] = useState(""); const [newLT, setNewLT] = useState({ label: "", color: COLORS[0], is_exceptional: false }); const [showAddLTModal, setShowAddLTModal] = useState(false); const [loading, setLoading] = useState(false);
   const [teamModal, setTeamModal] = useState(false);
+  const [renameTeam, setRenameTeam] = useState(null); // { id, name, newName }
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterTeam, setFilterTeam] = useState("all");
@@ -1304,6 +1305,17 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
   async function handleAddTeam() { if (!newTeam.trim()) return; try { const data = await apiFetch("/teams", token, { method: "POST", body: JSON.stringify({ name: newTeam.trim() }) }); if (data.id) { onTeamAdded(data); setNewTeam(""); showNotif("Équipe ajoutée ✅"); } } catch { showNotif("Erreur", "error"); } }
   async function handleDeleteTeam(team) { try { await apiFetch(`/teams/${team.id}`, token, { method: "DELETE" }); onTeamDeleted(team.id); showNotif("Équipe supprimée", "error"); } catch { showNotif("Erreur", "error"); } }
+  async function handleRenameTeam() {
+    if (!renameTeam || !renameTeam.newName?.trim()) return;
+    try {
+      const data = await apiFetch(`/teams/${renameTeam.id}`, token, { method: "PATCH", body: JSON.stringify({ name: renameTeam.newName.trim() }) });
+      if (data.id) {
+        onTeamRenamed(data.id, data.name);
+        setRenameTeam(null);
+        showNotif("Équipe renommée ✅");
+      }
+    } catch { showNotif("Erreur", "error"); }
+  }
   async function handleAddLT() { if (!newLT.label.trim()) return; try { const data = await apiFetch("/leave-types", token, { method: "POST", body: JSON.stringify({ label: newLT.label.trim(), color: newLT.color, is_exceptional: newLT.is_exceptional }) }); if (data.id) { onLeaveTypeAdded({ ...data, bg: hexToLight(data.color), is_exceptional: data.is_exceptional || false }); setNewLT({ label: "", color: COLORS[0], is_exceptional: false }); showNotif("Type ajouté ✅"); } } catch { showNotif("Erreur", "error"); } }
   async function handleUpdateLT(lt, newLabel, newColor) { try { await apiFetch(`/leave-types/${lt.id}`, token, { method: "PATCH", body: JSON.stringify({ label: newLabel, color: newColor }) }); onLeaveTypeUpdated(lt.id, { label: newLabel, color: newColor, bg: hexToLight(newColor) }); setEditLT(null); showNotif("Modifié ✅"); } catch { showNotif("Erreur", "error"); } }
   async function handleAssignAgentTeam(agentId, teamName) {
@@ -1527,14 +1539,22 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{t.name}</div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 11, color: "#94a3b8" }}>{tAgents.length} agent{tAgents.length !== 1 ? "s" : ""}</span>
-                      {t.name !== "Admin" && (
-                        <button onClick={e => { e.stopPropagation(); handleDeleteTeam(t); }}
-                          style={{ padding: "2px 8px", borderRadius: 6, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 10, color: "#ef4444", fontWeight: 600, transition: "all 0.15s" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; }}>
-                          🗑
+                      <div style={{ display: "flex", gap: 5 }}>
+                        <button onClick={e => { e.stopPropagation(); setRenameTeam({ id: t.id, name: t.name, newName: t.name }); }}
+                          style={{ padding: "2px 8px", borderRadius: 6, border: "1.5px solid #c7d2fe", background: "#eef2ff", cursor: "pointer", fontSize: 10, color: "#4338ca", fontWeight: 600, transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "#6366f1"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#6366f1"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "#eef2ff"; e.currentTarget.style.color = "#4338ca"; e.currentTarget.style.borderColor = "#c7d2fe"; }}>
+                          ✏️
                         </button>
-                      )}
+                        {t.name !== "Admin" && (
+                          <button onClick={e => { e.stopPropagation(); handleDeleteTeam(t); }}
+                            style={{ padding: "2px 8px", borderRadius: 6, border: "1.5px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: 10, color: "#ef4444", fontWeight: 600, transition: "all 0.15s" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#fca5a5"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#fef2f2"; e.currentTarget.style.color = "#ef4444"; e.currentTarget.style.borderColor = "#fca5a5"; }}>
+                            🗑
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -1589,6 +1609,34 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+          {renameTeam && (
+            <div onClick={() => setRenameTeam(null)} style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, backdropFilter: "blur(6px)" }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "linear-gradient(145deg,#0f172a,#1e293b)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 18, padding: "28px 28px 24px", width: 380, boxShadow: "0 30px 80px rgba(0,0,0,0.6)", animation: "slideIn 0.2s ease" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#6366f1,#818cf8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>✏️</div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#f1f5f9" }}>Renommer l'équipe</div>
+                    <div style={{ fontSize: 11, color: "#94a3b8" }}>Ancien nom : <strong style={{ color: "#6366f1" }}>{renameTeam.name}</strong></div>
+                  </div>
+                </div>
+                <input autoFocus value={renameTeam.newName}
+                  onChange={e => setRenameTeam(p => ({ ...p, newName: e.target.value }))}
+                  onKeyDown={e => { if (e.key === "Enter") handleRenameTeam(); if (e.key === "Escape") setRenameTeam(null); }}
+                  placeholder="Nouveau nom de l'équipe..."
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 16, transition: "border 0.15s", fontFamily: "'Outfit',sans-serif" }}
+                  onFocus={e => e.target.style.borderColor = "#6366f1"}
+                  onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => setRenameTeam(null)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", fontSize: 13, color: "#94a3b8", fontWeight: 600 }}>Annuler</button>
+                  <button onClick={handleRenameTeam} disabled={!renameTeam.newName?.trim() || renameTeam.newName.trim() === renameTeam.name}
+                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: renameTeam.newName?.trim() && renameTeam.newName.trim() !== renameTeam.name ? "linear-gradient(135deg,#6366f1,#818cf8)" : "rgba(255,255,255,0.05)", color: renameTeam.newName?.trim() && renameTeam.newName.trim() !== renameTeam.name ? "#fff" : "#475569", cursor: "pointer", fontSize: 13, fontWeight: 700, boxShadow: "0 2px 10px rgba(99,102,241,0.3)", transition: "all 0.15s" }}>
+                    ✓ Renommer
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -3482,6 +3530,7 @@ function PlanningApp({ currentUser, onLogout }) {
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
+          onTeamRenamed={(id, name) => setTeams(prev => prev.map(t => t.id === id ? { ...t, name } : t))}
           onLeaveTypeAdded={lt => setLeaveTypes(prev => [...prev, lt])}
           onLeaveTypeUpdated={(id, data) => setLeaveTypes(prev => prev.map(lt => lt.id === id ? { ...lt, ...data } : lt))}
           onLeaveTypeDeleted={id => setLeaveTypes(prev => prev.filter(lt => lt.id !== id))}
