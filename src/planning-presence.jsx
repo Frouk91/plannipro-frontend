@@ -607,6 +607,8 @@ function teamPalette(teamName) {
     "Equipe Digital 2":   { row: "#f0f9ff", wk: "#bae6fd", header: "#bae6fd", border: "#0284c7", text: "#075985", accent: "#0284c7" },
     "Mailing Solution":   { row: "#f5f0ff", wk: "#e4d8fb", header: "#ede9fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
     "MANAGER":            { row: "#f0fdf7", wk: "#ccf0e0", header: "#d1fae5", border: "#10b981", text: "#065f46", accent: "#10b981" },
+    "Quadient":           { row: "#f1f5f9", wk: "#e2e8f0", header: "#cbd5e1", border: "#475569", text: "#1e293b", accent: "#475569" },
+    "Serensia":           { row: "#f0f4ff", wk: "#dce5f7", header: "#c7d7f5", border: "#4c6ef5", text: "#1e3a8a", accent: "#4c6ef5" },
   };
   const defaults = [
     { row: "#f0fdf4", wk: "#d1fae5", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
