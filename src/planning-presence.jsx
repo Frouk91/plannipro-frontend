@@ -557,14 +557,8 @@ function formatDate(s) { if (!s) return ""; const p = s.split("T")[0].split("-")
 function getInitials(name) { return (name || "?").split(" ").map(w => w[0] || "").join("").toUpperCase().slice(0, 2); }
 function agentHue(id) { return Math.abs((id || "").toString().split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360; }
 function teamGradient(team) {
-  const map = {
-    "CSS Digital": "linear-gradient(135deg,#3b82f6,#60a5fa)",
-    "Mailing Solution": "linear-gradient(135deg,#7c3aed,#a78bfa)",
-    "MANAGER": "linear-gradient(135deg,#059669,#34d399)",
-  };
-  if (map[team]) return map[team];
-  const hue = Math.abs((team || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % 360;
-  return "linear-gradient(135deg,hsl(" + hue + ",55%,50%),hsl(" + (hue + 30) + ",65%,62%))";
+  const p = teamPalette(team);
+  return "linear-gradient(135deg," + p.accent + "," + mixHex(p.accent, "#ffffff", 0.32) + ")";
 }
 function addDays(dateStr, n) { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function compareDates(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
@@ -600,25 +594,48 @@ function HalfDayCell({ color, label, isMatin, size, fontSize, pad }) {
     </div>
   );
 }
-function teamPalette(teamName) {
-  const palettes = {
-    "CSS Digital":        { row: "#f0f5ff", wk: "#dce8fb", header: "#dbeafe", border: "#3b82f6", text: "#1d4ed8", accent: "#3b82f6" },
-    "Equipe Digital 1":   { row: "#eff6ff", wk: "#dbeafe", header: "#bfdbfe", border: "#2563eb", text: "#1e40af", accent: "#2563eb" },
-    "Equipe Digital 2":   { row: "#f0f9ff", wk: "#bae6fd", header: "#bae6fd", border: "#0284c7", text: "#075985", accent: "#0284c7" },
-    "Mailing Solution":   { row: "#f5f0ff", wk: "#e4d8fb", header: "#ede9fe", border: "#7c3aed", text: "#5b21b6", accent: "#7c3aed" },
-    "MANAGER":            { row: "#f0fdf7", wk: "#ccf0e0", header: "#d1fae5", border: "#10b981", text: "#065f46", accent: "#10b981" },
-    "Quadient":           { row: "#f1f5f9", wk: "#e2e8f0", header: "#cbd5e1", border: "#475569", text: "#1e293b", accent: "#475569" },
-    "Serensia":           { row: "#f0f4ff", wk: "#dce5f7", header: "#c7d7f5", border: "#4c6ef5", text: "#1e3a8a", accent: "#4c6ef5" },
+// ─── COULEURS D'ÉQUIPES — une couleur distincte par équipe, sans rose ni rouge ───
+function mixHex(hex, other, t) {
+  const p = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const a = p(hex), b = p(other);
+  return "#" + a.map((v, i) => Math.round(v * (1 - t) + b[i] * t).toString(16).padStart(2, "0")).join("");
+}
+function buildTeamPalette(base) {
+  return {
+    row: mixHex(base, "#ffffff", 0.93),
+    wk: mixHex(base, "#ffffff", 0.83),
+    header: mixHex(base, "#ffffff", 0.78),
+    border: base,
+    text: mixHex(base, "#000000", 0.45),
+    accent: base,
   };
-  const defaults = [
-    { row: "#f0fdf4", wk: "#d1fae5", header: "#bbf7d0", border: "#22c55e", text: "#166534", accent: "#22c55e" },
-    { row: "#fff7ed", wk: "#fde8cc", header: "#fed7aa", border: "#f97316", text: "#9a3412", accent: "#f97316" },
-    { row: "#fdf2f8", wk: "#fce7f3", header: "#fbcfe8", border: "#ec4899", text: "#9d174d", accent: "#ec4899" },
-    { row: "#ecfeff", wk: "#cffafe", header: "#a5f3fc", border: "#06b6d4", text: "#0e7490", accent: "#06b6d4" },
-  ];
-  if (palettes[teamName]) return palettes[teamName];
-  const idx = Math.abs((teamName || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % defaults.length;
-  return defaults[idx];
+}
+// Reconnaissance par mot-clé (insensible à la casse, aux accents et aux préfixes "1. ", "2. ")
+const TEAM_COLOR_RULES = [
+  ["equipe digital 1", "#0d9488"],  // sarcelle
+  ["equipe digital 2", "#65a30d"],  // vert olive
+  ["css digital",      "#4f46e5"],  // indigo
+  ["mailing",          "#0891b2"],  // cyan
+  ["quadient",         "#2563eb"],  // bleu roi
+  ["serensia",         "#7c3aed"],  // violet
+  ["manager",          "#059669"],  // émeraude
+  ["admin",            "#475569"],  // ardoise
+];
+// Couleurs de repli (aucun rose, aucun rouge)
+const TEAM_FALLBACK_COLORS = ["#0284c7", "#4338ca", "#0f766e", "#6d28d9", "#475569", "#1d4ed8", "#15803d", "#0369a1"];
+const _teamPaletteCache = {};
+function teamPalette(teamName) {
+  const key = teamName || "";
+  if (_teamPaletteCache[key]) return _teamPaletteCache[key];
+  const norm = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/^[\s\d.\-)]+/, "").trim();
+  const rule = TEAM_COLOR_RULES.find(([kw]) => norm.includes(kw));
+  let base;
+  if (rule) base = rule[1];
+  else {
+    const idx = Math.abs(norm.split("").reduce((a, ch) => a + ch.charCodeAt(0), 0)) % TEAM_FALLBACK_COLORS.length;
+    base = TEAM_FALLBACK_COLORS[idx];
+  }
+  return (_teamPaletteCache[key] = buildTeamPalette(base));
 }
 function leaveAbbr(label) {
   if (!label) return "???";
