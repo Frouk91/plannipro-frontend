@@ -2168,6 +2168,9 @@ function PlanningApp({ currentUser, onLogout }) {
   const [planView, setPlanView] = useState("month");
   const [weekAnchor, setWeekAnchor] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [filterTeam, setFilterTeam] = useState("Tous");
+  const [teamsOrder, setTeamsOrder] = useState(() => { try { return JSON.parse(localStorage.getItem("teamsOrder") || "[]"); } catch { return []; } });
+  const [dragTeamName, setDragTeamName] = useState(null);
+  const [dragOverTeamName, setDragOverTeamName] = useState(null);
   const [cssSubTeams, setCssSubTeams] = useState({});
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
@@ -2457,6 +2460,19 @@ function PlanningApp({ currentUser, onLogout }) {
     await saveAgentOrder(newOrder);
   };
 
+  const reorderTeam = (fromName, toName) => {
+    if (fromName === toName) return;
+    const allTeamNames = agentsByTeam.map(([t]) => t);
+    const order = teamsOrder.length > 0 ? [...teamsOrder] : [...allTeamNames];
+    allTeamNames.forEach(n => { if (!order.includes(n)) order.push(n); });
+    const fi = order.indexOf(fromName), ti = order.indexOf(toName);
+    if (fi < 0 || ti < 0) return;
+    order.splice(fi, 1);
+    order.splice(ti, 0, fromName);
+    setTeamsOrder(order);
+    try { localStorage.setItem("teamsOrder", JSON.stringify(order)); } catch {}
+  };
+
   const sortedAgents = useMemo(() => {
     if (agentsOrder.length === 0) return agents;
     return agents.slice().sort((a, b) => agentsOrder.indexOf(a.id) - agentsOrder.indexOf(b.id));
@@ -2526,11 +2542,16 @@ function PlanningApp({ currentUser, onLogout }) {
       teamMap[displayTeam].push(agent);
     });
     grouped.sort(([a], [b]) => {
-      // CSS Digital et ses sous-équipes restent groupés ensemble
-      const parentA = a.startsWith("Equipe Digital") ? "CSS Digital~" + a : a;
-      const parentB = b.startsWith("Equipe Digital") ? "CSS Digital~" + b : b;
       if (a === "Sans équipe") return 1;
       if (b === "Sans équipe") return -1;
+      if (teamsOrder.length > 0) {
+        const ia = teamsOrder.indexOf(a), ib = teamsOrder.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+      }
+      const parentA = a.startsWith("Equipe Digital") ? "CSS Digital~" + a : a;
+      const parentB = b.startsWith("Equipe Digital") ? "CSS Digital~" + b : b;
       return parentA.localeCompare(parentB);
     });
     return grouped;
@@ -2781,7 +2802,7 @@ function PlanningApp({ currentUser, onLogout }) {
   }, [agents, filterTeam, currentUser.id]);
 
   // Cache les agents groupés par équipe pour éviter les recalculs
-  const agentsByTeam = useMemo(() => getAgentsByTeam(), [sortedAgents, filterTeam, cssSubTeams]);
+  const agentsByTeam = useMemo(() => getAgentsByTeam(), [sortedAgents, filterTeam, cssSubTeams, teamsOrder]);
   const pendingRequests = useMemo(() => requests.filter(r => r.status === "pending"), [requests]);
   const myRequests = useMemo(() => requests.filter(r => r.agentId === currentUser.id), [requests, currentUser.id]);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
@@ -3532,7 +3553,18 @@ function PlanningApp({ currentUser, onLogout }) {
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
-          onTeamRenamed={(id, name) => setTeams(prev => prev.map(t => t.id === id ? { ...t, name } : t))}
+          onTeamRenamed={(id, newName) => {
+            const oldName = teams.find(t => t.id === id)?.name;
+            setTeams(prev => prev.map(t => t.id === id ? { ...t, name: newName } : t));
+            if (oldName) {
+              setAgents(prev => prev.map(a => a.team === oldName ? { ...a, team: newName } : a));
+              setTeamsOrder(prev => {
+                const updated = prev.map(n => n === oldName ? newName : n);
+                try { localStorage.setItem("teamsOrder", JSON.stringify(updated)); } catch {}
+                return updated;
+              });
+            }
+          }}
           onLeaveTypeAdded={lt => setLeaveTypes(prev => [...prev, lt])}
           onLeaveTypeUpdated={(id, data) => setLeaveTypes(prev => prev.map(lt => lt.id === id ? { ...lt, ...data } : lt))}
           onLeaveTypeDeleted={id => setLeaveTypes(prev => prev.filter(lt => lt.id !== id))}
@@ -4254,9 +4286,17 @@ function PlanningApp({ currentUser, onLogout }) {
                         <React.Fragment key={teamName}>
                           {(() => {
                             const tp = teamPalette(teamName); return (
-                              <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                              <tr
+                                draggable={isAdmin || isManager}
+                                onDragStart={e => { e.stopPropagation(); setDragTeamName(teamName); e.dataTransfer.effectAllowed = "move"; }}
+                                onDragOver={e => { e.preventDefault(); setDragOverTeamName(teamName); }}
+                                onDragLeave={() => setDragOverTeamName(null)}
+                                onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragTeamName) reorderTeam(dragTeamName, teamName); setDragTeamName(null); setDragOverTeamName(null); }}
+                                onDragEnd={() => { setDragTeamName(null); setDragOverTeamName(null); }}
+                                style={{ background: dragOverTeamName === teamName ? tp.border + "30" : tp.header, borderBottom: "2px solid " + tp.border, cursor: isAdmin || isManager ? "grab" : "default", opacity: dragTeamName === teamName ? 0.5 : 1 }}>
                                 <td colSpan={daysInMonth + 1} style={{ padding: "0 0 0 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1.2px", height: 28, position: "relative", overflow: "hidden" }}>
                                   <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg,${tp.border},${tp.accent})` }} />
+                                  {(isAdmin || isManager) && <span style={{ marginRight: 6, opacity: 0.5, fontSize: 11 }}>⠿</span>}
                                   🏢 {teamName}
                                 </td>
                               </tr>
@@ -4501,9 +4541,17 @@ function PlanningApp({ currentUser, onLogout }) {
                         <React.Fragment key={teamName}>
                           {(() => {
                             const tp = teamPalette(teamName); return (
-                              <tr style={{ background: tp.header, borderBottom: "2px solid " + tp.border }}>
+                              <tr
+                                draggable={isAdmin || isManager}
+                                onDragStart={e => { e.stopPropagation(); setDragTeamName(teamName); e.dataTransfer.effectAllowed = "move"; }}
+                                onDragOver={e => { e.preventDefault(); setDragOverTeamName(teamName); }}
+                                onDragLeave={() => setDragOverTeamName(null)}
+                                onDrop={e => { e.preventDefault(); e.stopPropagation(); if (dragTeamName) reorderTeam(dragTeamName, teamName); setDragTeamName(null); setDragOverTeamName(null); }}
+                                onDragEnd={() => { setDragTeamName(null); setDragOverTeamName(null); }}
+                                style={{ background: dragOverTeamName === teamName ? tp.border + "30" : tp.header, borderBottom: "2px solid " + tp.border, cursor: isAdmin || isManager ? "grab" : "default", opacity: dragTeamName === teamName ? 0.5 : 1 }}>
                                 <td colSpan={8} style={{ padding: "0 0 0 14px", fontSize: 10, fontWeight: 800, color: tp.text, textTransform: "uppercase", letterSpacing: "1.2px", height: 28, position: "relative", overflow: "hidden" }}>
                                   <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: `linear-gradient(180deg,${tp.border},${tp.accent})` }} />
+                                  {(isAdmin || isManager) && <span style={{ marginRight: 6, opacity: 0.5, fontSize: 11 }}>⠿</span>}
                                   🏢 {teamName}
                                 </td>
                               </tr>
