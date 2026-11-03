@@ -610,31 +610,38 @@ function buildTeamPalette(base) {
     accent: base,
   };
 }
-// Reconnaissance par mot-clé (insensible à la casse, aux accents et aux préfixes "1. ", "2. ")
-const TEAM_COLOR_RULES = [
-  ["equipe digital 1", "#0d9488"],  // sarcelle
-  ["equipe digital 2", "#65a30d"],  // vert olive
-  ["css digital",      "#4f46e5"],  // indigo
-  ["mailing",          "#0891b2"],  // cyan
-  ["quadient",         "#2563eb"],  // bleu roi
-  ["serensia",         "#7c3aed"],  // violet
-  ["manager",          "#059669"],  // émeraude
-  ["admin",            "#475569"],  // ardoise
+// Séquence de couleurs : chaque équipe reçoit la suivante → jamais deux équipes identiques
+// (pas de rose, pas de rouge). Les premières sont les plus contrastées entre elles.
+const TEAM_COLOR_SEQUENCE = [
+  "#2563eb", // bleu roi
+  "#059669", // émeraude
+  "#d97706", // ambre
+  "#7c3aed", // violet
+  "#0891b2", // cyan
+  "#475569", // ardoise
+  "#65a30d", // vert olive
+  "#4f46e5", // indigo
+  "#0d9488", // sarcelle
+  "#0369a1", // bleu océan
+  "#a16207", // bronze
+  "#6d28d9", // pourpre profond
 ];
-// Couleurs de repli (aucun rose, aucun rouge)
-const TEAM_FALLBACK_COLORS = ["#0284c7", "#4338ca", "#0f766e", "#6d28d9", "#475569", "#1d4ed8", "#15803d", "#0369a1"];
-const _teamPaletteCache = {};
+let _teamColorOrder = [];
+let _teamColorKey = "";
+let _teamPaletteCache = {};
+function setTeamColorOrder(names) {
+  const k = names.join("|");
+  if (k === _teamColorKey) return;
+  _teamColorKey = k;
+  _teamColorOrder = names.slice();
+  _teamPaletteCache = {};
+}
 function teamPalette(teamName) {
-  const key = teamName || "";
+  const key = teamName || "Sans équipe";
   if (_teamPaletteCache[key]) return _teamPaletteCache[key];
-  const norm = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/^[\s\d.\-)]+/, "").trim();
-  const rule = TEAM_COLOR_RULES.find(([kw]) => norm.includes(kw));
-  let base;
-  if (rule) base = rule[1];
-  else {
-    const idx = Math.abs(norm.split("").reduce((a, ch) => a + ch.charCodeAt(0), 0)) % TEAM_FALLBACK_COLORS.length;
-    base = TEAM_FALLBACK_COLORS[idx];
-  }
+  let idx = _teamColorOrder.indexOf(key);
+  if (idx === -1) { _teamColorOrder.push(key); idx = _teamColorOrder.length - 1; }
+  const base = TEAM_COLOR_SEQUENCE[idx % TEAM_COLOR_SEQUENCE.length];
   return (_teamPaletteCache[key] = buildTeamPalette(base));
 }
 function leaveAbbr(label) {
@@ -2820,6 +2827,22 @@ function PlanningApp({ currentUser, onLogout }) {
 
   // Cache les agents groupés par équipe pour éviter les recalculs
   const agentsByTeam = useMemo(() => getAgentsByTeam(), [sortedAgents, filterTeam, cssSubTeams, teamsOrder]);
+
+  // Ordre stable des équipes (ordre de création) → une couleur distincte par équipe, quel que soit le nom
+  const teamColorNames = useMemo(() => {
+    const meta = {};
+    teams.forEach(t => { meta[t.name] = String(t.created_at || "") + "|" + String(t.id).padStart(12, "0"); });
+    const seen = new Set();
+    agents.filter(a => a.role !== "admin").forEach(a => {
+      const raw = a.team || "Sans équipe";
+      seen.add(raw === "CSS Digital" && cssSubTeams[a.id] ? cssSubTeams[a.id] : raw);
+    });
+    const names = [...seen];
+    const known = names.filter(n => meta[n] !== undefined).sort((a, b) => meta[a].localeCompare(meta[b], undefined, { numeric: true }));
+    const others = names.filter(n => meta[n] === undefined).sort((a, b) => a.localeCompare(b));
+    return [...known, ...others];
+  }, [agents, teams, cssSubTeams]);
+  setTeamColorOrder(teamColorNames);
   const pendingRequests = useMemo(() => requests.filter(r => r.status === "pending"), [requests]);
   const myRequests = useMemo(() => requests.filter(r => r.agentId === currentUser.id), [requests, currentUser.id]);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
