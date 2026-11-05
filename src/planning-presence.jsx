@@ -1308,7 +1308,7 @@ function LeaveTypeEditRow({ lt, onSave, onCancel }) {
 }
 
 
-function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onTeamRenamed, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement, cssSubTeams, setCssSubTeams }) {
+function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpdated, onAgentDeleted, onTeamAdded, onTeamDeleted, onTeamRenamed, onTeamSlotChanged, onLeaveTypeAdded, onLeaveTypeUpdated, onLeaveTypeDeleted, showNotif, announcement, announceLevel, setAnnounceLevel, announceMsg, setAnnounceMsg, showAnnounceForm, setShowAnnounceForm, handlePostAnnouncement, handleDeleteAnnouncement, cssSubTeams, setCssSubTeams }) {
   const [tab, setTab] = useState("agents");
   const [addModal, setAddModal] = useState(false); const [editModal, setEditModal] = useState(null); const [deleteModal, setDeleteModal] = useState(null); const [editLT, setEditLT] = useState(null);
   const [newAgent, setNewAgent] = useState({ first_name: "", last_name: "", email: "", password: "", role: "agent", team: "" }); const [editData, setEditData] = useState({});
@@ -1331,6 +1331,15 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
   }
   async function handleAddTeam() { if (!newTeam.trim()) return; try { const data = await apiFetch("/teams", token, { method: "POST", body: JSON.stringify({ name: newTeam.trim() }) }); if (data.id) { onTeamAdded(data); setNewTeam(""); showNotif("Équipe ajoutée ✅"); } } catch { showNotif("Erreur", "error"); } }
   async function handleDeleteTeam(team) { try { await apiFetch(`/teams/${team.id}`, token, { method: "DELETE" }); onTeamDeleted(team.id); showNotif("Équipe supprimée", "error"); } catch { showNotif("Erreur", "error"); } }
+  async function handleSetAstreinteSlot(team, slot) {
+    try {
+      const data = await apiFetch(`/teams/${team.id}`, token, { method: "PATCH", body: JSON.stringify({ astreinte_slot: slot }) });
+      if (data && data.id) {
+        onTeamSlotChanged(team.id, data.astreinte_slot || null);
+        showNotif(slot ? `Astreinte du vendredi : Équipe ${slot} ✅` : "Équipe retirée de l'astreinte");
+      }
+    } catch { showNotif("Erreur", "error"); }
+  }
   async function handleRenameTeam() {
     if (!renameTeam || !renameTeam.newName?.trim()) return;
     try {
@@ -1563,6 +1572,18 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                       )}
                     </div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{t.name}</div>
+                    {t.name !== "Admin" && (
+                      <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", marginRight: 2 }}>🔔 Astreinte</span>
+                        {[{ v: null, l: "—" }, { v: "A", l: "A" }, { v: "B", l: "B" }].map(o => {
+                          const on = (t.astreinte_slot || null) === o.v;
+                          return (
+                            <button key={String(o.v)} onClick={() => handleSetAstreinteSlot(t, o.v)}
+                              style={{ minWidth: 24, padding: "2px 7px", borderRadius: 6, border: on ? "1.5px solid #f59e0b" : "1.5px solid #e2e8f0", background: on ? "#fffbeb" : "#fff", color: on ? "#b45309" : "#94a3b8", cursor: "pointer", fontSize: 10, fontWeight: on ? 800 : 600 }}>{o.l}</button>
+                          );
+                        })}
+                      </div>
+                    )}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 11, color: "#94a3b8" }}>{tAgents.length} agent{tAgents.length !== 1 ? "s" : ""}</span>
                       <div style={{ display: "flex", gap: 5 }}>
@@ -2234,14 +2255,8 @@ function PlanningApp({ currentUser, onLogout }) {
   const [astreintes, setAstreintes] = useState({});
   const [loadingAstreintes, setLoadingAstreintes] = useState(false);
   // astreintes key format: "teamName|rowType|dateKey"  rowType: "astreinte"|"action_serveur"|"mail"|"es"
-  const ASTREINTE_TEAMS = ["CSS Digital", "Mailing Solution"];
-  const MAILING_EXTRA_ROWS = [
-    { id: "action_serveur", label: "Action Serveur / Admin" },
-    { id: "mail", label: "Mail" },
-    { id: "es", label: "ES" },
-  ];
   const [astreinteDropdown, setAstreinteDropdown] = useState(null); // { key, teamName, rowType, x, y }
-  const [astreinteFilter, setAstreinteFilter] = useState("all"); // "all"|"Css Digital"|"Mailing Solution"
+  const [astreinteFilter, setAstreinteFilter] = useState("all"); // "all" | identifiant de l'équipe
   const [astreinteSelStart, setAstreinteSelStart] = useState(null); // { aKey base, rowType, teamName }
   const [astreinteHovered, setAstreinteHovered] = useState(null); // dateKey hovered
   const [astreinteEraseStart, setAstreinteEraseStart] = useState(null); // { teamName, rowId, key } mode effacement plage
@@ -2843,6 +2858,22 @@ function PlanningApp({ currentUser, onLogout }) {
     return [...known, ...others];
   }, [agents, teams, cssSubTeams]);
   setTeamColorOrder(teamColorNames);
+
+  // ─── Astreinte du vendredi : Équipe A et Équipe B (désignées dans Administration → Équipes) ───
+  // La clé de données est l'identifiant de l'équipe : un renommage ne perd aucune astreinte.
+  const astreinteTeams = useMemo(() =>
+    ["A", "B"].map(slot => {
+      const t = teams.find(x => x.astreinte_slot === slot);
+      return t ? { slot, key: String(t.id), name: t.name, label: "Équipe " + slot } : null;
+    }).filter(Boolean),
+  [teams]);
+  const astreinteTeamName = key => astreinteTeams.find(t => t.key === key)?.name || key;
+  const astreinteShownTeams = astreinteFilter === "all" || !astreinteTeams.some(t => t.key === astreinteFilter)
+    ? astreinteTeams : astreinteTeams.filter(t => t.key === astreinteFilter);
+  const astreinteRowStyle = name => {
+    const p = teamPalette(name);
+    return { color: p.accent, bg: p.row, border: mixHex(p.accent, "#ffffff", 0.5), textColor: p.text, header: p.header, headerBorder: mixHex(p.accent, "#ffffff", 0.55) };
+  };
   const pendingRequests = useMemo(() => requests.filter(r => r.status === "pending"), [requests]);
   const myRequests = useMemo(() => requests.filter(r => r.agentId === currentUser.id), [requests, currentUser.id]);
   const todayDay = now.getFullYear() === year && now.getMonth() === month ? now.getDate() : null;
@@ -3593,6 +3624,7 @@ function PlanningApp({ currentUser, onLogout }) {
           onAgentDeleted={id => setAgents(prev => prev.filter(a => a.id !== id))}
           onTeamAdded={t => setTeams(prev => [...prev, t])}
           onTeamDeleted={id => setTeams(prev => prev.filter(t => t.id !== id))}
+          onTeamSlotChanged={(id, slot) => setTeams(prev => prev.map(t => t.id === id ? { ...t, astreinte_slot: slot } : (slot && t.astreinte_slot === slot ? { ...t, astreinte_slot: null } : t)))}
           onTeamRenamed={(id, newName) => {
             const oldName = teams.find(t => t.id === id)?.name;
             setTeams(prev => prev.map(t => t.id === id ? { ...t, name: newName } : t));
@@ -3737,8 +3769,8 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
               {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>
-                {["all", "Css Digital", "Mailing Solution"].map(f => (
-                  <button key={f} onClick={() => setAstreinteFilter(f)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f ? 700 : 400, background: astreinteFilter === f ? "#1e293b" : "#fff", color: astreinteFilter === f ? "#fff" : "#64748b", borderColor: astreinteFilter === f ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f === "all" ? "Tous" : f}</button>
+                {[{ key: "all", label: "Tous" }, ...astreinteTeams.map(t => ({ key: t.key, label: t.label + " · " + t.name }))].map(f => (
+                  <button key={f.key} onClick={() => setAstreinteFilter(f.key)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f.key ? 700 : 400, background: astreinteFilter === f.key ? "#1e293b" : "#fff", color: astreinteFilter === f.key ? "#fff" : "#64748b", borderColor: astreinteFilter === f.key ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
                 ))}
               </div>}
               {filterMode !== "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
@@ -3815,17 +3847,6 @@ function PlanningApp({ currentUser, onLogout }) {
 
             {/* VUE SEMAINE ASTREINTE */}
             {planView === "week" && filterMode === "astreinte" && (() => {
-              const cssAgents = agents.filter(a => a.team === "Css Digital" && a.role !== "admin");
-              const mailAgents = agents.filter(a => a.team === "Mailing Solution" && a.role !== "admin");
-              const mailingRows = [
-                { id: "astreinte", label: "Astreinte vendredi", fridayOnly: true, color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", textColor: "#92400e" },
-                { id: "action_serveur", label: "Action Serveur / Admin", fridayOnly: false, color: "#8b5cf6", bg: "#f5f3ff", border: "#c4b5fd", textColor: "#5b21b6" },
-                { id: "mail", label: "Mail", fridayOnly: false, color: "#06b6d4", bg: "#ecfeff", border: "#67e8f9", textColor: "#0e7490" },
-                { id: "es", label: "ES", fridayOnly: false, color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7", textColor: "#065f46" },
-              ];
-              const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
-              const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
-
               function AstreinteWeekRow({ teamName, rowId, rowLabel, fridayOnly, color, bg, border, textColor, teamAgentsList }) {
                 return (
                   <tr style={{ borderBottom: "1px solid #f1f5f9", height: 52, animation: "cascadeIn 0.5s ease-out forwards", opacity: 0 }}>
@@ -3857,12 +3878,12 @@ function PlanningApp({ currentUser, onLogout }) {
                               const minK = s < en ? s : en, maxK = s < en ? en : s;
                               const keysToDelete = Object.keys(astreintes).filter(ak => {
                                 const parts = ak.split("|");
-                                return parts[0] === teamName && parts[1] === rowType && parts[2] >= minK && parts[2] <= maxK;
+                                return parts[0] === teamName && parts[1] === rowId && parts[2] >= minK && parts[2] <= maxK;
                               });
                               keysToDelete.forEach(ak => {
                                 const dk = ak.split("|")[2];
                                 const entry = astreintes[ak];
-                                if (entry?.id) deleteAstreinte(entry.id, teamName, rowType, dk);
+                                if (entry?.id) deleteAstreinte(entry.id, teamName, rowId, dk);
                                 else setAstreintes(prev => { const n = { ...prev }; delete n[ak]; return n; });
                               });
                               setAstreinteEraseStart(null); setAstreinteHovered(null);
@@ -3877,7 +3898,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   const isFri2 = dow2 === 5;
                                   const ferDD = getFeries(dd.getFullYear());
                                   if (dk >= minK && dk <= maxK && !wk2 && !ferDD[dk] && (fridayOnly ? isFri2 : true)) {
-                                    saveAstreinte(teamName, rowType, dk, astreinteSelStart.agentId);
+                                    saveAstreinte(teamName, rowId, dk, astreinteSelStart.agentId);
                                   }
                                 });
                               }
@@ -3895,7 +3916,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             if (!canClick) return;
                             const astrToDelete = astreintes[aKey];
                             if (!astrToDelete) return;
-                            setAstreinteContextMenu({ x: e.clientX, y: e.clientY, aKey, teamName, rowId, rowType, dateKey: k, id: astrToDelete?.id });
+                            setAstreinteContextMenu({ x: e.clientX, y: e.clientY, aKey, teamName, rowId, rowType: rowId, dateKey: k, id: astrToDelete?.id });
                           }}
                           onMouseEnter={() => {
                             if ((astreinteSelStart && astreinteSelStart.teamName === teamName && astreinteSelStart.rowId === rowId) ||
@@ -3904,7 +3925,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           className={canClick ? "cell-hover" : ""}
                           style={{
                             textAlign: "center", cursor: canClick ? "pointer" : "default",
-                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isFer ? "#f1f5f9" : isToday ? teamPalette(teamName).header : wk ? "#fafafa" : "#fff",
+                            background: inErase ? "#fee2e2" : inSel ? "#fde68a" : isFer ? "#f1f5f9" : isToday ? teamPalette(astreinteTeamName(teamName)).header : wk ? "#fafafa" : "#fff",
                             borderLeft: "1px solid #f8fafc", height: 52, verticalAlign: "middle",
                             outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
                             opacity: (!eligible && !wk && !isFer) ? 0.25 : 1
@@ -3953,24 +3974,22 @@ function PlanningApp({ currentUser, onLogout }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {showCss && (
-                        <React.Fragment>
-                          <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
-                            <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
-                          </tr>
-                          <AstreinteWeekRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
-                        </React.Fragment>
+                      {astreinteShownTeams.length === 0 && (
+                        <tr><td colSpan={8} style={{ padding: "28px 16px", textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
+                          Aucune équipe n'est désignée pour l'astreinte du vendredi. Rendez-vous dans Administration → Équipes pour définir l'Équipe A et l'Équipe B.
+                        </td></tr>
                       )}
-                      {showMail && (
-                        <React.Fragment>
-                          <tr style={{ background: "#fdf4ff", borderBottom: "2px solid #e9d5ff" }}>
-                            <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Mailing Solution</td>
-                          </tr>
-                          {mailingRows.map(row => (
-                            <AstreinteWeekRow key={row.id} teamName="Mailing Solution" rowId={row.id} rowLabel={row.label} fridayOnly={row.fridayOnly} color={row.color} bg={row.bg} border={row.border} textColor={row.textColor} teamAgentsList={mailAgents} />
-                          ))}
-                        </React.Fragment>
-                      )}
+                      {astreinteShownTeams.map(t => {
+                        const st = astreinteRowStyle(t.name);
+                        return (
+                          <React.Fragment key={t.key}>
+                            <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
+                              <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.label} · {t.name} — Astreinte vendredi</td>
+                            </tr>
+                            <AstreinteWeekRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
+                          </React.Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -4101,7 +4120,7 @@ function PlanningApp({ currentUser, onLogout }) {
                                   className={canClick ? "cell-hover" : ""}
                                   style={{
                                     padding: "2px 1px", textAlign: "center", cursor: canClick ? "pointer" : "default",
-                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : isFer ? "#f1f5f9" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(teamName).header : "#fff"; })(),
+                                    background: inErase ? "#fee2e2" : inSel ? "#fde68a" : wk ? "#fafafa" : isFer ? "#f1f5f9" : (() => { const isToday = dateKey(year, month, day) === dateKey(now.getFullYear(), now.getMonth(), now.getDate()); return isToday ? teamPalette(astreinteTeamName(teamName)).header : "#fff"; })(),
                                     border: "1px solid #f1f5f9",
                                     height: 48, verticalAlign: "middle",
                                     outline: inErase ? "2px solid #ef4444" : inSel ? "2px solid #f59e0b" : "none", outlineOffset: "-2px",
@@ -4129,36 +4148,24 @@ function PlanningApp({ currentUser, onLogout }) {
                           );
                         }
 
-                        const showCss = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
-                        const showMail = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
-                        const cssAgents = agents.filter(a => a.team === "Css Digital" && a.role !== "admin");
-                        const mailAgents = agents.filter(a => a.team === "Mailing Solution" && a.role !== "admin");
-                        const mailingRows = [
-                          { id: "astreinte", label: "Astreinte vendredi", fridayOnly: true, color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", textColor: "#92400e" },
-                          { id: "action_serveur", label: "Action Serveur / Admin", fridayOnly: false, color: "#8b5cf6", bg: "#f5f3ff", border: "#c4b5fd", textColor: "#5b21b6" },
-                          { id: "mail", label: "Mail", fridayOnly: false, color: "#06b6d4", bg: "#ecfeff", border: "#67e8f9", textColor: "#0e7490" },
-                          { id: "es", label: "ES", fridayOnly: false, color: "#10b981", bg: "#ecfdf5", border: "#6ee7b7", textColor: "#065f46" },
-                        ];
                         return (
                           <React.Fragment>
-                            {showCss && (
-                              <React.Fragment>
-                                <tr style={{ background: "#f0f9ff", borderBottom: "2px solid #bae6fd" }}>
-                                  <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Css Digital — Astreinte vendredi</td>
-                                </tr>
-                                <AstreinteRow teamName="CSS Digital" rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color="#3b82f6" bg="#eff6ff" border="#93c5fd" textColor="#1d4ed8" teamAgentsList={cssAgents} />
-                              </React.Fragment>
+                            {astreinteShownTeams.length === 0 && (
+                              <tr><td colSpan={daysInMonth + 1} style={{ padding: "28px 16px", textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
+                                Aucune équipe n'est désignée pour l'astreinte du vendredi. Rendez-vous dans Administration → Équipes pour définir l'Équipe A et l'Équipe B.
+                              </td></tr>
                             )}
-                            {showMail && (
-                              <React.Fragment>
-                                <tr style={{ background: "#fdf4ff", borderBottom: "2px solid #e9d5ff" }}>
-                                  <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 Mailing Solution</td>
-                                </tr>
-                                {mailingRows.map(row => (
-                                  <AstreinteRow key={row.id} teamName="Mailing Solution" rowId={row.id} rowLabel={row.label} fridayOnly={row.fridayOnly} color={row.color} bg={row.bg} border={row.border} textColor={row.textColor} teamAgentsList={mailAgents} />
-                                ))}
-                              </React.Fragment>
-                            )}
+                            {astreinteShownTeams.map(t => {
+                              const st = astreinteRowStyle(t.name);
+                              return (
+                                <React.Fragment key={t.key}>
+                                  <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
+                                    <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.label} · {t.name} — Astreinte vendredi</td>
+                                  </tr>
+                                  <AstreinteRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
+                                </React.Fragment>
+                              );
+                            })}
                           </React.Fragment>
                         );
                       })()}
@@ -4170,8 +4177,8 @@ function PlanningApp({ currentUser, onLogout }) {
                 {(() => {
                   // Calculer le cumul par agent sur toute l'année pour toutes les clés astreintes
                   const bilanByTeam = {};
-                  ASTREINTE_TEAMS.forEach(teamName => {
-                    const teamAgentsList = agents.filter(a => a.team === teamName && a.role !== "admin");
+                  astreinteTeams.forEach(({ key: teamName, name: bilanTeamName }) => {
+                    const teamAgentsList = agents.filter(a => a.team === bilanTeamName && a.role !== "admin");
                     // ✅ MODIFICATION : Toutes les équipes n'affichent que "astreinte" (vendredi)
                     const rows = ["astreinte"];
                     const rowLabels = { "astreinte": "Astreinte vendredi", "action_serveur": "Action Serveur / Admin", "mail": "Mail", "es": "ES" };
@@ -4189,8 +4196,6 @@ function PlanningApp({ currentUser, onLogout }) {
                     });
                     bilanByTeam[teamName] = { agents: teamAgentsList, rows, rowLabels, agentCounts };
                   });
-                  const showCssBilan = astreinteFilter === "all" || astreinteFilter === "CSS Digital";
-                  const showMailBilan = astreinteFilter === "all" || astreinteFilter === "Mailing Solution";
                   return (
                     <div style={{ marginTop: 8 }}>
                       <button onClick={() => setShowBilanAstreinte(p => !p)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", background: "#fff", border: "2px solid #f59e0b", borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#92400e", boxShadow: "0 1px 6px rgba(245,158,11,0.15)" }}>
@@ -4199,14 +4204,15 @@ function PlanningApp({ currentUser, onLogout }) {
                       </button>
                       {showBilanAstreinte && (
                         <div style={{ background: "#fff", border: "2px solid #f59e0b", borderTop: "none", borderRadius: "0 0 10px 10px", overflow: "hidden", boxShadow: "0 4px 16px rgba(245,158,11,0.1)" }}>
-                          {[...(showCssBilan ? ["CSS Digital"] : []), ...(showMailBilan ? ["Mailing Solution"] : [])].map(teamName => {
+                          {astreinteShownTeams.map(({ key: teamName, name: bilanTeamName, label: bilanTeamLabel }) => {
                             const { agents: tAgents, rows, rowLabels, agentCounts } = bilanByTeam[teamName];
-                            const teamColor = teamName === "CSS Digital" ? "#3b82f6" : "#7c3aed";
-                            const teamBg = teamName === "CSS Digital" ? "#eff6ff" : "#fdf4ff";
+                            const bst = astreinteRowStyle(bilanTeamName);
+                            const teamColor = bst.color;
+                            const teamBg = bst.bg;
                             return (
                               <div key={teamName}>
                                 <div style={{ padding: "8px 16px", background: teamBg, borderTop: "1px solid #f1f5f9", fontSize: 11, fontWeight: 700, color: teamColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                                  🔔 {teamName}
+                                  🔔 {bilanTeamLabel} · {bilanTeamName}
                                 </div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
@@ -5149,14 +5155,14 @@ function PlanningApp({ currentUser, onLogout }) {
         astreinteDropdown && (() => {
           const { aKey, teamName: aTeamName, rowType, rowId, key: aDateKey, onAgentPicked } = astreinteDropdown;
           const ASTREINTE_EXCLUDED = ["carol horlaville", "yannick loubery"];
-          const aTeamAgents = agents.filter(a => a.team === aTeamName && a.role !== "admin" && !ASTREINTE_EXCLUDED.includes(a.name.toLowerCase()));
+          const aTeamAgents = agents.filter(a => a.team === astreinteTeamName(aTeamName) && a.role !== "admin" && !ASTREINTE_EXCLUDED.includes(a.name.toLowerCase()));
           const rowLabels = { "astreinte": "Astreinte vendredi", "action_serveur": "Action Serveur / Admin", "mail": "Mail", "es": "ES" };
           const [ay, am, ad] = (aDateKey || "").split("-");
           const dateLabel = `${ad}/${am}`;
           return (
             <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.min(astreinteDropdown.y, window.innerHeight - 320), left: Math.min(astreinteDropdown.x, window.innerWidth - 240), background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: 230, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.15s ease" }}>
               <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#1e293b", fontWeight: 700, background: "#fef3c7", position: "sticky", top: 0 }}>
-                🔔 {aTeamName} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
+                🔔 {astreinteTeamName(aTeamName)} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
                 {astreinteDropdown.fridayOnly
                   ? <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
                   : <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
