@@ -3769,7 +3769,7 @@ function PlanningApp({ currentUser, onLogout }) {
               </div>
               {filterMode === "astreinte" && <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b" }}>Filtrer :</span>
-                {[{ key: "all", label: "Tous" }, ...astreinteTeams.map(t => ({ key: t.key, label: t.label + " · " + t.name }))].map(f => (
+                {[{ key: "all", label: "Tous" }, ...astreinteTeams.map(t => ({ key: t.key, label: t.name }))].map(f => (
                   <button key={f.key} onClick={() => setAstreinteFilter(f.key)} style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: astreinteFilter === f.key ? 700 : 400, background: astreinteFilter === f.key ? "#1e293b" : "#fff", color: astreinteFilter === f.key ? "#fff" : "#64748b", borderColor: astreinteFilter === f.key ? "#1e293b" : "#e2e8f0", transition: "all 0.15s" }}>{f.label}</button>
                 ))}
               </div>}
@@ -3984,7 +3984,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         return (
                           <React.Fragment key={t.key}>
                             <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
-                              <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.label} · {t.name} — Astreinte vendredi</td>
+                              <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.name} — Astreinte vendredi</td>
                             </tr>
                             <AstreinteWeekRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
                           </React.Fragment>
@@ -4160,7 +4160,7 @@ function PlanningApp({ currentUser, onLogout }) {
                               return (
                                 <React.Fragment key={t.key}>
                                   <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
-                                    <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.label} · {t.name} — Astreinte vendredi</td>
+                                    <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.name} — Astreinte vendredi</td>
                                   </tr>
                                   <AstreinteRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
                                 </React.Fragment>
@@ -4212,7 +4212,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             return (
                               <div key={teamName}>
                                 <div style={{ padding: "8px 16px", background: teamBg, borderTop: "1px solid #f1f5f9", fontSize: 11, fontWeight: 700, color: teamColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                                  🔔 {bilanTeamLabel} · {bilanTeamName}
+                                  🔔 {bilanTeamName}
                                 </div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
