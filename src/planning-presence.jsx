@@ -1103,6 +1103,125 @@ function LoginPage({ onLogin }) {
   );
 }
 
+// ─── SURFACE UNIQUE DE TOUTES LES POP-UPS (sombre, identique partout) ───
+const POPUP_SURFACE = {
+  background: "linear-gradient(145deg,#0f172a,#1e293b)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  boxShadow: "0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03) inset",
+};
+const ROLE_OPTIONS = [
+  { value: "agent", label: "Agent" },
+  { value: "coordinator", label: "Coordinateur" },
+  { value: "manager", label: "Manager 👑" },
+];
+
+// ─── LISTE DÉROULANTE UNIFIÉE (remplace les listes natives du navigateur) ───
+function PopupSelect({ value, onChange, options, placeholder = "Sélectionner…", variant = "field" }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState(null);
+  const btnRef = useRef(null);
+  const popRef = useRef(null);
+  const compact = variant === "compact";
+  const selected = options.find(o => o.value === value);
+  const showPlaceholder = !selected || selected.value === "";
+
+  function toggle() {
+    if (open) { setOpen(false); return; }
+    const r = btnRef.current.getBoundingClientRect();
+    const width = Math.max(r.width, compact ? 230 : 0);
+    const estH = Math.min(options.length * 40 + 12, 264);
+    const spaceBelow = window.innerHeight - r.bottom;
+    const up = spaceBelow < estH + 16 && r.top > spaceBelow;
+    setPos({
+      left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)),
+      width,
+      ...(up ? { bottom: window.innerHeight - r.top + 6 } : { top: r.bottom + 6 }),
+      up,
+    });
+    setOpen(true);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    const onDown = e => { if (btnRef.current?.contains(e.target) || popRef.current?.contains(e.target)) return; setOpen(false); };
+    const onKey = e => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false); } };
+    const onScroll = e => { if (popRef.current?.contains(e.target)) return; setOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", onScroll, true);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [open]);
+
+  const triggerStyle = compact ? {
+    display: "inline-flex", alignItems: "center", gap: 8, width: "auto",
+    padding: "5px 10px", borderRadius: 8,
+    border: "1.5px solid #0d9488", background: "#fff", color: "#0d9488",
+    fontSize: 11, fontWeight: 600,
+  } : {
+    display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, width: "100%",
+    padding: "10px 14px", borderRadius: 12,
+    border: open ? "1.5px solid #6366f1" : "1.5px solid rgba(255,255,255,0.1)",
+    background: open ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.05)",
+    color: showPlaceholder ? "#64748b" : "#f1f5f9",
+    fontSize: 14, fontWeight: 400,
+    boxShadow: open ? "0 0 0 3px rgba(99,102,241,0.16)" : "none",
+  };
+
+  return (
+    <>
+      <button type="button" ref={btnRef} onClick={toggle}
+        style={{ ...triggerStyle, cursor: "pointer", textAlign: "left", outline: "none", fontFamily: "'Outfit',sans-serif", transition: "all 0.2s ease" }}>
+        <span style={{ flex: compact ? "none" : 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {showPlaceholder ? (selected?.label || placeholder) : selected.label}
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={compact ? "#0d9488" : "#94a3b8"} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"
+          style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.25s cubic-bezier(0.34,1.56,0.64,1)" }}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && pos && (
+        <div ref={popRef} onClick={e => e.stopPropagation()} style={{
+          position: "fixed", left: pos.left, width: pos.width, top: pos.top, bottom: pos.bottom,
+          ...POPUP_SURFACE, borderRadius: 14, padding: 6, zIndex: 999999,
+          maxHeight: 264, overflowY: "auto",
+          animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+          transformOrigin: pos.up ? "bottom" : "top",
+        }}>
+          {options.map((o, i) => {
+            const sel = o.value === value;
+            return (
+              <button key={String(o.value) + "_" + i} type="button"
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8, width: "100%",
+                  padding: "9px 12px", border: "none", borderRadius: 9, marginBottom: i < options.length - 1 ? 2 : 0,
+                  background: sel ? "linear-gradient(135deg,rgba(99,102,241,0.38),rgba(99,102,241,0.2))" : "transparent",
+                  color: sel ? "#fff" : (o.value === "" ? "#94a3b8" : "#e2e8f0"),
+                  fontSize: 13, fontWeight: sel ? 700 : 500, fontFamily: "'Outfit',sans-serif",
+                  cursor: "pointer", textAlign: "left",
+                  animation: `fadeIn 0.2s ease ${i * 0.02}s both`, transition: "background 0.15s ease",
+                }}
+                onMouseEnter={e => { if (!sel) e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
+                onMouseLeave={e => { if (!sel) e.currentTarget.style.background = "transparent"; }}>
+                <span style={{ flex: 1 }}>{o.label}</span>
+                {o.hint && <span style={{ fontSize: 10, color: "#64748b", fontWeight: 500 }}>{o.hint}</span>}
+                {sel && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
 function Modal({ title, children }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, backdropFilter: "blur(6px)", animation: "fadeIn 0.2s ease" }}>
@@ -1232,10 +1351,7 @@ function CustomSelect({ label, value, onChange, options, placeholder = "Sélecti
           top: dropdownPos.top,
           left: dropdownPos.left,
           width: dropdownPos.width,
-          background: "#1e293b",
-          border: "1.5px solid #334155",
-          borderRadius: 10,
-          boxShadow: "0 12px 32px rgba(0, 0, 0, 0.6)",
+          ...POPUP_SURFACE, borderRadius: 12,
           zIndex: 99999,
           overflow: "hidden",
           animation: "slideIn 0.15s ease",
@@ -1626,11 +1742,9 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                 <div style={{ padding: "10px 16px", background: "linear-gradient(135deg,#f0fdfa,#f8fafc)", borderBottom: "1px solid #e8edf5", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#0d9488" }}>Membres</span>
                   {agents.filter(a => a.role !== "admin" && a.team !== selectedTeam.name).length > 0 && (
-                    <select onChange={e => { if (e.target.value) handleAssignAgentTeam(e.target.value, selectedTeam.name); e.target.value = ""; }}
-                      style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid #0d9488", background: "#fff", fontSize: 11, color: "#0d9488", cursor: "pointer", fontWeight: 600, outline: "none" }}>
-                      <option value="">＋ Ajouter un agent...</option>
-                      {agents.filter(a => a.role !== "admin" && a.team !== selectedTeam.name).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
+                    <PopupSelect variant="compact" value="" placeholder="＋ Ajouter un agent..."
+                      onChange={v => { if (v) handleAssignAgentTeam(v, selectedTeam.name); }}
+                      options={agents.filter(a => a.role !== "admin" && a.team !== selectedTeam.name).map(a => ({ value: a.id, label: a.name, hint: a.team || "" }))} />
                   )}
                 </div>
                 {agents.filter(a => a.team === selectedTeam.name && a.role !== "admin").length === 0 && (
@@ -2081,13 +2195,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Mot de passe (min 8 car.)" value={newAgent.password} onChange={v => setNewAgent(p => ({ ...p, password: v }))} placeholder="motdepasse123" style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
           <div><label className="label">Équipe</label>
-            <select value={newAgent.team} onChange={e => setNewAgent(p => ({ ...p, team: e.target.value }))} className="select-field">
-              <option value="">-- Choisir --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
-            </select></div>
+            <PopupSelect value={newAgent.team} onChange={v => setNewAgent(p => ({ ...p, team: v }))} placeholder="-- Choisir --"
+              options={[{ value: "", label: "-- Choisir --" }, ...teams.map(t => ({ value: t.name, label: t.name }))]} /></div>
           <div><label className="label">Rôle</label>
-            <select value={newAgent.role} onChange={e => setNewAgent(p => ({ ...p, role: e.target.value }))} className="select-field">
-              <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
-            </select></div>
+            <PopupSelect value={newAgent.role} onChange={v => setNewAgent(p => ({ ...p, role: v }))} options={ROLE_OPTIONS} /></div>
         </div>
         <ModalButtons onCancel={() => setAddModal(false)} onConfirm={handleAddAgent} confirmLabel={loading ? "En cours..." : "Ajouter"} disabled={loading} />
       </Modal>}
@@ -2099,13 +2210,10 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
         <Field label="Email" value={editData.email} onChange={v => setEditData(p => ({ ...p, email: v }))} style={{ marginBottom: 12 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div><label className="label">Équipe</label>
-            <select value={editData.team || ""} onChange={e => setEditData(p => ({ ...p, team: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
-              <option value="">-- Aucune équipe --</option>{teams.map(t => <option key={t.id || t.name} value={t.name}>{t.name}</option>)}
-            </select></div>
+            <PopupSelect value={editData.team || ""} onChange={v => setEditData(p => ({ ...p, team: v }))} placeholder="-- Aucune équipe --"
+              options={[{ value: "", label: "-- Aucune équipe --" }, ...teams.map(t => ({ value: t.name, label: t.name }))]} /></div>
           <div><label className="label">Rôle</label>
-            <select value={editData.role || "agent"} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ width: "100%", padding: "10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "#f1f5f9", fontSize: 14, transition: "all 0.2s" }}>
-              <option value="agent">Agent</option><option value="coordinator">Coordinateur</option><option value="manager">Manager 👑</option>
-            </select></div>
+            <PopupSelect value={editData.role || "agent"} onChange={v => setEditData(p => ({ ...p, role: v }))} options={ROLE_OPTIONS} /></div>
         </div>
         <Field label="Nouveau mot de passe (vide = inchangé)" value={editData.password} onChange={v => setEditData(p => ({ ...p, password: v }))} placeholder="••••••••" style={{ marginBottom: 12 }} />
         {editData.role === "agent" && (
@@ -2155,7 +2263,7 @@ function MiniCalendarPicker({ value, onChange, minDate }) {
   const nextMonth = () => { if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); } else setViewMonth(m => m + 1); };
   const fmt = (y, m, d) => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   return (
-    <div style={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 14, boxShadow: "0 20px 50px rgba(0,0,0,0.5)", padding: "14px", width: 280, userSelect: "none" }}>
+    <div style={{ ...POPUP_SURFACE, borderRadius: 14, padding: "14px", width: 280, userSelect: "none" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <button onClick={prevMonth} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#94a3b8" }}>‹</button>
         <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{MONTHS[viewMonth]} {viewYear}</span>
@@ -3723,10 +3831,10 @@ function PlanningApp({ currentUser, onLogout }) {
                   </button>
                   <button onClick={() => { if (planView === "month") { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); } else { const d = new Date(weekAnchor); d.setDate(d.getDate() + 7); setWeekAnchor(d); setYear(d.getFullYear()); setMonth(d.getMonth()); } }} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 7, cursor: "pointer", padding: "2px 8px", fontSize: 13, color: "#64748b", lineHeight: 1, transition: "all 0.15s" }} onMouseEnter={e => { const c = filterMode === "presence" ? "#0d9488" : filterMode === "astreinte" ? "#f59e0b" : "#6366f1"; e.currentTarget.style.background = filterMode === "presence" ? "#f0fdfa" : filterMode === "astreinte" ? "#fffbeb" : "#eef2ff"; e.currentTarget.style.color = c; e.currentTarget.style.borderColor = c; }} onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.borderColor = "#e2e8f0"; }}>›</button>
                   {showMonthPicker && (
-                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 9999, padding: 12, width: 240, animation: "slideIn 0.15s ease" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid #f1f5f9" }}>
+                    <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", ...POPUP_SURFACE, borderRadius: 14, zIndex: 9999, padding: 12, width: 250, animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                         <button onClick={() => setYear(y => y - 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#94a3b8", padding: "0 6px" }}>‹</button>
-                        <span style={{ fontWeight: 700, fontSize: 13, color: "#1e293b" }}>{year}</span>
+                        <span style={{ fontWeight: 700, fontSize: 13, color: "#f1f5f9" }}>{year}</span>
                         <button onClick={() => setYear(y => y + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#94a3b8", padding: "0 6px" }}>›</button>
                       </div>
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 4 }}>
@@ -3735,14 +3843,14 @@ function PlanningApp({ currentUser, onLogout }) {
                           const isNow = m_idx === now.getMonth() && year === now.getFullYear();
                           return (
                             <button key={m_idx} onClick={() => { setMonth(m_idx); setShowMonthPicker(false); }} style={{
-                              padding: "5px 4px", borderRadius: 6, border: "none",
-                              background: isCurrent ? "#1e293b" : isNow ? "#eef2ff" : "transparent",
-                              color: isCurrent ? "#fff" : isNow ? "#4338ca" : "#475569",
+                              padding: "7px 4px", borderRadius: 8, border: "none",
+                              background: isCurrent ? "linear-gradient(135deg,#6366f1,#818cf8)" : isNow ? "rgba(99,102,241,0.2)" : "transparent",
+                              color: isCurrent ? "#fff" : isNow ? "#a5b4fc" : "#cbd5e1",
                               cursor: "pointer", fontSize: 11, fontWeight: isCurrent || isNow ? 700 : 400,
                               transition: "background 0.1s"
                             }}
-                              onMouseEnter={e => { if (!isCurrent) e.target.style.background = "#f1f5f9"; }}
-                              onMouseLeave={e => { if (!isCurrent) e.target.style.background = isNow ? "#eef2ff" : "transparent"; }}>
+                              onMouseEnter={e => { if (!isCurrent) e.target.style.background = "rgba(255,255,255,0.08)"; }}
+                              onMouseLeave={e => { if (!isCurrent) e.target.style.background = isNow ? "rgba(99,102,241,0.2)" : "transparent"; }}>
                               {m_label.slice(0, 3)}
                             </button>
                           );
@@ -4892,8 +5000,8 @@ function PlanningApp({ currentUser, onLogout }) {
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: statsAgentDropOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.25s ease" }}><polyline points="6 9 12 15 18 9"/></svg>
                         </div>
                         {statsAgentDropOpen && (
-                          <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#1a1f35", borderRadius: 16, boxShadow: "0 24px 60px rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.08)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)", minWidth: 230 }}>
-                            <div style={{ padding: "10px 12px", borderBottom: "1px solid #334155", position: "sticky", top: 0, background: "#1e293b", zIndex: 1 }}>
+                          <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, ...POPUP_SURFACE, borderRadius: 16, zIndex: 9999, overflow: "hidden", animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)", minWidth: 230 }}>
+                            <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.08)", position: "sticky", top: 0, background: "#111a2e", zIndex: 1 }}>
                               <div style={{ position: "relative" }}>
                                 <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", flexShrink: 0 }} width="14" height="14" viewBox="0 0 20 20" fill="none">
                                   <circle cx="8.5" cy="8.5" r="5.5" stroke="#94a3b8" strokeWidth="2" />
@@ -4984,12 +5092,12 @@ function PlanningApp({ currentUser, onLogout }) {
                               {!isYearMode && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5, transform: statsPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>}
                             </button>
                             {statsPickerOpen && (
-                              <div style={{ position: "absolute", top: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", background: "#fff", borderRadius: 18, boxShadow: "0 28px 70px rgba(20,20,60,0.18)", border: "1px solid #eceef5", zIndex: 9999, width: 280, animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
+                              <div style={{ position: "absolute", top: "calc(100% + 10px)", left: "50%", transform: "translateX(-50%)", ...POPUP_SURFACE, borderRadius: 18, zIndex: 9999, width: 280, animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
                                 {yearsAvailable.map(yr => (
                                   <div key={yr}>
-                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 9px", borderBottom: "1px solid #f2f3f8", background: "linear-gradient(135deg,#fafbff,#f5f6fc)", borderRadius: yr === yearsAvailable[0] ? "18px 18px 0 0" : 0 }}>
-                                      <span style={{ fontSize: 13, fontWeight: 800, color: "#1e293b" }}>{yr}</span>
-                                      <span style={{ fontSize: 9.5, color: "#9ca3af", fontWeight: 600 }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois actifs</span>
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 9px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", borderRadius: yr === yearsAvailable[0] ? "18px 18px 0 0" : 0 }}>
+                                      <span style={{ fontSize: 13, fontWeight: 800, color: "#f1f5f9" }}>{yr}</span>
+                                      <span style={{ fontSize: 9.5, color: "#64748b", fontWeight: 600 }}>{Object.values(monthsWithLeaves).filter(x => x.year === yr).length} mois actifs</span>
                                     </div>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 5, padding: "11px 13px 13px" }}>
                                       {Array.from({ length: 12 }, (_, mi) => {
@@ -5003,9 +5111,9 @@ function PlanningApp({ currentUser, onLogout }) {
                                               else { setStatsFilter("custom"); setStatsCustomMonth({ year: yr, month: mi }); }
                                               setStatsPickerOpen(false);
                                             }}
-                                            style={{ padding: "8px 4px", borderRadius: 9, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid #c7d2fe" : "1.5px solid transparent", background: isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "#eef2ff" : "none", color: isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#374151" : "#d1d5db", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 600 : 400, textAlign: "center", transition: "all 0.15s", boxShadow: isAct ? "0 3px 10px rgba(99,102,241,0.35)" : "none" }}
-                                            onMouseEnter={e => { if (!isAct) { e.currentTarget.style.background = "#e0e7ff"; e.currentTarget.style.color = "#4338ca"; } }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "#eef2ff" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#4338ca" : hasLeave ? "#374151" : "#d1d5db"; }}>
+                                            style={{ padding: "8px 4px", borderRadius: 9, border: isAct ? "2px solid #6366f1" : isCurrMth ? "1.5px solid rgba(165,180,252,0.45)" : "1.5px solid transparent", background: isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "rgba(99,102,241,0.18)" : "none", color: isAct ? "#fff" : isCurrMth ? "#a5b4fc" : hasLeave ? "#e2e8f0" : "#475569", cursor: "pointer", fontSize: 11, fontWeight: isAct || isCurrMth ? 700 : hasLeave ? 600 : 400, textAlign: "center", transition: "all 0.15s", boxShadow: isAct ? "0 3px 10px rgba(99,102,241,0.35)" : "none" }}
+                                            onMouseEnter={e => { if (!isAct) { e.currentTarget.style.background = "rgba(255,255,255,0.09)"; e.currentTarget.style.color = "#a5b4fc"; } }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = isAct ? "linear-gradient(135deg,#6366f1,#818cf8)" : isCurrMth ? "rgba(99,102,241,0.18)" : "none"; e.currentTarget.style.color = isAct ? "#fff" : isCurrMth ? "#a5b4fc" : hasLeave ? "#e2e8f0" : "#475569"; }}>
                                             {MONTHS_FR[mi].slice(0, 3)}
                                           </button>
                                         );
@@ -5160,12 +5268,12 @@ function PlanningApp({ currentUser, onLogout }) {
           const [ay, am, ad] = (aDateKey || "").split("-");
           const dateLabel = `${ad}/${am}`;
           return (
-            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.min(astreinteDropdown.y, window.innerHeight - 320), left: Math.min(astreinteDropdown.x, window.innerWidth - 240), background: "#fff", borderRadius: 12, boxShadow: "0 10px 40px rgba(0,0,0,0.15)", border: "1px solid #f1f5f9", zIndex: 99999, minWidth: 230, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.15s ease" }}>
-              <div style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", fontSize: 12, color: "#1e293b", fontWeight: 700, background: "#fef3c7", position: "sticky", top: 0 }}>
+            <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.max(8, Math.min(astreinteDropdown.y, window.innerHeight - 360)), left: Math.max(8, Math.min(astreinteDropdown.x, window.innerWidth - 260)), ...POPUP_SURFACE, borderRadius: 14, zIndex: 99999, minWidth: 240, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
+              <div style={{ padding: "11px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#fbbf24", fontWeight: 700, background: "linear-gradient(rgba(245,158,11,0.12),rgba(245,158,11,0.12)), #111a2e", position: "sticky", top: 0, zIndex: 1 }}>
                 🔔 {astreinteTeamName(aTeamName)} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
                 {astreinteDropdown.fridayOnly
-                  ? <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
-                  : <span style={{ fontSize: 10, color: "#92400e", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
+                  ? <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
+                  : <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
                 }
               </div>
               {!onAgentPicked && astreintes[aKey] && (
@@ -5177,10 +5285,14 @@ function PlanningApp({ currentUser, onLogout }) {
                     setAstreintes(prev => { const n = { ...prev }; delete n[aKey]; return n; });
                   }
                   setAstreinteDropdown(null);
-                }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: "none", cursor: "pointer", fontSize: 12, color: "#ef4444", fontWeight: 600 }}>✕ Retirer ce jour uniquement</button>
+                }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "none", cursor: "pointer", fontSize: 12, color: "#f87171", fontWeight: 600, transition: "background 0.15s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.1)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}>✕ Retirer ce jour uniquement</button>
               )}
-              {aTeamAgents.length === 0 && <div style={{ padding: "16px", fontSize: 12, color: "#94a3b8", textAlign: "center" }}>Aucun agent dans cette équipe</div>}
-              {aTeamAgents.map(a => (
+              {aTeamAgents.length === 0 && <div style={{ padding: "16px", fontSize: 12, color: "#64748b", textAlign: "center" }}>Aucun agent dans cette équipe</div>}
+              {aTeamAgents.map(a => {
+                const isCurrent = astreintes[aKey]?.agent_id === a.id;
+                return (
                 <button key={a.id} onClick={() => {
                   if (onAgentPicked) {
                     // Mode glisser : choisir agent puis glisser jusqu'à la date de fin
@@ -5192,14 +5304,19 @@ function PlanningApp({ currentUser, onLogout }) {
                     saveAstreinte(aTeamName, rowType || rowId, aDateKey, a.id);
                     setAstreinteDropdown(null);
                   }
-                }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid #f8fafc", background: astreintes[aKey] === a.id ? "#fef3c7" : "none", cursor: "pointer", fontSize: 12, color: "#1e293b", fontWeight: astreintes[aKey] === a.id ? 700 : 400, transition: "background 0.1s" }}>
+                }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 16px", border: "none", borderBottom: "1px solid rgba(255,255,255,0.05)", background: isCurrent ? "rgba(245,158,11,0.14)" : "none", cursor: "pointer", fontSize: 12, color: isCurrent ? "#fde68a" : "#e2e8f0", fontWeight: isCurrent ? 700 : 500, transition: "background 0.15s" }}
+                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
+                  onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = "none"; }}>
                   <div style={{ width: 26, height: 26, borderRadius: "50%", background: teamGradient(a.team), display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700, flexShrink: 0 }}>{a.avatar}</div>
                   <span style={{ flex: 1, textAlign: "left" }}>{a.name}</span>
-                  {astreintes[aKey] === a.id && <span style={{ color: "#f59e0b" }}>✓</span>}
+                  {isCurrent && <span style={{ color: "#fbbf24" }}>✓</span>}
                   {onAgentPicked && <span style={{ fontSize: 10, color: "#64748b" }}>→ puis glisser</span>}
                 </button>
-              ))}
-              <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "9px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#94a3b8" }}>✕ Annuler</button>
+                );
+              })}
+              <button onClick={() => { setAstreinteDropdown(null); setAstreinteSelStart(null); setAstreinteEraseStart(null); setAstreinteHovered(null); }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 16px", border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#64748b", transition: "background 0.15s, color 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.color = "#94a3b8"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748b"; }}>✕ Annuler</button>
             </div>
           );
         })()
@@ -5370,7 +5487,7 @@ function PlanningApp({ currentUser, onLogout }) {
                           <span style={{ fontSize: 10, color: "#64748b" }}>▾</span>
                         </div>
                         {alShowAgentDrop && (
-                          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+                          <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, ...POPUP_SURFACE, borderRadius: 12, zIndex: 99999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
                             <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                               <input autoFocus value={alSearchQuery} onChange={e => setAlSearchQuery(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid #e2e8f0", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
                             </div>
@@ -5838,7 +5955,7 @@ function CongesExceptionnelsView({ agents, leaves, leaveTypes, requests, token, 
             <span style={{ fontSize: 10, color: "#94a3b8", flexShrink: 0 }}>▾</span>
           </div>
           {searchAgentDrop && (
-            <div style={{ position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0, background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 12px 32px rgba(0,0,0,0.5)", zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
+            <div style={{ position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0, ...POPUP_SURFACE, borderRadius: 12, zIndex: 9999, overflow: "hidden", animation: "slideIn 0.15s ease" }}>
               <div style={{ padding: "8px 10px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                 <input autoFocus value={searchAgent} onChange={e => setSearchAgent(e.target.value)} placeholder="🔍 Rechercher..." style={{ width: "100%", padding: "6px 10px", borderRadius: 7, border: "1.5px solid rgba(255,255,255,0.15)", background: "#0f172a", color: "#f1f5f9", fontSize: 12, outline: "none", boxSizing: "border-box" }} />
               </div>
