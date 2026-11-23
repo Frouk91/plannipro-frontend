@@ -1103,6 +1103,30 @@ function LoginPage({ onLogin }) {
   );
 }
 
+// ─── ICÔNE ASTREINTE : clé à molette croisant un cadran (remplace la clochette) ───
+// Silhouette de la clé : pictogramme « build » de Material Design (licence Apache 2.0).
+const ASTREINTE_WRENCH = "M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z";
+function AstreinteIcon({ size = 16, style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true"
+      style={{ display: "inline-block", verticalAlign: "-0.2em", flexShrink: 0, ...style }}>
+      <defs>
+        <mask id="astreinte-icon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+          <rect width="24" height="24" fill="white" />
+          <path d={ASTREINTE_WRENCH} fill="black" stroke="black" strokeWidth="3.4" strokeLinejoin="round" />
+        </mask>
+      </defs>
+      {/* cadran, détouré autour de la clé */}
+      <g mask="url(#astreinte-icon-cut)" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9.3" strokeWidth="1.7" />
+        <path d="M12 4.9v1.9M19.1 12h-1.9M12 19.1v-1.9M4.9 12h1.9" strokeWidth="1.5" />
+        <path d="M12 12l3.4-3.4" strokeWidth="1.6" />
+      </g>
+      <path d={ASTREINTE_WRENCH} fill="currentColor" />
+    </svg>
+  );
+}
+
 // ─── SURFACE UNIQUE DE TOUTES LES POP-UPS (sombre, identique partout) ───
 const POPUP_SURFACE = {
   background: "linear-gradient(145deg,#0f172a,#1e293b)",
@@ -1690,7 +1714,7 @@ function AdminPanel({ agents, teams, leaveTypes, token, onAgentAdded, onAgentUpd
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{t.name}</div>
                     {t.name !== "Admin" && (
                       <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
-                        <span style={{ fontSize: 9, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", marginRight: 2 }}>🔔 Astreinte</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", marginRight: 2 }}><AstreinteIcon size={11} /> Astreinte</span>
                         {[{ v: null, l: "—" }, { v: "A", l: "A" }, { v: "B", l: "B" }].map(o => {
                           const on = (t.astreinte_slot || null) === o.v;
                           return (
@@ -3775,7 +3799,7 @@ function PlanningApp({ currentUser, onLogout }) {
               <div style={{ display: 'flex', gap: 0, backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px', borderBottom: '2px solid #e8edf5' }}>
                 {[
                   { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
-                  { mode: 'astreinte', label: 'Astreintes', icon: '🔔', color: '#f59e0b' }
+                  { mode: 'astreinte', label: 'Astreintes', icon: <AstreinteIcon size={17} />, color: '#f59e0b' }
                 ].map(tab => {
                   const isActive = filterMode === tab.mode;
                   return (
@@ -4067,7 +4091,7 @@ function PlanningApp({ currentUser, onLogout }) {
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff" }}>
                       <tr>
-                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ width: 160, padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}><AstreinteIcon size={12} /> ÉQUIPE / RÔLE</th>
                         {weekDays.map((d, i) => {
                           const k = dKey(d), wk = d.getDay() === 0 || d.getDay() === 6, isToday = k === dKey(now), isFriday = d.getDay() === 5;
                           return (
@@ -4075,7 +4099,7 @@ function PlanningApp({ currentUser, onLogout }) {
                               <div style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>{DAYS_FR[i]}</div>
                               <div style={{ fontSize: 22, fontWeight: 800, color: isFriday && !wk ? "#d97706" : isToday ? "#f59e0b" : wk ? "#e2e8f0" : "#1e293b", marginTop: 2 }}>{d.getDate()}</div>
                               <div style={{ fontSize: 10, color: "#64748b" }}>{MONTHS_FR[d.getMonth()].slice(0, 3)}</div>
-                              {isFriday && !wk && <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, marginTop: 2 }}>🔔 Astreinte</div>}
+                              {isFriday && !wk && <div style={{ fontSize: 9, color: "#f59e0b", fontWeight: 700, marginTop: 2 }}><AstreinteIcon size={11} /> Astreinte</div>}
                             </th>
                           );
                         })}
@@ -4092,7 +4116,7 @@ function PlanningApp({ currentUser, onLogout }) {
                         return (
                           <React.Fragment key={t.key}>
                             <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
-                              <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.name} — Astreinte vendredi</td>
+                              <td colSpan={8} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}><AstreinteIcon size={13} /> {t.name} — Astreinte vendredi</td>
                             </tr>
                             <AstreinteWeekRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
                           </React.Fragment>
@@ -4117,7 +4141,7 @@ function PlanningApp({ currentUser, onLogout }) {
                     <colgroup><col style={{ width: 200 }} />{Array.from({ length: daysInMonth }, (_, i) => <col key={i} />)}</colgroup>
                     <thead>
                       <tr>
-                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}>🔔 ÉQUIPE / RÔLE</th>
+                        <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 9, color: "#d97706", fontWeight: 800, borderBottom: "2px solid #fde68a", background: "linear-gradient(135deg,#fef9ec,#fffbeb)", textTransform: "uppercase", letterSpacing: "1px" }}><AstreinteIcon size={12} /> ÉQUIPE / RÔLE</th>
                         {Array.from({ length: daysInMonth }, (_, i) => {
                           const day = i + 1, k = dateKey(year, month, day), wk = isWeekend(year, month, day), isToday = todayDay === day;
                           const isFriday = new Date(year, month, day).getDay() === 5;
@@ -4268,7 +4292,7 @@ function PlanningApp({ currentUser, onLogout }) {
                               return (
                                 <React.Fragment key={t.key}>
                                   <tr style={{ background: st.header, borderBottom: "2px solid " + st.headerBorder }}>
-                                    <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>🔔 {t.name} — Astreinte vendredi</td>
+                                    <td colSpan={daysInMonth + 1} style={{ padding: "6px 12px", fontSize: 11, fontWeight: 700, color: st.textColor, textTransform: "uppercase", letterSpacing: "0.5px" }}><AstreinteIcon size={13} /> {t.name} — Astreinte vendredi</td>
                                   </tr>
                                   <AstreinteRow teamName={t.key} rowId="astreinte" rowLabel="Agent d'astreinte" fridayOnly={true} color={st.color} bg={st.bg} border={st.border} textColor={st.textColor} />
                                 </React.Fragment>
@@ -4320,7 +4344,7 @@ function PlanningApp({ currentUser, onLogout }) {
                             return (
                               <div key={teamName}>
                                 <div style={{ padding: "8px 16px", background: teamBg, borderTop: "1px solid #f1f5f9", fontSize: 11, fontWeight: 700, color: teamColor, textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                                  🔔 {bilanTeamName}
+                                  <AstreinteIcon size={13} /> {bilanTeamName}
                                 </div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
@@ -5270,7 +5294,7 @@ function PlanningApp({ currentUser, onLogout }) {
           return (
             <div onClick={e => e.stopPropagation()} style={{ position: "fixed", top: Math.max(8, Math.min(astreinteDropdown.y, window.innerHeight - 360)), left: Math.max(8, Math.min(astreinteDropdown.x, window.innerWidth - 260)), ...POPUP_SURFACE, borderRadius: 14, zIndex: 99999, minWidth: 240, maxHeight: 360, overflowY: "auto", animation: "slideIn 0.18s cubic-bezier(0.34,1.56,0.64,1)" }}>
               <div style={{ padding: "11px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", fontSize: 12, color: "#fbbf24", fontWeight: 700, background: "linear-gradient(rgba(245,158,11,0.12),rgba(245,158,11,0.12)), #111a2e", position: "sticky", top: 0, zIndex: 1 }}>
-                🔔 {astreinteTeamName(aTeamName)} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
+                <AstreinteIcon size={13} /> {astreinteTeamName(aTeamName)} — {rowLabels[rowType || rowId] || rowType || rowId}<br />
                 {astreinteDropdown.fridayOnly
                   ? <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>Cliquez sur un agent pour l'assigner à ce vendredi</span>
                   : <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>Cliquez sur un agent puis glissez jusqu'à la date de fin</span>
