@@ -1103,6 +1103,9 @@ function LoginPage({ onLogin }) {
   );
 }
 
+// Couleur du panneau des contrôles : l'onglet actif doit être strictement de la même couleur pour s'y fondre
+const TAB_PANEL_BG = "#fafbfe";
+
 // ─── ICÔNE ASTREINTE : clé à molette croisant un cadran (remplace la clochette) ───
 // Silhouette de la clé : pictogramme « build » de Material Design (licence Apache 2.0).
 const ASTREINTE_WRENCH = "M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z";
@@ -2346,6 +2349,7 @@ function PlanningApp({ currentUser, onLogout }) {
   const [weekAnchor, setWeekAnchor] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
   const [filterTeam, setFilterTeam] = useState("Tous");
   const [teamsOrder, setTeamsOrder] = useState(() => { try { return JSON.parse(localStorage.getItem("teamsOrder") || "[]"); } catch { return []; } });
+  const [hoverTab, setHoverTab] = useState(null);
   const [dragTeamName, setDragTeamName] = useState(null);
   const [dragOverTeamName, setDragOverTeamName] = useState(null);
   const [cssSubTeams, setCssSubTeams] = useState({});
@@ -3790,51 +3794,62 @@ function PlanningApp({ currentUser, onLogout }) {
             }} />
             {/* ── Controls bar ── */}
             <div style={{
-              background: "rgba(255,255,255,0.97)",
+              background: TAB_PANEL_BG,
               border: "1px solid rgba(0,0,0,0.07)",
               borderRadius: 16, padding: "14px 18px", marginBottom: 14,
               boxShadow: "0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)",
             }}>
-              {/* ========== ONGLETS ========== */}
-              <div style={{ display: 'flex', gap: 0, backgroundColor: '#f8fafc', padding: '0 4px', marginBottom: '20px', borderBottom: '2px solid #e8edf5' }}>
+              {/* ========== ONGLETS (intercalaires) ========== */}
+              <div role="tablist" style={{ display: 'flex', alignItems: 'flex-end', gap: 3, margin: '-14px -18px 18px', padding: '12px 18px 0', background: 'linear-gradient(180deg,#eceff7 0%,#e4e9f4 100%)', borderRadius: '15px 15px 0 0', borderBottom: '1px solid rgba(15,23,42,0.09)', position: 'relative' }}>
                 {[
-                  { mode: 'all', label: 'Planning', icon: '📅', color: '#6366f1' },
-                  { mode: 'astreinte', label: 'Astreintes', icon: <AstreinteIcon size={17} />, color: '#f59e0b' }
+                  { mode: 'all', label: 'Planning', color: '#6366f1', color2: '#818cf8', dark: '#3730a3',
+                    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> },
+                  { mode: 'astreinte', label: 'Astreintes', color: '#f59e0b', color2: '#fbbf24', dark: '#92400e', icon: <AstreinteIcon size={16} /> },
                 ].map(tab => {
                   const isActive = filterMode === tab.mode;
+                  const isHover = !isActive && hoverTab === tab.mode;
+                  const R = 12; // rayon des raccords courbes entre l'onglet actif et le panneau
                   return (
-                    <button
-                      key={tab.mode}
-                      onClick={() => {
-                        setFilterMode(tab.mode);
-                        if (tab.mode === 'presence') {
-                          const pt = leaveTypes.find(t => isPresenceType(t));
-                          if (pt) setSelectedLTId(pt.id);
-                        }
-                      }}
-                      style={{
-                        padding: '11px 22px',
-                        border: 'none',
-                        borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
-                        background: isActive ? '#fff' : 'transparent',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: isActive ? '700' : '500',
-                        color: isActive ? tab.color : '#b0b8c8',
-                        position: 'relative',
-                        transition: 'all 0.22s ease',
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        borderRadius: '10px 10px 0 0',
-                        marginBottom: -2,
-                        fontFamily: "'Outfit', sans-serif",
-                        letterSpacing: '0.15px',
-                      }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.color = tab.color; e.currentTarget.style.background = `${tab.color}0a`; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.color = '#b0b8c8'; e.currentTarget.style.background = 'transparent'; } }}
-                    >
-                      <span style={{ fontSize: '15px', filter: isActive ? 'none' : 'grayscale(0.5)', transition: 'filter 0.2s' }}>{tab.icon}</span>
-                      {tab.label}
-                    </button>
+                    <div key={tab.mode} style={{ position: 'relative', zIndex: isActive ? 3 : 1, marginBottom: isActive ? -1 : 0 }}>
+                      {isActive && (
+                        <>
+                          <span aria-hidden="true" style={{ position: 'absolute', bottom: 0, left: -R, width: R, height: R, background: `radial-gradient(circle at 0 0, transparent ${R - 0.5}px, ${TAB_PANEL_BG} ${R}px)`, pointerEvents: 'none' }} />
+                          <span aria-hidden="true" style={{ position: 'absolute', bottom: 0, right: -R, width: R, height: R, background: `radial-gradient(circle at 100% 0, transparent ${R - 0.5}px, ${TAB_PANEL_BG} ${R}px)`, pointerEvents: 'none' }} />
+                        </>
+                      )}
+                      <button
+                        role="tab"
+                        aria-selected={isActive}
+                        onClick={() => setFilterMode(tab.mode)}
+                        onMouseEnter={() => setHoverTab(tab.mode)}
+                        onMouseLeave={() => setHoverTab(null)}
+                        style={{
+                          position: 'relative', display: 'flex', alignItems: 'center', gap: 10,
+                          cursor: 'pointer', fontFamily: "'Outfit', sans-serif", letterSpacing: '0.15px',
+                          transition: 'background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
+                          ...(isActive ? {
+                            padding: '14px 26px', border: 'none', borderRadius: '14px 14px 0 0',
+                            background: TAB_PANEL_BG, color: tab.dark, fontSize: 13.5, fontWeight: 700,
+                            boxShadow: '0 -8px 18px -10px rgba(15,23,42,0.28)',
+                          } : {
+                            padding: '9px 22px', border: '1px solid rgba(15,23,42,0.06)', borderBottom: 'none', borderRadius: '12px 12px 0 0',
+                            background: isHover ? 'rgba(255,255,255,0.88)' : 'linear-gradient(180deg,rgba(255,255,255,0.55),rgba(255,255,255,0.28))',
+                            color: isHover ? tab.dark : '#7b859d', fontSize: 13, fontWeight: 600,
+                            boxShadow: isHover ? `inset 0 2px 0 ${tab.color}88` : 'none',
+                          }),
+                        }}
+                      >
+                        {isActive && <span aria-hidden="true" style={{ position: 'absolute', top: 0, left: 16, right: 16, height: 3, borderRadius: '0 0 4px 4px', background: `linear-gradient(90deg,${tab.color},${tab.color2})`, boxShadow: `0 2px 10px ${tab.color}66` }} />}
+                        <span style={{
+                          width: 26, height: 26, borderRadius: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                          transition: 'all 0.25s ease',
+                          ...(isActive
+                            ? { background: `linear-gradient(135deg,${tab.color},${tab.color2})`, color: '#fff', boxShadow: `0 3px 10px ${tab.color}55, inset 0 1px 0 rgba(255,255,255,0.35)` }
+                            : isHover ? { background: `${tab.color}22`, color: tab.color } : { background: 'rgba(15,23,42,0.06)', color: '#8f99b0' }),
+                        }}>{tab.icon}</span>
+                        <span>{tab.label}</span>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
